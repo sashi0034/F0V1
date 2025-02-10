@@ -1,13 +1,24 @@
+#include <array>
+
 #include "Windows.h"
 #include <iostream>
 
 #include "Value2D.h"
 
+#include<d3d12.h>
+#include<dxgi1_6.h>
+#include <format>
+#include <iso646.h>
+#include <vector>
+
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib, "dxgi.lib")
+
 using namespace ZG;
 
 namespace
 {
-    LRESULT WindowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+    LRESULT windowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         if (msg == WM_DESTROY)
         {
@@ -24,10 +35,12 @@ namespace
         void Init()
         {
             m_windowClass.cbSize = sizeof(WNDCLASSEX);
-            m_windowClass.lpfnWndProc = static_cast<WNDPROC>(WindowProcedure);
+            m_windowClass.lpfnWndProc = static_cast<WNDPROC>(windowProcedure);
             m_windowClass.lpszClassName = L"F0";
             m_windowClass.hInstance = GetModuleHandle(nullptr);
             RegisterClassEx(&m_windowClass);
+
+            // -----------------------------------------------
 
             m_windowSize = {1280, 720};
 
@@ -65,17 +78,103 @@ namespace
         HWND m_handle{};
     };
 
+    void enableDebugLayer()
+    {
+        ID3D12Debug* debugLayer = nullptr;
+        if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer))))
+        {
+            debugLayer->EnableDebugLayer();
+            debugLayer->Release();
+        }
+    }
+
     class EngineCore
     {
+    public:
+        void Init()
+        {
+            // デバッグフラグ有効で DXGI ファクトリを生成
+            if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory))))
+            {
+                // 失敗した場合、デバッグフラグ無効で DXGI ファクトリを生成
+                if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_dxgiFactory))))
+                {
+                    throw std::runtime_error("Failed to create DXGI Factory");
+                }
+            }
+
+            // 利用可能なアダプタを取得
+            std::vector<IDXGIAdapter*> availableAdapters{};
+            {
+                IDXGIAdapter* tmp = nullptr;
+                for (int i = 0; m_dxgiFactory->EnumAdapters(i, &tmp) != DXGI_ERROR_NOT_FOUND; ++i)
+                {
+                    availableAdapters.push_back(tmp);
+                }
+            }
+
+            // 最適なアダプタを選択
+            for (const auto adapter : availableAdapters)
+            {
+                DXGI_ADAPTER_DESC desc = {};
+                adapter->GetDesc(&desc);
+                std::wstring strDesc = desc.Description;
+                if (strDesc.find(L"NVIDIA") != std::string::npos)
+                {
+                    m_adapter = adapter;
+                    break;
+                }
+            }
+
+            if (not m_adapter)
+            {
+                throw std::runtime_error("Failed to select adapter");
+            }
+
+            // Direct3D デバイスの初期化
+            static constexpr std::array levels = {
+                D3D_FEATURE_LEVEL_12_1,
+                D3D_FEATURE_LEVEL_12_0,
+                D3D_FEATURE_LEVEL_11_1,
+                D3D_FEATURE_LEVEL_11_0,
+            };
+
+            for (const auto level : levels)
+            {
+                if (D3D12CreateDevice(m_adapter, level, IID_PPV_ARGS(&m_dev)) == S_OK)
+                {
+                    m_featureLevel = level;
+                    break;
+                }
+            }
+        }
+
+    private:
+        ID3D12Device* m_dev{};
+        IDXGIFactory6* m_dxgiFactory{};
+        IDXGISwapChain4* m_sapChain{};
+        IDXGIAdapter* m_adapter{};
+        D3D_FEATURE_LEVEL m_featureLevel{};
     };
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    WindowCore window;
+    OutputDebugString(L"--- application start\n");
+
+    WindowCore window{};
     window.Init();
 
+#ifdef _DEBUG
+    enableDebugLayer();
+#endif
+
+    EngineCore engine{};
+    engine.Init();
+
     window.Show();
+
+    OutputDebugString(L"--- start message loop\n");
 
     while (true)
     {
@@ -90,6 +189,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             break;
         }
+
+        // -----------------------------------------------
     }
 
     window.Destroy();
