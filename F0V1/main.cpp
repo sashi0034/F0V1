@@ -11,6 +11,8 @@
 #include <iso646.h>
 #include <vector>
 
+#include "AssertObject.h"
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 
@@ -141,20 +143,36 @@ namespace
 
             for (const auto level : levels)
             {
-                if (D3D12CreateDevice(m_adapter, level, IID_PPV_ARGS(&m_dev)) == S_OK)
+                if (D3D12CreateDevice(m_adapter, level, IID_PPV_ARGS(&m_device)) == S_OK)
                 {
                     m_featureLevel = level;
                     break;
                 }
             }
+
+            // コマンドアロケータを生成
+            Assert_HRESULT{}
+                << m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
+
+            // コマンドリストを生成
+            Assert_HRESULT{}
+                << m_device->CreateCommandList(
+                    0,
+                    D3D12_COMMAND_LIST_TYPE_DIRECT,
+                    m_commandAllocator,
+                    nullptr,
+                    IID_PPV_ARGS(&m_commandList)
+                );
         }
 
     private:
-        ID3D12Device* m_dev{};
+        ID3D12Device* m_device{};
         IDXGIFactory6* m_dxgiFactory{};
         IDXGISwapChain4* m_sapChain{};
         IDXGIAdapter* m_adapter{};
         D3D_FEATURE_LEVEL m_featureLevel{};
+        ID3D12CommandAllocator* m_commandAllocator{};
+        ID3D12GraphicsCommandList* m_commandList{};
     };
 }
 
