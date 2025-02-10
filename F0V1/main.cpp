@@ -10,6 +10,7 @@
 #include <format>
 #include <iso646.h>
 #include <vector>
+#include <string_view>
 
 #include "AssertObject.h"
 
@@ -20,6 +21,8 @@ using namespace ZG;
 
 namespace
 {
+    using namespace std::string_view_literals;
+
     LRESULT windowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         if (msg == WM_DESTROY)
@@ -151,12 +154,12 @@ namespace
             }
 
             // コマンドアロケータを生成
-            Assert_HRESULT{}
-                << m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
+            Assert_HRESULT{"failed to create command allocator"sv}
+                | m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
 
             // コマンドリストを生成
-            Assert_HRESULT{}
-                << m_device->CreateCommandList(
+            Assert_HRESULT{"failed to create command list"sv}
+                | m_device->CreateCommandList(
                     0,
                     D3D12_COMMAND_LIST_TYPE_DIRECT,
                     m_commandAllocator,

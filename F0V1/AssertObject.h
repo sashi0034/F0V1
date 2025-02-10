@@ -1,11 +1,30 @@
 ﻿#pragma once
 
+#include <source_location>
+#include <string>
+
 #include "Windows.h"
 
 namespace ZG
 {
-    struct Assert_HRESULT
+    struct AssertObject
     {
-        void operator <<(HRESULT result) const;
+        std::string_view errorMessage;
+#ifdef _DEBUG
+        std::source_location location{};
+
+        AssertObject(
+            std::string_view errorMessage,
+            const std::source_location& location = std::source_location::current());
+#else
+        AssertObject(std::string_view errorMessage);
+#endif
+
+        void throwError() const;
+    };
+
+    struct Assert_HRESULT : AssertObject
+    {
+        Assert_HRESULT operator |(HRESULT result) const;
     };
 }
