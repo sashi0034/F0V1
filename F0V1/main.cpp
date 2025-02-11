@@ -23,6 +23,8 @@ namespace
 {
     using namespace std::string_view_literals;
 
+    constexpr Point DefaultWindowSize{1280, 720};
+
     LRESULT windowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     {
         if (msg == WM_DESTROY)
@@ -47,7 +49,7 @@ namespace
 
             // -----------------------------------------------
 
-            m_windowSize = {1280, 720};
+            m_windowSize = DefaultWindowSize;
 
             RECT windowRect{0, 0, m_windowSize.x, m_windowSize.y};
             AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
@@ -77,6 +79,10 @@ namespace
             UnregisterClass(m_windowClass.lpszClassName, m_windowClass.hInstance);
         }
 
+        Point WindowSize() const { return m_windowSize; }
+
+        HWND Handle() const { return m_handle; }
+
     private:
         WNDCLASSEX m_windowClass{};
         Point m_windowSize{};
@@ -98,6 +104,11 @@ namespace
     public:
         void Init()
         {
+            m_window.Init();
+#ifdef _DEBUG
+            enableDebugLayer();
+#endif
+
             // デバッグフラグ有効で DXGI ファクトリを生成
             if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory))))
             {
@@ -166,16 +177,91 @@ namespace
                     nullptr,
                     IID_PPV_ARGS(&m_commandList)
                 );
+
+            // コマンドキューを生成
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+            commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE; // タイムアウトなし
+            commandQueueDesc.NodeMask = 0;
+            commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; // プライオリティ特に指定なし
+            commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            AssertWin32{"failed to create command queue"sv}
+                | m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_commandQueue));
+
+            // スワップチェインの設定
+            DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+            swapchainDesc.Width = DefaultWindowSize.x;
+            swapchainDesc.Height = DefaultWindowSize.y;
+            swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            swapchainDesc.Stereo = false;
+            swapchainDesc.SampleDesc.Count = 1;
+            swapchainDesc.SampleDesc.Quality = 0;
+            swapchainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
+            swapchainDesc.BufferCount = 2;
+            swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
+            swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+            swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+            AssertWin32{"failed to create swap chain"sv}
+                | m_dxgiFactory->CreateSwapChainForHwnd(
+                    m_commandQueue,
+                    m_window.Handle(),
+                    &swapchainDesc,
+                    nullptr,
+                    nullptr,
+                    reinterpret_cast<IDXGISwapChain1**>(&m_swapChain)
+                );
+
+            // ディスクリプタヒープを生成
+            D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heapDesc.NodeMask = 0;
+            heapDesc.NumDescriptors = 2; // 表裏の２つ
+            heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            ID3D12DescriptorHeap* rtvHeaps = nullptr;
+            AssertWin32{"failed to create descriptor heap"sv}
+                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
+
+            // AssertWin32{"failed to get swap chain description"sv}
+            //     | m_sapChain->GetDesc(&swapchainDesc);
+
+            std::vector<ID3D12Resource*> backBuffers{swapchainDesc.BufferCount};
+            D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
+            {
+                AssertWin32{"failed to get buffer"sv}
+                    | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&backBuffers[i]));
+                m_device->CreateRenderTargetView(backBuffers[i], nullptr, handle);
+                handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            }
+
+            // フェンスを生成
+            AssertWin32{"failed to create fence"sv}
+                | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+
+            // ウィンドウ表示
+            m_window.Show();
+        }
+
+        void Destroy()
+        {
+            m_window.Destroy();
         }
 
     private:
+        WindowCore m_window{};
+
         ID3D12Device* m_device{};
         IDXGIFactory6* m_dxgiFactory{};
-        IDXGISwapChain4* m_sapChain{};
         IDXGIAdapter* m_adapter{};
         D3D_FEATURE_LEVEL m_featureLevel{};
+
         ID3D12CommandAllocator* m_commandAllocator{};
         ID3D12GraphicsCommandList* m_commandList{};
+        ID3D12CommandQueue* m_commandQueue{};
+        IDXGISwapChain4* m_swapChain{};
+
+        ID3D12Fence* m_fence{};
+        UINT64 m_fenceValue{};
     };
 }
 
@@ -183,17 +269,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
     OutputDebugString(L"--- application start\n");
 
-    WindowCore window{};
-    window.Init();
-
-#ifdef _DEBUG
-    enableDebugLayer();
-#endif
-
     EngineCore engine{};
     engine.Init();
-
-    window.Show();
 
     OutputDebugString(L"--- start message loop\n");
 
@@ -214,7 +291,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // -----------------------------------------------
     }
 
-    window.Destroy();
+    engine.Destroy();
 
     return 0;
 }
