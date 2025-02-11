@@ -13,6 +13,7 @@
 #include <string_view>
 
 #include "AssertObject.h"
+#include "Logger.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -267,12 +268,12 @@ namespace
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    OutputDebugString(L"--- application start\n");
+    Logger.hr().writeln(L"application start");
 
     EngineCore engine{};
     engine.Init();
 
-    OutputDebugString(L"--- start message loop\n");
+    Logger.hr().writeln(L"start message loop");
 
     while (true)
     {

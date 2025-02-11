@@ -134,12 +134,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AssertObject.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Value2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssertObject.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Value2D.h" />
   </ItemGroup>
