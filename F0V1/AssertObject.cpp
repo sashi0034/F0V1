@@ -43,10 +43,9 @@ namespace ZG
         const auto message = string_to_wstring(std::string(errorMessage));
         const auto filename = string_to_wstring(location.file_name());
         const std::wstring output =
-            message + L"\n" + filename + L"(" + std::to_wstring(location.line()) + L")";
+            message + L"\n" + filename + L":" + std::to_wstring(location.line());
 
-        // TODO: エラーっぽくする
-        MessageBox(nullptr, output.c_str(), L"Error", MB_OK);
+        MessageBox(nullptr, output.c_str(), L"assertion failed", MB_OK | MB_ICONERROR);
 #endif
 
         if (not errorMessage.empty()) throw std::runtime_error(std::string(errorMessage));
