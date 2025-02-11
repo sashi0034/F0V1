@@ -26,8 +26,8 @@ namespace ZG
     void AssertObject::throwError() const
     {
 #if _DEBUG
-        const auto message = ToUTF16(std::string(errorMessage));
-        const auto filename = ToUTF16(location.file_name());
+        const auto message = ToUtf16(std::string(errorMessage));
+        const auto filename = ToUtf16(location.file_name());
         const std::wstring output =
             message + L"\n" + filename + L":" + std::to_wstring(location.line());
 
@@ -38,7 +38,7 @@ namespace ZG
         else throw std::runtime_error("An error occurred");
     }
 
-    Assert_HRESULT Assert_HRESULT::operator|(HRESULT result) const
+    AssertWin32 AssertWin32::operator|(HRESULT result) const
     {
         if (FAILED(result))
         {

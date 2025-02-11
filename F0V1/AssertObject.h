@@ -23,8 +23,8 @@ namespace ZG
         [[noreturn]] void throwError() const;
     };
 
-    struct Assert_HRESULT : AssertObject
+    struct AssertWin32 : AssertObject
     {
-        Assert_HRESULT operator |(HRESULT result) const;
+        AssertWin32 operator |(HRESULT result) const;
     };
 }

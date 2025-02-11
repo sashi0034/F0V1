@@ -154,11 +154,11 @@ namespace
             }
 
             // コマンドアロケータを生成
-            Assert_HRESULT{"failed to create command allocator"sv}
+            AssertWin32{"failed to create command allocator"sv}
                 | m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
 
             // コマンドリストを生成
-            Assert_HRESULT{"failed to create command list"sv}
+            AssertWin32{"failed to create command list"sv}
                 | m_device->CreateCommandList(
                     0,
                     D3D12_COMMAND_LIST_TYPE_DIRECT,

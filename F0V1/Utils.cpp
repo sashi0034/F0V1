@@ -4,7 +4,7 @@
 
 namespace ZG
 {
-    std::wstring ToUTF16(const std::string& str)
+    std::wstring ToUtf16(const std::string& str)
     {
         // Get the required buffer size for the wide string
         int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);

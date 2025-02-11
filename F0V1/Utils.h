@@ -3,5 +3,5 @@
 
 namespace ZG
 {
-    std::wstring ToUTF16(const std::string& str);
+    std::wstring ToUtf16(const std::string& str);
 }
