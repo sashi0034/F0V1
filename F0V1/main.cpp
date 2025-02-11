@@ -225,13 +225,13 @@ namespace
             // AssertWin32{"failed to get swap chain description"sv}
             //     | m_sapChain->GetDesc(&swapchainDesc);
 
-            std::vector<ID3D12Resource*> backBuffers{swapchainDesc.BufferCount};
+            m_backBuffers.resize(swapchainDesc.BufferCount);
             D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
             for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
             {
                 AssertWin32{"failed to get buffer"sv}
-                    | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&backBuffers[i]));
-                m_device->CreateRenderTargetView(backBuffers[i], nullptr, handle);
+                    | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&m_backBuffers[i]));
+                m_device->CreateRenderTargetView(m_backBuffers[i], nullptr, handle);
                 handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
             }
 
@@ -241,6 +241,24 @@ namespace
 
             // ウィンドウ表示
             m_window.Show();
+        }
+
+        void Update()
+        {
+            // バックバッファのインデックスを取得
+            const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+            // リソースバリア
+            D3D12_RESOURCE_BARRIER barrierDesc{};
+            barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+            barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+            barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
+            barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+            barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+            barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            m_commandList->ResourceBarrier(1, &barrierDesc);
+
+            // TODO
         }
 
         void Destroy()
@@ -263,6 +281,8 @@ namespace
 
         ID3D12Fence* m_fence{};
         UINT64 m_fenceValue{};
+
+        std::vector<ID3D12Resource*> m_backBuffers{};
     };
 }
 
@@ -290,6 +310,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
 
         // -----------------------------------------------
+
+        engine.Update();
     }
 
     engine.Destroy();
