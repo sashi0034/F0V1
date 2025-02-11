@@ -20,7 +20,7 @@ namespace ZG
         AssertObject(std::string_view errorMessage);
 #endif
 
-        void throwError() const;
+        [[noreturn]] void throwError() const;
     };
 
     struct Assert_HRESULT : AssertObject

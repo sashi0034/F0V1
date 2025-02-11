@@ -135,10 +135,12 @@
   <ItemGroup>
     <ClCompile Include="AssertObject.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Value2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AssertObject.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Value2D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
