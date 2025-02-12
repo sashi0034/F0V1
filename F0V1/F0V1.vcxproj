@@ -139,24 +139,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AssertObject.cpp" />
-    <ClCompile Include="EngineCore.cpp" />
-    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Value2D.cpp" />
+    <ClCompile Include="ZG\AssertObject.cpp" />
+    <ClCompile Include="ZG\EngineCore.cpp" />
+    <ClCompile Include="ZG\Logger.cpp" />
+    <ClCompile Include="ZG\Utils.cpp" />
+    <ClCompile Include="ZG\Value2D.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AssertObject.h" />
-    <ClInclude Include="EngineCore.h" />
-    <ClInclude Include="Logger.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Utils.h" />
-    <ClInclude Include="Value2D.h" />
+    <ClInclude Include="ZG\AssertObject.h" />
+    <ClInclude Include="ZG\EngineCore.h" />
+    <ClInclude Include="ZG\Logger.h" />
+    <ClInclude Include="ZG\Utils.h" />
+    <ClInclude Include="ZG\Value2D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
