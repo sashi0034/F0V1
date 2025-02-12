@@ -27,4 +27,9 @@ namespace ZG
     {
         AssertWin32 operator |(HRESULT result) const;
     };
+
+    struct AssertNotNull : AssertObject
+    {
+        AssertNotNull operator |(const void* ptr) const;
+    };
 }

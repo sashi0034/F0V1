@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include <memory>
 
-#include "IResource.h"
-
 namespace ZG
 {
+    class ResourceFactory;
+
     class EngineCore_impl
     {
     public:
@@ -16,7 +16,7 @@ namespace ZG
 
         void Destroy() const;
 
-        std::shared_ptr<IResourceState> CreateResource(const IResourceProps& props) const;
+        ResourceFactory GetResourceFactory() const;
 
     private:
         struct Impl;

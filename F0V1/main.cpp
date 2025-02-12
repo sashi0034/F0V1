@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "Windows.h"
+#include "ZG/Buffer3D.h"
 
 #include "ZG/EngineCore.h"
 #include "ZG/Logger.h"
@@ -18,6 +19,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     EngineCore.Init();
 
     Logger.HR().Writeln(L"start message loop");
+
+    const Buffer3D buffer3D{
+        Buffer3DParams{
+            .vertexes = {
+                {-0.4f, -0.7f, 0.0f}, //左下
+                {-0.4f, 0.7f, 0.0f}, //左上
+                {0.4f, -0.7f, 0.0f}, //右下
+                {0.4f, 0.7f, 0.0f}, //右上
+            },
+            .indices = {0, 1, 2, 2, 1, 3}
+        }
+    };
 
     while (true)
     {

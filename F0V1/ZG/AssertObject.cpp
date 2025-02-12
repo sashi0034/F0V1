@@ -48,4 +48,14 @@ namespace ZG
 
         return *this;
     }
+
+    AssertNotNull AssertNotNull::operator|(const void* ptr) const
+    {
+        if (ptr == nullptr)
+        {
+            throwError();
+        }
+
+        return *this;
+    }
 }

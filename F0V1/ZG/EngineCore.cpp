@@ -9,7 +9,9 @@
 #include <dxgi1_6.h>
 
 #include "AssertObject.h"
-#include "Buffer2D_impl.h"
+#include "Buffer3D_impl.h"
+#include "ColorF32.h"
+#include "ResourceFactory.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -95,6 +97,8 @@ namespace
             debugLayer->Release();
         }
     }
+
+    constexpr ColorF32 defaultClearColor = {0.5f, 0.5f, 0.5f, 1.0f};
 }
 
 struct EngineCore_impl::Impl
@@ -261,8 +265,7 @@ public:
         m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
         // 画面クリア
-        constexpr float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f}; // 黄色
-        m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.GetPointer(), 0, nullptr);
 
         barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
         barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -300,89 +303,17 @@ public:
         m_window.Destroy();
     }
 
-    std::shared_ptr<IResourceState> CreateResource(const IResourceProps& props)
+    ResourceFactory GetResourceFactory() const
     {
-        if (const auto buffer2D = dynamic_cast<const Buffer2DProps*>(&props))
-        {
-            D3D12_HEAP_PROPERTIES heapProperties = {};
-            heapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
-            heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN; // GPU メモリ領域における CPU のアクセス方法
-            heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-
-            D3D12_RESOURCE_DESC resourceDesc = {};
-            resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-            resourceDesc.Width = sizeof(buffer2D->vertexes);
-            resourceDesc.Height = 1;
-            resourceDesc.DepthOrArraySize = 1;
-            resourceDesc.MipLevels = 1;
-            resourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-            resourceDesc.SampleDesc.Count = 1;
-            resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-            resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-            // アップロード
-            ID3D12Resource* vertBuffer = nullptr;
-            AssertWin32{"failed to create buffer"sv}
-                | m_device->CreateCommittedResource(
-                    &heapProperties,
-                    D3D12_HEAP_FLAG_NONE,
-                    &resourceDesc,
-                    D3D12_RESOURCE_STATE_GENERIC_READ,
-                    nullptr,
-                    IID_PPV_ARGS(&vertBuffer)
-                );
-
-            // バッファの仮想アドレスを取得
-            DirectX::XMFLOAT3* vertMap{};
-            AssertWin32{"failed to map vertex buffer"sv}
-                | vertBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vertMap));
-
-            // マップしたメモリ位置へデータを転送
-            std::ranges::copy(buffer2D->vertexes, vertMap);
-
-            // アンマップ
-            vertBuffer->Unmap(0, nullptr);
-
-            Buffer2DState result{};
-            result.vertexBufferView.BufferLocation = vertBuffer->GetGPUVirtualAddress();
-            result.vertexBufferView.SizeInBytes = sizeof(buffer2D->vertexes);
-            result.vertexBufferView.StrideInBytes = sizeof(buffer2D->vertexes[0]);
-
-            ID3D12Resource* indexBuffer{};
-            resourceDesc.Width = sizeof(buffer2D->indices);
-            AssertWin32{"failed to create buffer"sv}
-                | m_device->CreateCommittedResource(
-                    &heapProperties,
-                    D3D12_HEAP_FLAG_NONE,
-                    &resourceDesc,
-                    D3D12_RESOURCE_STATE_GENERIC_READ,
-                    nullptr,
-                    IID_PPV_ARGS(&indexBuffer)
-                );
-
-            // バッファの仮想アドレスを取得
-            uint16_t* indexMap{};
-            AssertWin32{"failed to map index buffer"sv}
-                | indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&indexMap));
-
-            // マップしたメモリ位置へデータを転送
-            std::ranges::copy(buffer2D->indices, indexMap);
-
-            // アンマップ
-            indexBuffer->Unmap(0, nullptr);
-
-            result.indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-            result.indexBufferView.SizeInBytes = sizeof(buffer2D->indices);
-            result.indexBufferView.Format = DXGI_FORMAT_R16_UINT;
-
-            return std::make_shared<Buffer2DState>(result);
-        }
-
-        throw std::runtime_error("failed to create resource");
+        AssertNotNull{"the engine is not initialized"sv}
+            | m_device;
+        return ResourceFactory{m_device};
     }
 
 private:
     WindowCore m_window{};
+
+    ColorF32 m_clearColor{defaultClearColor};
 
     ID3D12Device* m_device{};
     IDXGIFactory6* m_dxgiFactory{};
@@ -423,8 +354,8 @@ namespace ZG
         p_impl->Destroy();
     }
 
-    std::shared_ptr<IResourceState> EngineCore_impl::CreateResource(const IResourceProps& props) const
+    ResourceFactory EngineCore_impl::GetResourceFactory() const
     {
-        return p_impl->CreateResource(props);
+        return p_impl->GetResourceFactory();
     }
 }

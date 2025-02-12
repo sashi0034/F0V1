@@ -145,22 +145,26 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ZG\AssertObject.cpp" />
-    <ClCompile Include="ZG\Buffer2D.cpp" />
+    <ClCompile Include="ZG\Buffer3D.cpp" />
+    <ClCompile Include="ZG\ColorF32.cpp" />
     <ClCompile Include="ZG\EngineCore.cpp" />
     <ClCompile Include="ZG\Logger.cpp" />
+    <ClCompile Include="ZG\ResourceFactory.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
     <ClCompile Include="ZG\Value2D.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\AssertObject.h" />
-    <ClInclude Include="ZG\Buffer2D.h" />
-    <ClInclude Include="ZG\Buffer2D_impl.h" />
+    <ClInclude Include="ZG\Buffer3D.h" />
+    <ClInclude Include="ZG\Buffer3D_impl.h" />
+    <ClInclude Include="ZG\ColorF32.h" />
     <ClInclude Include="ZG\EngineCore.h" />
     <ClInclude Include="ZG\Logger.h" />
-    <ClInclude Include="ZG\IResource.h" />
+    <ClInclude Include="ZG\ResourceFactory.h" />
     <ClInclude Include="ZG\Utils.h" />
     <ClInclude Include="ZG\Value2D.h" />
+    <ClInclude Include="ZG\Uncopyable.h" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="asset\" />
