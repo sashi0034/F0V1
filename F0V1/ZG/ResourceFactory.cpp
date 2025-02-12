@@ -1,9 +1,42 @@
 ﻿#include "pch.h"
 #include "ResourceFactory.h"
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <DirectXMath.h>
+#include <d3dcompiler.h>
+
 #include "AssertObject.h"
 #include "Buffer3D.h"
 #include "Buffer3D_impl.h"
+#include "Shader.h"
+#include "Shader_impl.h"
+
+namespace
+{
+    using namespace ZG;
+
+    std::shared_ptr<Shader_impl> createShader(ID3D12Device* m_device, const ShaderParams& params, const char* target)
+    {
+        auto result = std::make_shared<Shader_impl>();
+
+        // TODO: 例外を投げる代わりにエラーをログへ出力
+        AssertWin32{"failed to create shader"sv}
+            | D3DCompileFromFile(
+                (params.filename).c_str(),
+                nullptr,
+                D3D_COMPILE_STANDARD_FILE_INCLUDE,
+                params.entryPoint.c_str(),
+                target,
+                D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // FIXME
+                0,
+                &result->shaderBlob,
+                &result->errorBlob
+            );
+
+        return result;
+    }
+}
 
 namespace ZG
 {
@@ -81,5 +114,15 @@ namespace ZG
         result.indexBufferView.Format = DXGI_FORMAT_R16_UINT;
 
         return std::make_shared<Buffer3D_impl>(result);
+    }
+
+    std::shared_ptr<Shader_impl> ResourceFactory::CreatePS(const ShaderParams& params) const
+    {
+        return createShader(m_device, params, "ps_5_0");
+    }
+
+    std::shared_ptr<Shader_impl> ResourceFactory::CreateVS(const ShaderParams& params) const
+    {
+        return createShader(m_device, params, "vs_5_0");
     }
 }
