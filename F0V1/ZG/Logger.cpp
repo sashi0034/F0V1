@@ -12,13 +12,13 @@ namespace
 
 namespace ZG
 {
-    const Logger_impl& Logger_impl::hr() const
+    const Logger_impl& Logger_impl::HR() const
     {
-        writeln(L"--------------------------------------------------");
+        Writeln(L"--------------------------------------------------");
         return *this;
     }
 
-    void Logger_impl::writeln(const std::wstring& message) const
+    void Logger_impl::Writeln(const std::wstring& message) const
     {
         if (not s_initializedConsole)
         {
@@ -45,7 +45,7 @@ namespace ZG
 
     const Logger_impl& Logger_impl::operator<<(const std::wstring& message) const
     {
-        writeln(message);
+        Writeln(message);
         return *this;
     }
 }

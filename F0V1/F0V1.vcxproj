@@ -145,6 +145,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ZG\AssertObject.cpp" />
+    <ClCompile Include="ZG\Buffer2D.cpp" />
     <ClCompile Include="ZG\EngineCore.cpp" />
     <ClCompile Include="ZG\Logger.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
@@ -153,10 +154,16 @@
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\AssertObject.h" />
+    <ClInclude Include="ZG\Buffer2D.h" />
+    <ClInclude Include="ZG\Buffer2D_impl.h" />
     <ClInclude Include="ZG\EngineCore.h" />
     <ClInclude Include="ZG\Logger.h" />
+    <ClInclude Include="ZG\IResource.h" />
     <ClInclude Include="ZG\Utils.h" />
     <ClInclude Include="ZG\Value2D.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="asset\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,21 +1,27 @@
 ﻿#pragma once
 #include <memory>
 
+#include "IResource.h"
+
 namespace ZG
 {
-    class EngineCore
+    class EngineCore_impl
     {
     public:
-        EngineCore();
+        EngineCore_impl();
 
-        void Init();
+        void Init() const;
 
-        void Update();
+        void Update() const;
 
-        void Destroy();
+        void Destroy() const;
+
+        std::shared_ptr<IResourceState> CreateResource(const IResourceProps& props) const;
 
     private:
         struct Impl;
         std::shared_ptr<Impl> p_impl;
     };
+
+    inline const auto EngineCore = EngineCore_impl{};
 }

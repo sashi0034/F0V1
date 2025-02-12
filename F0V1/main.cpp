@@ -13,12 +13,11 @@ namespace
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    Logger.hr().writeln(L"application start");
+    Logger.HR().Writeln(L"application start");
 
-    EngineCore engine{};
-    engine.Init();
+    EngineCore.Init();
 
-    Logger.hr().writeln(L"start message loop");
+    Logger.HR().Writeln(L"start message loop");
 
     while (true)
     {
@@ -36,10 +35,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // -----------------------------------------------
 
-        engine.Update();
+        EngineCore.Update();
     }
 
-    engine.Destroy();
+    EngineCore.Destroy();
 
     return 0;
 }
