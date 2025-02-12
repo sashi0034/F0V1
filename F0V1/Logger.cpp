@@ -1,7 +1,5 @@
-﻿#include "Logger.h"
-
-#include <iostream>
-#include <iso646.h>
+﻿#include "pch.h"
+#include "Logger.h"
 
 #include "AssertObject.h"
 

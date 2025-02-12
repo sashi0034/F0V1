@@ -1,4 +1,5 @@
-﻿#include "AssertObject.h"
+﻿#include "pch.h"
+#include "AssertObject.h"
 
 #include <stdexcept>
 

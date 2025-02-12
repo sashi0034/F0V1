@@ -1,4 +1,5 @@
-﻿#include "EngineCore.h"
+﻿#include "pch.h"
+#include "EngineCore.h"
 
 #include <array>
 
