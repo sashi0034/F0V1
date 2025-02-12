@@ -311,7 +311,6 @@ public:
         return ResourceFactory{m_device};
     }
 
-private:
     WindowCore m_window{};
 
     ColorF32 m_clearColor{defaultClearColor};
@@ -331,6 +330,9 @@ private:
     UINT64 m_fenceValue{};
 
     std::vector<ID3D12Resource*> m_backBuffers{};
+
+    std::vector<ID3DBlob*> m_psBlobs{};
+    std::vector<ID3DBlob*> m_vsBlobs{};
 };
 
 namespace ZG
@@ -358,5 +360,29 @@ namespace ZG
     ResourceFactory EngineCore_impl::GetResourceFactory() const
     {
         return p_impl->GetResourceFactory();
+    }
+
+    void EngineCore_impl::PushPS(ID3DBlob* psBlob) const
+    {
+        assert(psBlob);
+        p_impl->m_psBlobs.push_back(psBlob);
+    }
+
+    void EngineCore_impl::PopPS() const
+    {
+        assert(not p_impl->m_psBlobs.empty());
+        p_impl->m_psBlobs.pop_back();
+    }
+
+    void EngineCore_impl::PushVS(ID3DBlob* vsBlob) const
+    {
+        assert(vsBlob);
+        p_impl->m_vsBlobs.push_back(vsBlob);
+    }
+
+    void EngineCore_impl::PopVS() const
+    {
+        assert(not p_impl->m_vsBlobs.empty());
+        p_impl->m_vsBlobs.pop_back();
     }
 }

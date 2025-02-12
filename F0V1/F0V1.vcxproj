@@ -139,6 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Content Include="asset\basic_pixel.hlsl" />
+    <Content Include="asset\basic_vertex.hlsl" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -168,9 +170,6 @@
     <ClInclude Include="ZG\Utils.h" />
     <ClInclude Include="ZG\Value2D.h" />
     <ClInclude Include="ZG\Uncopyable.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="asset\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

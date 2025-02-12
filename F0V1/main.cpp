@@ -5,6 +5,7 @@
 
 #include "ZG/EngineCore.h"
 #include "ZG/Logger.h"
+#include "ZG/Shader.h"
 
 using namespace ZG;
 
@@ -32,6 +33,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
     };
 
+    const PixelShader pixelShader{ShaderParams{.filename = L"asset/basic_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
+
     while (true)
     {
         MSG msg;
@@ -49,6 +53,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         // -----------------------------------------------
 
         EngineCore.Update();
+
+        const ScopedShader scopedShader{pixelShader, vertexShader};
+
+        // TODO
     }
 
     EngineCore.Destroy();

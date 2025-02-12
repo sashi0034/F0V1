@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <d3dcommon.h>
 #include <memory>
 
 namespace ZG
@@ -17,6 +18,12 @@ namespace ZG
         void Destroy() const;
 
         ResourceFactory GetResourceFactory() const;
+
+        void PushPS(ID3DBlob* psBlob) const;
+        void PopPS() const;
+
+        void PushVS(ID3DBlob* vsBlob) const;
+        void PopVS() const;
 
     private:
         struct Impl;
