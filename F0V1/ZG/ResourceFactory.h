@@ -21,10 +21,6 @@ namespace ZG
 
         std::shared_ptr<Buffer3D_impl> Create(const Buffer3DParams& params) const;
 
-        std::shared_ptr<Shader_impl> CreatePS(const ShaderParams& params) const;
-
-        std::shared_ptr<Shader_impl> CreateVS(const ShaderParams& params) const;
-
     private:
         ID3D12Device* m_device;
     };
