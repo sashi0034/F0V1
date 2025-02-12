@@ -2,14 +2,15 @@
 #include <d3d12.h>
 
 #include "Uncopyable.h"
+#include "Value2D.h"
 
 namespace ZG
 {
     struct Buffer3D_impl;
     struct Buffer3DParams;
 
-    struct Shader_impl;
-    struct ShaderParams;
+    struct PipelineState_impl;
+    struct PipelineStateParams;
 
     class ResourceFactory : Uncopyable
     {
@@ -19,7 +20,9 @@ namespace ZG
         {
         }
 
-        std::shared_ptr<Buffer3D_impl> Create(const Buffer3DParams& params) const;
+        std::shared_ptr<Buffer3D_impl> CreateBuffer(const Buffer3DParams& params) const;
+
+        std::shared_ptr<PipelineState_impl> CreatePipelineState(const PipelineStateParams& params) const;
 
     private:
         ID3D12Device* m_device;

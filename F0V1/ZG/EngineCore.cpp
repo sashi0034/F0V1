@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include "EngineCore.h"
 
+#include <cassert>
+
 #include "Windows.h"
 
 #include "Value2D.h"
@@ -11,6 +13,7 @@
 #include "AssertObject.h"
 #include "Buffer3D_impl.h"
 #include "ColorF32.h"
+#include "PipelineState.h"
 #include "ResourceFactory.h"
 
 #pragma comment(lib, "d3d12.lib")
@@ -244,20 +247,19 @@ public:
         m_window.Show();
     }
 
-    void Update()
+    void BeginFrame()
     {
         // バックバッファのインデックスを取得
         const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 
         // リソースバリア
-        D3D12_RESOURCE_BARRIER barrierDesc{};
-        barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
-        barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        m_commandList->ResourceBarrier(1, &barrierDesc);
+        m_barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        m_barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
+        m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+        m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        m_commandList->ResourceBarrier(1, &m_barrierDesc);
 
         // レンダーターゲットを指定
         auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
@@ -268,9 +270,32 @@ public:
         // 画面クリア
         m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.GetPointer(), 0, nullptr);
 
-        barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-        m_commandList->ResourceBarrier(1, &barrierDesc);
+        // ビューポートの設定
+        Point windowSize = m_window.WindowSize();
+        D3D12_VIEWPORT viewport = {};
+        viewport.TopLeftX = 0.0f;
+        viewport.TopLeftY = 0.0f;
+        viewport.Width = static_cast<float>(windowSize.x);
+        viewport.Height = static_cast<float>(windowSize.y);
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+        m_commandList->RSSetViewports(1, &viewport);
+
+        // シザー矩形の設定
+        D3D12_RECT scissorRect = {};
+        scissorRect.left = 0;
+        scissorRect.top = 0;
+        scissorRect.right = scissorRect.left + windowSize.x;
+        scissorRect.bottom = scissorRect.top + windowSize.y;
+        m_commandList->RSSetScissorRects(1, &scissorRect);
+    }
+
+    void EndFrame()
+    {
+        // リソースバリア
+        m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+        m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+        m_commandList->ResourceBarrier(1, &m_barrierDesc);
 
         // コマンドリストのクローズ
         m_commandList->Close();
@@ -329,10 +354,13 @@ public:
     ID3D12Fence* m_fence{};
     UINT64 m_fenceValue{};
 
+    D3D12_RESOURCE_BARRIER m_barrierDesc{};
+
     std::vector<ID3D12Resource*> m_backBuffers{};
 
-    std::vector<ID3DBlob*> m_psBlobs{};
-    std::vector<ID3DBlob*> m_vsBlobs{};
+    std::vector<ID3D12PipelineState*> m_pipelineStateStack{};
+    // std::vector<ID3DBlob*> m_psBlobs{};
+    // std::vector<ID3DBlob*> m_vsBlobs{};
 };
 
 namespace ZG
@@ -347,9 +375,14 @@ namespace ZG
         p_impl->Init();
     }
 
-    void EngineCore_impl::Update() const
+    void EngineCore_impl::BeginFrame() const
     {
-        p_impl->Update();
+        p_impl->BeginFrame();
+    }
+
+    void EngineCore_impl::EndFrame() const
+    {
+        p_impl->EndFrame();
     }
 
     void EngineCore_impl::Destroy() const
@@ -362,27 +395,28 @@ namespace ZG
         return p_impl->GetResourceFactory();
     }
 
-    void EngineCore_impl::PushPS(ID3DBlob* psBlob) const
+    void EngineCore_impl::PushPipelineState(ID3D12PipelineState* pipelineState) const
     {
-        assert(psBlob);
-        p_impl->m_psBlobs.push_back(psBlob);
+        assert(pipelineState);
+        p_impl->m_pipelineStateStack.push_back(pipelineState);
+
+        p_impl->m_commandList->SetPipelineState(pipelineState);
     }
 
-    void EngineCore_impl::PopPS() const
+    void EngineCore_impl::PopPipelineState() const
     {
-        assert(not p_impl->m_psBlobs.empty());
-        p_impl->m_psBlobs.pop_back();
+        assert(not p_impl->m_pipelineStateStack.empty());
+        p_impl->m_pipelineStateStack.pop_back();
+
+        if (not p_impl->m_pipelineStateStack.empty())
+        {
+            p_impl->m_commandList->SetPipelineState(p_impl->m_pipelineStateStack.back());
+        }
     }
 
-    void EngineCore_impl::PushVS(ID3DBlob* vsBlob) const
+    ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
     {
-        assert(vsBlob);
-        p_impl->m_vsBlobs.push_back(vsBlob);
-    }
-
-    void EngineCore_impl::PopVS() const
-    {
-        assert(not p_impl->m_vsBlobs.empty());
-        p_impl->m_vsBlobs.pop_back();
+        assert(p_impl->m_commandList);
+        return p_impl->m_commandList;
     }
 }

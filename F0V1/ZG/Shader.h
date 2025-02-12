@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <d3dcommon.h>
+
 #include "Uncopyable.h"
 
 namespace ZG
@@ -18,7 +20,7 @@ namespace ZG
     public:
         PixelShader(const ShaderParams& params);
 
-        class Internal;
+        ID3D10Blob* GetBlob() const;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;
@@ -29,20 +31,22 @@ namespace ZG
     public:
         VertexShader(const ShaderParams& params);
 
+        ID3D10Blob* GetBlob() const;
+
         class Internal;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;
     };
 
-    class ScopedShader : Uncopyable
-    {
-    public:
-        explicit ScopedShader(const PixelShader& pixelShader, const VertexShader& vertexShader);
-
-        ~ScopedShader();
-
-    private:
-        size_t m_timestamp{};
-    };
+    // class ScopedShader : Uncopyable
+    // {
+    // public:
+    //     explicit ScopedShader(const PixelShader& pixelShader, const VertexShader& vertexShader);
+    //
+    //     ~ScopedShader();
+    //
+    // private:
+    //     size_t m_timestamp{};
+    // };
 }

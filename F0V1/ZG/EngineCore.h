@@ -1,5 +1,8 @@
 ﻿#pragma once
+
+#include <d3d12.h>
 #include <d3dcommon.h>
+
 #include <memory>
 
 namespace ZG
@@ -13,17 +16,17 @@ namespace ZG
 
         void Init() const;
 
-        void Update() const;
+        void BeginFrame() const;
+        void EndFrame() const;
 
         void Destroy() const;
 
         ResourceFactory GetResourceFactory() const;
 
-        void PushPS(ID3DBlob* psBlob) const;
-        void PopPS() const;
+        void PushPipelineState(ID3D12PipelineState* pipelineState) const;
+        void PopPipelineState() const;
 
-        void PushVS(ID3DBlob* vsBlob) const;
-        void PopVS() const;
+        ID3D12GraphicsCommandList* GetCommandList() const;
 
     private:
         struct Impl;

@@ -151,6 +151,7 @@
     <ClCompile Include="ZG\ColorF32.cpp" />
     <ClCompile Include="ZG\EngineCore.cpp" />
     <ClCompile Include="ZG\Logger.cpp" />
+    <ClCompile Include="ZG\PipelineState.cpp" />
     <ClCompile Include="ZG\Shader.cpp" />
     <ClCompile Include="ZG\ResourceFactory.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
@@ -164,6 +165,8 @@
     <ClInclude Include="ZG\ColorF32.h" />
     <ClInclude Include="ZG\EngineCore.h" />
     <ClInclude Include="ZG\Logger.h" />
+    <ClInclude Include="ZG\PipelineState.h" />
+    <ClInclude Include="ZG\PipelineState_impl.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\Shader_impl.h" />
     <ClInclude Include="ZG\ResourceFactory.h" />

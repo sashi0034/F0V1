@@ -16,6 +16,8 @@ namespace ZG
     public:
         Buffer3D(const Buffer3DParams& params);
 
+        void Draw() const;
+
     private:
         std::shared_ptr<Buffer3D_impl> p_impl;
     };

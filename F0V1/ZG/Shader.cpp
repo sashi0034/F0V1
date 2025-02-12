@@ -5,7 +5,6 @@
 
 #include "AssertObject.h"
 #include "EngineCore.h"
-#include "ResourceFactory.h"
 #include "Shader_impl.h"
 
 using namespace ZG;
@@ -34,34 +33,6 @@ namespace
     }
 }
 
-class PixelShader::Internal
-{
-public:
-    static void Push(const PixelShader& shader)
-    {
-        EngineCore.PushPS(shader.p_impl->shaderBlob);
-    }
-
-    static void Pop()
-    {
-        EngineCore.PopPS();
-    }
-};
-
-class VertexShader::Internal
-{
-public:
-    static void Push(const VertexShader& shader)
-    {
-        EngineCore.PushVS(shader.p_impl->shaderBlob);
-    }
-
-    static void Pop()
-    {
-        EngineCore.PopVS();
-    }
-};
-
 namespace ZG
 {
     PixelShader::PixelShader(const ShaderParams& params)
@@ -69,21 +40,31 @@ namespace ZG
         p_impl = createShader(params, "ps_5_0");
     }
 
+    ID3D10Blob* PixelShader::GetBlob() const
+    {
+        return p_impl->shaderBlob;
+    }
+
     VertexShader::VertexShader(const ShaderParams& params)
     {
         p_impl = createShader(params, "vs_5_0");
     }
 
-    ScopedShader::ScopedShader(const PixelShader& pixelShader, const VertexShader& vertexShader) :
-        m_timestamp(0) // TODO
+    ID3D10Blob* VertexShader::GetBlob() const
     {
-        PixelShader::Internal::Push(pixelShader);
-        VertexShader::Internal::Push(vertexShader);
+        return p_impl->shaderBlob;
     }
 
-    ScopedShader::~ScopedShader()
-    {
-        PixelShader::Internal::Pop();
-        VertexShader::Internal::Pop();
-    }
+    // ScopedShader::ScopedShader(const PixelShader& pixelShader, const VertexShader& vertexShader) :
+    //     m_timestamp(0) // TODO
+    // {
+    //     PixelShader::Internal::Push(pixelShader);
+    //     VertexShader::Internal::Push(vertexShader);
+    // }
+    //
+    // ScopedShader::~ScopedShader()
+    // {
+    //     PixelShader::Internal::Pop();
+    //     VertexShader::Internal::Pop();
+    // }
 }

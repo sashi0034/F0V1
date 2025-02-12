@@ -5,6 +5,7 @@
 
 #include "ZG/EngineCore.h"
 #include "ZG/Logger.h"
+#include "ZG/PipelineState.h"
 #include "ZG/Shader.h"
 
 using namespace ZG;
@@ -35,6 +36,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     const PixelShader pixelShader{ShaderParams{.filename = L"asset/basic_pixel.hlsl", .entryPoint = "PS"}};
     const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
+    const PipelineState pipelineState{PipelineStateParams{.pixelShader = pixelShader, .vertexShader = vertexShader}};
 
     while (true)
     {
@@ -52,11 +54,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // -----------------------------------------------
 
-        EngineCore.Update();
+        EngineCore.BeginFrame();
 
-        const ScopedShader scopedShader{pixelShader, vertexShader};
+        const ScopedPipelineState scopedPipelineState{pipelineState};
 
-        // TODO
+        buffer3D.Draw();
+
+        EngineCore.EndFrame();
     }
 
     EngineCore.Destroy();
