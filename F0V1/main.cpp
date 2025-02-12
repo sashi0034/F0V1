@@ -218,15 +218,14 @@ namespace
             heapDesc.NodeMask = 0;
             heapDesc.NumDescriptors = 2; // 表裏の２つ
             heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            ID3D12DescriptorHeap* rtvHeaps = nullptr;
             AssertWin32{"failed to create descriptor heap"sv}
-                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeaps));
+                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeaps));
 
             // AssertWin32{"failed to get swap chain description"sv}
             //     | m_sapChain->GetDesc(&swapchainDesc);
 
             m_backBuffers.resize(swapchainDesc.BufferCount);
-            D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
             for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
             {
                 AssertWin32{"failed to get buffer"sv}
@@ -258,7 +257,45 @@ namespace
             barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
             m_commandList->ResourceBarrier(1, &barrierDesc);
 
-            // TODO
+            // レンダーターゲットを指定
+            auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            rtvHandle.ptr += static_cast<ULONG_PTR>(
+                backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+            m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+            // 画面クリア
+            constexpr float clearColor[] = {1.0f, 1.0f, 0.0f, 1.0f}; // 黄色
+            m_commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+            barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+            m_commandList->ResourceBarrier(1, &barrierDesc);
+
+            // コマンドリストのクローズ
+            m_commandList->Close();
+
+            // コマンドリストの実行
+            ID3D12CommandList* commandLists[] = {m_commandList};
+            m_commandQueue->ExecuteCommandLists(1, commandLists);
+
+            // 実行の待機
+            m_fenceValue++;
+            m_commandQueue->Signal(m_fence, m_fenceValue);
+
+            if (m_fence->GetCompletedValue() != m_fenceValue)
+            {
+                m_fence->SetEventOnCompletion(m_fenceValue, nullptr);
+                WaitForSingleObjectEx(nullptr, INFINITE, false);
+            }
+
+            // コマンドアロケータのリセット
+            m_commandAllocator->Reset();
+
+            // コマンドリストのリセット
+            m_commandList->Reset(m_commandAllocator, nullptr);
+
+            // フリップ
+            m_swapChain->Present(1, 0);
         }
 
         void Destroy()
@@ -278,6 +315,7 @@ namespace
         ID3D12GraphicsCommandList* m_commandList{};
         ID3D12CommandQueue* m_commandQueue{};
         IDXGISwapChain4* m_swapChain{};
+        ID3D12DescriptorHeap* m_rtvHeaps{};
 
         ID3D12Fence* m_fence{};
         UINT64 m_fenceValue{};
