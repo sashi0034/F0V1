@@ -156,8 +156,12 @@
     <ClCompile Include="ZG\PipelineState.cpp" />
     <ClCompile Include="ZG\Shader.cpp" />
     <ClCompile Include="ZG\System.cpp" />
+    <ClCompile Include="ZG\Texture.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
     <ClCompile Include="ZG\Value2D.cpp" />
+    <Content Include="asset\fairy_1024x1024.png" />
+    <Content Include="asset\mii.png" />
+    <Content Include="asset\violet_900x1600.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asset\basic.hlsli" />
@@ -173,6 +177,7 @@
     <ClInclude Include="ZG\PipelineState.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
+    <ClInclude Include="ZG\Texture.h" />
     <ClInclude Include="ZG\Utils.h" />
     <ClInclude Include="ZG\Value2D.h" />
     <ClInclude Include="ZG\Uncopyable.h" />

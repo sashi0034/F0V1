@@ -287,6 +287,24 @@ namespace
             m_commandList->RSSetScissorRects(1, &scissorRect);
         }
 
+        void ExecuteCommandList()
+        {
+            ID3D12CommandList* commandLists[] = {m_commandList};
+            m_commandQueue->ExecuteCommandLists(1, commandLists);
+
+            // 実行の待機
+            m_fenceValue++;
+            m_commandQueue->Signal(m_fence, m_fenceValue);
+
+            if (m_fence->GetCompletedValue() != m_fenceValue)
+            {
+                const auto event = CreateEvent(nullptr, false, false, nullptr);
+                m_fence->SetEventOnCompletion(m_fenceValue, event);
+                WaitForSingleObjectEx(nullptr, INFINITE, false);
+                CloseHandle(event);
+            }
+        }
+
         void EndFrame()
         {
             // リソースバリア
@@ -298,18 +316,7 @@ namespace
             m_commandList->Close();
 
             // コマンドリストの実行
-            ID3D12CommandList* commandLists[] = {m_commandList};
-            m_commandQueue->ExecuteCommandLists(1, commandLists);
-
-            // 実行の待機
-            m_fenceValue++;
-            m_commandQueue->Signal(m_fence, m_fenceValue);
-
-            if (m_fence->GetCompletedValue() != m_fenceValue)
-            {
-                m_fence->SetEventOnCompletion(m_fenceValue, nullptr);
-                WaitForSingleObjectEx(nullptr, INFINITE, false);
-            }
+            ExecuteCommandList();
 
             // コマンドアロケータのリセット
             m_commandAllocator->Reset();
@@ -382,5 +389,16 @@ namespace ZG
     {
         assert(s_impl.m_commandList);
         return s_impl.m_commandList;
+    }
+
+    void EngineCore_impl::ExecuteCommandList() const
+    {
+        s_impl.ExecuteCommandList();
+    }
+
+    ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
+    {
+        assert(s_impl.m_commandQueue);
+        return s_impl.m_commandQueue;
     }
 }
