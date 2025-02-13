@@ -16,10 +16,11 @@ namespace ZG
     public:
         PipelineState(const PipelineStateParams& params);
 
-        class Internal;
+        struct Internal;
 
     private:
-        std::shared_ptr<PipelineState_impl> p_impl;
+        struct Impl;
+        std::shared_ptr<Impl> p_impl;
     };
 
     class ScopedPipelineState : Uncopyable

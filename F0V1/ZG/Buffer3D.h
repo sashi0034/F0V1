@@ -19,6 +19,7 @@ namespace ZG
         void Draw() const;
 
     private:
-        std::shared_ptr<Buffer3D_impl> p_impl;
+        struct Impl;
+        std::shared_ptr<Impl> p_impl;
     };
 }

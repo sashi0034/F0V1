@@ -11,10 +11,7 @@
 #include <dxgi1_6.h>
 
 #include "AssertObject.h"
-#include "Buffer3D_impl.h"
 #include "ColorF32.h"
-#include "PipelineState.h"
-#include "ResourceFactory.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -329,13 +326,6 @@ public:
         m_window.Destroy();
     }
 
-    ResourceFactory GetResourceFactory() const
-    {
-        AssertNotNull{"the engine is not initialized"sv}
-            | m_device;
-        return ResourceFactory{m_device};
-    }
-
     WindowCore m_window{};
 
     ColorF32 m_clearColor{defaultClearColor};
@@ -357,10 +347,6 @@ public:
     D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
     std::vector<ID3D12Resource*> m_backBuffers{};
-
-    std::vector<ID3D12PipelineState*> m_pipelineStateStack{};
-    // std::vector<ID3DBlob*> m_psBlobs{};
-    // std::vector<ID3DBlob*> m_vsBlobs{};
 };
 
 namespace ZG
@@ -390,28 +376,10 @@ namespace ZG
         p_impl->Destroy();
     }
 
-    ResourceFactory EngineCore_impl::GetResourceFactory() const
+    ID3D12Device* EngineCore_impl::GetDevice() const
     {
-        return p_impl->GetResourceFactory();
-    }
-
-    void EngineCore_impl::PushPipelineState(ID3D12PipelineState* pipelineState) const
-    {
-        assert(pipelineState);
-        p_impl->m_pipelineStateStack.push_back(pipelineState);
-
-        p_impl->m_commandList->SetPipelineState(pipelineState);
-    }
-
-    void EngineCore_impl::PopPipelineState() const
-    {
-        assert(not p_impl->m_pipelineStateStack.empty());
-        p_impl->m_pipelineStateStack.pop_back();
-
-        if (not p_impl->m_pipelineStateStack.empty())
-        {
-            p_impl->m_commandList->SetPipelineState(p_impl->m_pipelineStateStack.back());
-        }
+        assert(p_impl->m_device);
+        return p_impl->m_device;
     }
 
     ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const

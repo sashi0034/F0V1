@@ -23,8 +23,7 @@ namespace ZG
 
         ResourceFactory GetResourceFactory() const;
 
-        void PushPipelineState(ID3D12PipelineState* pipelineState) const;
-        void PopPipelineState() const;
+        ID3D12Device* GetDevice() const;
 
         ID3D12GraphicsCommandList* GetCommandList() const;
 
