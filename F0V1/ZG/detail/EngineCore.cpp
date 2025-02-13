@@ -300,7 +300,7 @@ namespace
             {
                 const auto event = CreateEvent(nullptr, false, false, nullptr);
                 m_fence->SetEventOnCompletion(m_fenceValue, event);
-                WaitForSingleObjectEx(nullptr, INFINITE, false);
+                WaitForSingleObjectEx(event, INFINITE, false);
                 CloseHandle(event);
             }
         }
