@@ -54,4 +54,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
+// external libraries
+#include "DirectXTex.h"
+
 using namespace std::string_view_literals;
