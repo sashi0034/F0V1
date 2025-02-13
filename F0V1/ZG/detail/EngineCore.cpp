@@ -5,13 +5,13 @@
 
 #include "Windows.h"
 
-#include "Value2D.h"
+#include "ZG/Value2D.h"
 
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
-#include "AssertObject.h"
-#include "ColorF32.h"
+#include "ZG/AssertObject.h"
+#include "ZG/ColorF32.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -20,6 +20,7 @@
 namespace
 {
     using namespace ZG;
+    using namespace ZG::detail;
 
     using namespace std::string_view_literals;
 

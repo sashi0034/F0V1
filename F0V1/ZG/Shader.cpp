@@ -4,10 +4,16 @@
 #include <d3dcompiler.h>
 
 #include "AssertObject.h"
-#include "EngineCore.h"
-#include "Shader_impl.h"
+#include "detail/EngineCore.h"
 
 using namespace ZG;
+using namespace ZG::detail;
+
+struct ZG::Shader_impl
+{
+    ID3DBlob* shaderBlob{};
+    ID3DBlob* errorBlob{};
+};
 
 namespace
 {
@@ -54,17 +60,4 @@ namespace ZG
     {
         return p_impl->shaderBlob;
     }
-
-    // ScopedShader::ScopedShader(const PixelShader& pixelShader, const VertexShader& vertexShader) :
-    //     m_timestamp(0) // TODO
-    // {
-    //     PixelShader::Internal::Push(pixelShader);
-    //     VertexShader::Internal::Push(vertexShader);
-    // }
-    //
-    // ScopedShader::~ScopedShader()
-    // {
-    //     PixelShader::Internal::Pop();
-    //     VertexShader::Internal::Pop();
-    // }
 }

@@ -2,10 +2,10 @@
 #include "Buffer3D.h"
 
 #include "AssertObject.h"
-#include "Buffer3D_impl.h"
-#include "EngineCore.h"
+#include "detail/EngineCore.h"
 
 using namespace ZG;
+using namespace ZG::detail;
 
 namespace
 {

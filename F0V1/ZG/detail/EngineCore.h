@@ -5,10 +5,8 @@
 
 #include <memory>
 
-namespace ZG
+namespace ZG::detail
 {
-    class ResourceFactory;
-
     class EngineCore_impl
     {
     public:
@@ -20,8 +18,6 @@ namespace ZG
         void EndFrame() const;
 
         void Destroy() const;
-
-        ResourceFactory GetResourceFactory() const;
 
         ID3D12Device* GetDevice() const;
 

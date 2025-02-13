@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "PipelineState_impl.h"
+#include <d3d12.h>
 
-namespace ZG
+namespace ZG::detail
 {
     class ScopedObjectStack_impl
     {

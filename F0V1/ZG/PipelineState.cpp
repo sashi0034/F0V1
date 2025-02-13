@@ -2,11 +2,11 @@
 #include "PipelineState.h"
 
 #include "AssertObject.h"
-#include "EngineCore.h"
-#include "PipelineState_impl.h"
-#include "ScopedObjectStack.h"
+#include "detail/EngineCore.h"
+#include "detail/ScopedObjectStack.h"
 
 using namespace ZG;
+using namespace ZG::detail;
 
 struct PipelineState::Impl
 {

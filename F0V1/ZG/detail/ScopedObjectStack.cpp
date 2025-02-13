@@ -14,7 +14,7 @@ namespace
     } s_impl;
 }
 
-namespace ZG
+namespace ZG::detail
 {
     void ScopedObjectStack_impl::PushPipelineState(ID3D12PipelineState* pipelineState) const
     {

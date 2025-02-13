@@ -1,12 +1,10 @@
 #include "pch.h"
 
-#include "Windows.h"
 #include "ZG/Buffer3D.h"
 
-#include "ZG/EngineCore.h"
-#include "ZG/Logger.h"
 #include "ZG/PipelineState.h"
 #include "ZG/Shader.h"
+#include "ZG/System.h"
 
 using namespace ZG;
 
@@ -14,14 +12,8 @@ namespace
 {
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+void Main()
 {
-    Logger.HR().Writeln(L"application start");
-
-    EngineCore.Init();
-
-    Logger.HR().Writeln(L"start message loop");
-
     const Buffer3D buffer3D{
         Buffer3DParams{
             .vertexes = {
@@ -38,32 +30,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
     const PipelineState pipelineState{PipelineStateParams{.pixelShader = pixelShader, .vertexShader = vertexShader}};
 
-    while (true)
+    while (System::Update())
     {
-        MSG msg;
-        if (PeekMessage(&msg, nullptr, 0, 0,PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-
-        if (msg.message == WM_QUIT)
-        {
-            break;
-        }
-
-        // -----------------------------------------------
-
-        EngineCore.BeginFrame();
-
         const ScopedPipelineState scopedPipelineState{pipelineState};
 
         buffer3D.Draw();
-
-        EngineCore.EndFrame();
     }
-
-    EngineCore.Destroy();
-
-    return 0;
 }
