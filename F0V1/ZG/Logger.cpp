@@ -37,7 +37,7 @@ namespace ZG
             std::wcout << std::endl;
         }
 
-        // OutputDebugString(message.c_str());
+        OutputDebugString((message + L"\n").c_str());
         std::wcout << message;
 
         s_flushRequest = true;

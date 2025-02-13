@@ -16,6 +16,8 @@ struct Buffer3D::Impl
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView{};
     D3D12_INDEX_BUFFER_VIEW m_indexBufferView{};
 
+    // TODO: Close?
+
     Impl(const Buffer3DParams& params)
     {
         const auto device = EngineCore.GetDevice();
@@ -27,7 +29,7 @@ struct Buffer3D::Impl
 
         D3D12_RESOURCE_DESC resourceDesc = {};
         resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-        resourceDesc.Width = sizeof(params.vertexes[0]) * params.vertexes.size();
+        resourceDesc.Width = params.vertexes.size_in_bytes();
         resourceDesc.Height = 1;
         resourceDesc.DepthOrArraySize = 1;
         resourceDesc.MipLevels = 1;
@@ -60,7 +62,7 @@ struct Buffer3D::Impl
         vertBuffer->Unmap(0, nullptr);
 
         m_vertexBufferView.BufferLocation = vertBuffer->GetGPUVirtualAddress();
-        m_vertexBufferView.SizeInBytes = sizeof(params.vertexes[0]) * params.vertexes.size();
+        m_vertexBufferView.SizeInBytes = params.vertexes.size_in_bytes();
         m_vertexBufferView.StrideInBytes = sizeof(params.vertexes[0]);
 
         ID3D12Resource* indexBuffer{};
@@ -87,7 +89,7 @@ struct Buffer3D::Impl
         indexBuffer->Unmap(0, nullptr);
 
         m_indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-        m_indexBufferView.SizeInBytes = sizeof(params.indices[0]) * params.indices.size();
+        m_indexBufferView.SizeInBytes = params.indices.size_in_bytes();
         m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
     }
 

@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <DirectXMath.h>
 
+#include "Array.h"
+
 namespace ZG
 {
     struct Vertex
@@ -11,8 +13,8 @@ namespace ZG
 
     struct Buffer3DParams
     {
-        std::vector<Vertex> vertexes;
-        std::vector<uint16_t> indices;
+        Array<Vertex> vertexes;
+        Array<uint16_t> indices;
     };
 
     struct Buffer3D_impl;

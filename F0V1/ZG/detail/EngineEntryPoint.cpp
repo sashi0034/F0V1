@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     EngineCore.Init();
 
-    Logger.HR().Writeln(L"start message loop");
+    Logger.HR().Writeln(L"message loop start");
 
     // -----------------------------------------------
 
@@ -38,7 +38,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // -----------------------------------------------
 
+    Logger.HR().Writeln(L"message loop end");
+
     EngineCore.Destroy();
+
+    Logger.HR().Writeln(L"application end");
 
     return 0;
 }
