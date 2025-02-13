@@ -3,7 +3,7 @@
 
 #include "AssertObject.h"
 #include "detail/EngineCore.h"
-#include "detail/ScopedObjectStack.h"
+#include "detail/EngineStackState.h"
 
 using namespace ZG;
 using namespace ZG::detail;
