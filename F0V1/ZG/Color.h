@@ -9,7 +9,7 @@ namespace ZG
         float b;
         float a;
 
-        float* GetPointer() { return &r; }
+        float* getPointer() { return &r; }
     };
 
     struct ColorU8
@@ -19,6 +19,6 @@ namespace ZG
         uint8_t b;
         uint8_t a;
 
-        uint8_t* GetPointer() { return &r; }
+        uint8_t* getPointer() { return &r; }
     };
 }

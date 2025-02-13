@@ -86,11 +86,44 @@ struct PipelineState::Impl
         pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングなし
         pipelineDesc.SampleDesc.Quality = 0; // クオリティ最低
 
-        // TODO: root signature
+        // TODO: root signature 分離
         D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-        rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
         {
+            // テクスチャを扱うためのディスクリプタテーブル
+            D3D12_DESCRIPTOR_RANGE descriptorTables = {};
+            descriptorTables.NumDescriptors = 1; // テクスチャひとつ
+            descriptorTables.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // 種別はテクスチャ
+            descriptorTables.BaseShaderRegister = 0; // 0 番スロットから
+            descriptorTables.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+            D3D12_ROOT_PARAMETER rootParameter = {};
+            rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            rootParameter.DescriptorTable.pDescriptorRanges = &descriptorTables;
+            rootParameter.DescriptorTable.NumDescriptorRanges = 1;
+            rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーからアクセス
+
+            rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+            rootSignatureDesc.NumParameters = 1;
+            rootSignatureDesc.pParameters = &rootParameter;
+
+            // サンプラーの設定
+            D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
+            samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 横繰り返し
+            samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 縦繰り返し
+            samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 奥行繰り返し
+            samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK; // ボーダーの時は黒
+            samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT; // ニアレストネイバー
+            samplerDesc.MaxLOD = D3D12_FLOAT32_MAX; // ミップマップ最大値
+            samplerDesc.MinLOD = 0.0f; // ミップマップ最小値
+            samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // ?
+            samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダからアクセス
+
+            rootSignatureDesc.NumStaticSamplers = 1;
+            rootSignatureDesc.pStaticSamplers = &samplerDesc;
+
+            // -----------------------------------------------
+
             ID3D10Blob* rootSignatureBlob{};
             AssertWin32{"failed to create root signature"sv}
                 | D3D12SerializeRootSignature(

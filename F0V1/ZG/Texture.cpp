@@ -4,6 +4,7 @@
 #include <d3d12.h>
 
 #include "AssertObject.h"
+#include "Buffer3D.h"
 #include "System.h"
 #include "Utils.h"
 #include "detail/EngineCore.h"
@@ -13,20 +14,34 @@ using namespace ZG::detail;
 
 namespace
 {
+    Buffer3D makeVertexesAndIndicis()
+    {
+        return Buffer3D{
+            Buffer3DParams{
+                .vertexes = {
+                    {{-0.5f, -0.9f, 0.0f}, {0.0f, 1.0f}}, //左下
+                    {{-0.5f, 0.9f, 0.0f}, {0.0f, 0.0f}}, //左上
+                    {{0.5f, -0.9f, 0.0f}, {1.0f, 1.0f}}, //右下
+                    {{0.5f, 0.9f, 0.0f}, {1.0f, 0.0f}}, //右上
+                },
+                .indices = {0, 1, 2, 2, 1, 3}
+            }
+        };
+    }
 }
 
 struct Texture::Impl
 {
-    DirectX::TexMetadata m_metadata{}; // nullable
-    DirectX::ScratchImage m_scratchImage{}; // nullable
-
-    // ID3D12Resource* m_uploadBuffer{};
     ID3D12Resource* m_textureBuffer{};
+    ID3D12DescriptorHeap* m_descriptorHeap{};
+    Buffer3D m_buffer3D = makeVertexesAndIndicis();
 
     Impl(const std::wstring& filename)
     {
+        DirectX::TexMetadata metadata{};
+        DirectX::ScratchImage scratchImage{};
         const auto loadResult =
-            LoadFromWICFile(filename.c_str(), DirectX::WIC_FLAGS_NONE, &m_metadata, m_scratchImage);
+            LoadFromWICFile(filename.c_str(), DirectX::WIC_FLAGS_NONE, &metadata, scratchImage);
 
         if (FAILED(loadResult))
         {
@@ -35,7 +50,7 @@ struct Texture::Impl
         }
 
         // 生データを取得
-        const auto rawImage = m_scratchImage.GetImage(0, 0, 0);
+        const auto rawImage = scratchImage.GetImage(0, 0, 0);
 
         // -----------------------------------------------
         // アップロード用中間バッファの設定
@@ -80,12 +95,12 @@ struct Texture::Impl
         textureHeapProperties.CreationNodeMask = 0;
         textureHeapProperties.VisibleNodeMask = 0;
 
-        resourceDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(m_metadata.dimension);
-        resourceDesc.Width = m_metadata.width;
-        resourceDesc.Height = m_metadata.height;
-        resourceDesc.DepthOrArraySize = m_metadata.arraySize;
-        resourceDesc.MipLevels = m_metadata.mipLevels;
-        resourceDesc.Format = m_metadata.format;
+        resourceDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
+        resourceDesc.Width = metadata.width;
+        resourceDesc.Height = metadata.height;
+        resourceDesc.DepthOrArraySize = metadata.arraySize;
+        resourceDesc.MipLevels = metadata.mipLevels;
+        resourceDesc.Format = metadata.format;
         resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 
         // テクスチャバッファ作成
@@ -130,9 +145,9 @@ struct Texture::Impl
 
         // FIXME: GetCopyableFootprints を使うほうがいい?
         srcCopyLocation.PlacedFootprint.Offset = 0;
-        srcCopyLocation.PlacedFootprint.Footprint.Width = static_cast<UINT>(m_metadata.width);
-        srcCopyLocation.PlacedFootprint.Footprint.Height = static_cast<UINT>(m_metadata.height);
-        srcCopyLocation.PlacedFootprint.Footprint.Depth = static_cast<UINT>(m_metadata.depth);
+        srcCopyLocation.PlacedFootprint.Footprint.Width = static_cast<UINT>(metadata.width);
+        srcCopyLocation.PlacedFootprint.Footprint.Height = static_cast<UINT>(metadata.height);
+        srcCopyLocation.PlacedFootprint.Footprint.Depth = static_cast<UINT>(metadata.depth);
         srcCopyLocation.PlacedFootprint.Footprint.RowPitch =
             static_cast<UINT>(AlignedSize(rawImage->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT));
         srcCopyLocation.PlacedFootprint.Footprint.Format = rawImage->format;
@@ -153,6 +168,10 @@ struct Texture::Impl
         commandList->Close();
 
         EngineCore.ExecuteCommandList();
+
+        // -----------------------------------------------
+        // ディスクリプタヒープの作成
+        createDescriptorHeap(metadata.format);
     }
 
     Impl(const Image& image)
@@ -188,7 +207,43 @@ struct Texture::Impl
 
         AssertWin32{"failed to write to subresource"sv}
             | m_textureBuffer->WriteToSubresource(
-                0, nullptr, image.data(), image.size().x * sizeof(ColorU8), image.size_in_bytes());
+                0,
+                nullptr, // リソース全体領域をコピー
+                image.data(),
+                image.size().x * sizeof(ColorU8),
+                image.size_in_bytes());
+
+        // ディスクリプタヒープの作成
+        createDescriptorHeap(DXGI_FORMAT_R8G8B8A8_UNORM);
+    }
+
+    void createDescriptorHeap(DXGI_FORMAT format)
+    {
+        // ディスクリプタヒープの作成
+        D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
+        descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+        descriptorHeapDesc.NodeMask = 0;
+        descriptorHeapDesc.NumDescriptors = 1;
+        descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        AssertWin32{"failed to create descriptor heap"sv}
+            | EngineCore.GetDevice()->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
+
+        // 通常テクスチャビューの作成
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+        srvDesc.Format = format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Texture2D.MipLevels = 1;
+        EngineCore.GetDevice()->CreateShaderResourceView(
+            m_textureBuffer, &srvDesc, m_descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+    }
+
+    void Draw() const
+    {
+        const auto commandList = EngineCore.GetCommandList();
+        commandList->SetDescriptorHeaps(1, &m_descriptorHeap);
+        commandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        m_buffer3D.Draw();
     }
 };
 
@@ -198,7 +253,12 @@ namespace ZG
     {
     }
 
-    Texture::Texture(const Image& image)
+    Texture::Texture(const Image& image) : p_impl{std::make_shared<Impl>(image)}
     {
+    }
+
+    void Texture::Draw() const
+    {
+        p_impl->Draw();
     }
 }

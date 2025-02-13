@@ -265,7 +265,7 @@ namespace
             m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
             // 画面クリア
-            m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.GetPointer(), 0, nullptr);
+            m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
 
             // ビューポートの設定
             Point windowSize = m_window.WindowSize();

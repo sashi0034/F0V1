@@ -10,6 +10,8 @@ namespace ZG
 
         Texture(const Image& image);
 
+        void Draw() const;
+
     private:
         struct Impl;
         std::shared_ptr<Impl> p_impl;
