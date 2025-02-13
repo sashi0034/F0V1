@@ -68,4 +68,6 @@ namespace ZG
     };
 
     using Point = Integer2D<int32_t>;
+
+    using Size = Point;
 }

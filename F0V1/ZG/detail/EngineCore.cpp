@@ -11,7 +11,7 @@
 #include <dxgi1_6.h>
 
 #include "ZG/AssertObject.h"
-#include "ZG/ColorF32.h"
+#include "ZG/Color.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")

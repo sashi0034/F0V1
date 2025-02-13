@@ -148,10 +148,11 @@
     </ClCompile>
     <ClCompile Include="ZG\AssertObject.cpp" />
     <ClCompile Include="ZG\Buffer3D.cpp" />
-    <ClCompile Include="ZG\ColorF32.cpp" />
+    <ClCompile Include="ZG\Color.cpp" />
     <ClCompile Include="ZG\detail\EngineCore.cpp" />
     <ClCompile Include="ZG\detail\EngineEntryPoint.cpp" />
     <ClCompile Include="ZG\detail\EngineStackState.cpp" />
+    <ClCompile Include="ZG\Image.cpp" />
     <ClCompile Include="ZG\Logger.cpp" />
     <ClCompile Include="ZG\PipelineState.cpp" />
     <ClCompile Include="ZG\Shader.cpp" />
@@ -169,10 +170,11 @@
     <ClInclude Include="ZG\Array.h" />
     <ClInclude Include="ZG\AssertObject.h" />
     <ClInclude Include="ZG\Buffer3D.h" />
-    <ClInclude Include="ZG\ColorF32.h" />
+    <ClInclude Include="ZG\Color.h" />
     <ClInclude Include="ZG\detail\EngineCore.h" />
     <ClInclude Include="ZG\detail\EngineEntryPoint.h" />
     <ClInclude Include="ZG\detail\EngineStackState.h" />
+    <ClInclude Include="ZG\Image.h" />
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\PipelineState.h" />
     <ClInclude Include="ZG\Shader.h" />
