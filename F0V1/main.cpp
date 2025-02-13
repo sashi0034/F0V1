@@ -45,12 +45,23 @@ void Main()
         }
     }
 
-    Texture texture{image};
+    Texture noiseTexture{image};
 
+    Texture pngTexture{L"asset/mii.png"};
+
+    int count{};
     while (System::Update())
     {
         const ScopedPipelineState scopedPipelineState{pipelineState};
 
-        texture.Draw();
+        count++;
+        if (count % 120 < 60)
+        {
+            pngTexture.Draw();
+        }
+        else
+        {
+            noiseTexture.Draw();
+        }
     }
 }

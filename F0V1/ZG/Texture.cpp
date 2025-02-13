@@ -124,7 +124,7 @@ struct Texture::Impl
         const auto srcPitch = AlignedSize(rawImage->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
         for (size_t y = 0; y < rawImage->height; ++y)
         {
-            std::memcpy(imageMap + y * srcPitch, srcAddress + y * rawImage->rowPitch, rawImage->rowPitch);
+            std::memcpy(imageMap, srcAddress, rawImage->rowPitch);
             srcAddress += rawImage->rowPitch;
             imageMap += srcPitch;
         }
