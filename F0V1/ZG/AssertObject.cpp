@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 
+#include "System.h"
 #include "Utils.h"
 
 namespace
@@ -32,7 +33,7 @@ namespace ZG
         const std::wstring output =
             message + L"\n" + filename + L":" + std::to_wstring(location.line());
 
-        MessageBox(nullptr, output.c_str(), L"assertion failed", MB_OK | MB_ICONERROR);
+        System::ModalError(output);
 #endif
 
         if (not errorMessage.empty()) throw std::runtime_error(std::string(errorMessage));

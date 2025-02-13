@@ -33,4 +33,9 @@ namespace ZG
         EngineCore.BeginFrame();
         return true;
     }
+
+    void System::ModalError(const std::wstring& message)
+    {
+        MessageBox(nullptr, message.c_str(), L"assertion failed", MB_OK | MB_ICONERROR);
+    }
 }

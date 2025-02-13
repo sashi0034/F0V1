@@ -3,9 +3,15 @@
 
 namespace ZG
 {
+    struct Vertex
+    {
+        DirectX::XMFLOAT3 position;
+        DirectX::XMFLOAT2 uv;
+    };
+
     struct Buffer3DParams
     {
-        std::vector<DirectX::XMFLOAT3> vertexes;
+        std::vector<Vertex> vertexes;
         std::vector<uint16_t> indices;
     };
 

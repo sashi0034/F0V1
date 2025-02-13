@@ -160,6 +160,7 @@
     <ClCompile Include="ZG\Value2D.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="asset\basic.hlsli" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\AssertObject.h" />
     <ClInclude Include="ZG\Buffer3D.h" />

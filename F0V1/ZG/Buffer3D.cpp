@@ -27,7 +27,7 @@ struct Buffer3D::Impl
 
         D3D12_RESOURCE_DESC resourceDesc = {};
         resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-        resourceDesc.Width = sizeof(params.vertexes);
+        resourceDesc.Width = sizeof(params.vertexes[0]) * params.vertexes.size();
         resourceDesc.Height = 1;
         resourceDesc.DepthOrArraySize = 1;
         resourceDesc.MipLevels = 1;
@@ -49,7 +49,7 @@ struct Buffer3D::Impl
             );
 
         // バッファの仮想アドレスを取得
-        DirectX::XMFLOAT3* vertMap{};
+        Vertex* vertMap{};
         AssertWin32{"failed to map vertex buffer"sv}
             | vertBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vertMap));
 
@@ -60,11 +60,11 @@ struct Buffer3D::Impl
         vertBuffer->Unmap(0, nullptr);
 
         m_vertexBufferView.BufferLocation = vertBuffer->GetGPUVirtualAddress();
-        m_vertexBufferView.SizeInBytes = sizeof(params.vertexes);
+        m_vertexBufferView.SizeInBytes = sizeof(params.vertexes[0]) * params.vertexes.size();
         m_vertexBufferView.StrideInBytes = sizeof(params.vertexes[0]);
 
         ID3D12Resource* indexBuffer{};
-        resourceDesc.Width = sizeof(params.indices);
+        resourceDesc.Width = sizeof(params.indices[0]) * params.indices.size();
         AssertWin32{"failed to create buffer"sv}
             | device->CreateCommittedResource(
                 &heapProperties,
@@ -87,7 +87,7 @@ struct Buffer3D::Impl
         indexBuffer->Unmap(0, nullptr);
 
         m_indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
-        m_indexBufferView.SizeInBytes = sizeof(params.indices);
+        m_indexBufferView.SizeInBytes = sizeof(params.indices[0]) * params.indices.size();
         m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
     }
 
@@ -95,7 +95,7 @@ struct Buffer3D::Impl
     {
         const auto commandList = EngineCore.GetCommandList();
 
-        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
         commandList->IASetVertexBuffers(0, 1, &m_vertexBufferView);
         commandList->IASetIndexBuffer(&m_indexBufferView);
 

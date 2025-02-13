@@ -1,13 +1,9 @@
-struct Output
-{
-    float4 pos : POSITION;
-    float4 svpos : SV_POSITION;
-};
+#include "basic.hlsli"
 
-Output VS(float4 pos : POSITION)
+PSInput VS(float4 position : POSITION, float2 uv : TEXCOORD)
 {
-    Output output;
-    output.pos = pos;
-    output.svpos = pos;
-    return output;
+    PSInput result;
+    result.position = position;
+    result.uv = uv;
+    return result;
 }

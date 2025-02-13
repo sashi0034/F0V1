@@ -4,6 +4,9 @@
 #include <d3dcompiler.h>
 
 #include "AssertObject.h"
+#include "Logger.h"
+#include "System.h"
+#include "Utils.h"
 #include "detail/EngineCore.h"
 
 using namespace ZG;
@@ -13,6 +16,12 @@ struct ZG::Shader_impl
 {
     ID3DBlob* shaderBlob{};
     ID3DBlob* errorBlob{};
+
+    std::string GetErrorMessage() const
+    {
+        if (not errorBlob) return "";
+        return std::string{static_cast<char*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize()};
+    }
 };
 
 namespace
@@ -21,19 +30,32 @@ namespace
     {
         auto result = std::make_shared<Shader_impl>();
 
-        // TODO: 例外を投げる代わりにエラーをログへ出力
-        AssertWin32{"failed to create shader"sv}
-            | D3DCompileFromFile(
-                (params.filename).c_str(),
-                nullptr,
-                D3D_COMPILE_STANDARD_FILE_INCLUDE,
-                params.entryPoint.c_str(),
-                target,
-                D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // FIXME
-                0,
-                &result->shaderBlob,
-                &result->errorBlob
-            );
+        const auto compileResult = D3DCompileFromFile(
+            (params.filename).c_str(),
+            nullptr,
+            D3D_COMPILE_STANDARD_FILE_INCLUDE,
+            params.entryPoint.c_str(),
+            target,
+            D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // FIXME
+            0,
+            &result->shaderBlob,
+            &result->errorBlob
+        );
+
+        if (FAILED(compileResult))
+        {
+            std::wstring message = L"failed to compile shader: ";
+            if (compileResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+            {
+                message += L"file not found";
+            }
+            else
+            {
+                message += ToUtf16(result->GetErrorMessage());
+            }
+
+            System::ModalError(message);
+        }
 
         return result;
     }
