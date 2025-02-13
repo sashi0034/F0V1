@@ -17,16 +17,16 @@ namespace
 
 struct Texture::Impl
 {
-    DirectX::TexMetadata m_metadata{};
-    DirectX::ScratchImage m_scratchImage{};
+    DirectX::TexMetadata m_metadata{}; // nullable
+    DirectX::ScratchImage m_scratchImage{}; // nullable
 
     // ID3D12Resource* m_uploadBuffer{};
     ID3D12Resource* m_textureBuffer{};
 
-    Impl(const TextureParams& params)
+    Impl(const std::wstring& filename)
     {
         const auto loadResult =
-            LoadFromWICFile(params.filename.c_str(), DirectX::WIC_FLAGS_NONE, &m_metadata, m_scratchImage);
+            LoadFromWICFile(filename.c_str(), DirectX::WIC_FLAGS_NONE, &m_metadata, m_scratchImage);
 
         if (FAILED(loadResult))
         {
@@ -62,7 +62,7 @@ struct Texture::Impl
 
         // アップロード用中間バッファの作成
         ID3D12Resource* uploadBuffer{};
-        AssertWin32{""sv}
+        AssertWin32{"failed to create commited resource"sv}
             | EngineCore.GetDevice()->CreateCommittedResource(
                 &uploadBufferDesc,
                 D3D12_HEAP_FLAG_NONE,
@@ -154,11 +154,51 @@ struct Texture::Impl
 
         EngineCore.ExecuteCommandList();
     }
+
+    Impl(const Image& image)
+    {
+        D3D12_HEAP_PROPERTIES heapProperties{};
+        heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
+        heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+        heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+        heapProperties.CreationNodeMask = 0;
+        heapProperties.VisibleNodeMask = 0;
+
+        D3D12_RESOURCE_DESC resourceDesc{};
+        resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+        resourceDesc.Alignment = 0;
+        resourceDesc.Width = image.size().x;
+        resourceDesc.Height = image.size().y;
+        resourceDesc.DepthOrArraySize = 1;
+        resourceDesc.MipLevels = 1;
+        resourceDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        resourceDesc.SampleDesc.Count = 1;
+        resourceDesc.SampleDesc.Quality = 0;
+        resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+        resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+        AssertWin32{"failed to create commited resource"sv}
+            | EngineCore.GetDevice()->CreateCommittedResource(
+                &heapProperties,
+                D3D12_HEAP_FLAG_NONE,
+                &resourceDesc,
+                D3D12_RESOURCE_STATE_COPY_DEST,
+                nullptr,
+                IID_PPV_ARGS(&m_textureBuffer));
+
+        AssertWin32{"failed to write to subresource"sv}
+            | m_textureBuffer->WriteToSubresource(
+                0, nullptr, image.data(), image.size().x * sizeof(ColorU8), image.size_in_bytes());
+    }
 };
 
 namespace ZG
 {
-    Texture::Texture(const TextureParams& params) : p_impl(std::make_unique<Impl>(params))
+    Texture::Texture(std::wstring filename) : p_impl{std::make_shared<Impl>(filename)}, m_filename(std::move(filename))
+    {
+    }
+
+    Texture::Texture(const Image& image)
     {
     }
 }

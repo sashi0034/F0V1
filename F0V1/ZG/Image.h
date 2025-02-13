@@ -22,6 +22,10 @@ namespace ZG
 
         const Size& size() const { return m_size; }
 
+        size_t size_in_bytes() const { return m_size.x * m_size.y * sizeof(ColorU8); }
+
+        const ColorU8* data() const { return m_data.data(); }
+
     private:
         Size m_size{};
         Array<ColorU8> m_data{};

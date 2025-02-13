@@ -6,6 +6,7 @@
 #include "ZG/PipelineState.h"
 #include "ZG/Shader.h"
 #include "ZG/System.h"
+#include "ZG/Texture.h"
 
 using namespace ZG;
 
@@ -43,6 +44,8 @@ void Main()
             pixel.a = 255;
         }
     }
+
+    Texture texture{image};
 
     while (System::Update())
     {
