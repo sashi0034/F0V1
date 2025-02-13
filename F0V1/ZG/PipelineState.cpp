@@ -109,14 +109,14 @@ struct PipelineState::Internal
 {
     static void Push(const PipelineState& pipelineState)
     {
-        ScopedObjectStack.PushPipelineState(pipelineState.p_impl->m_pipelineState);
-        ScopedObjectStack.PushRootSignature(pipelineState.p_impl->m_rootSignature);
+        EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState);
+        EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature);
     }
 
     static void Pop()
     {
-        ScopedObjectStack.PopRootSignature();
-        ScopedObjectStack.PopPipelineState();
+        EngineStackState.PopRootSignature();
+        EngineStackState.PopPipelineState();
     }
 };
 

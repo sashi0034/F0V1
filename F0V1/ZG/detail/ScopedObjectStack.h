@@ -3,7 +3,7 @@
 
 namespace ZG::detail
 {
-    class ScopedObjectStack_impl
+    class EngineStackState_impl
     {
     public:
         void PushPipelineState(ID3D12PipelineState* pipelineState) const;
@@ -13,5 +13,5 @@ namespace ZG::detail
         void PopRootSignature() const;
     };
 
-    inline constexpr auto ScopedObjectStack = ScopedObjectStack_impl{};
+    inline constexpr auto EngineStackState = EngineStackState_impl{};
 }

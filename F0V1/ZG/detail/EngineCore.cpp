@@ -101,291 +101,286 @@ namespace
     }
 
     constexpr ColorF32 defaultClearColor = {0.5f, 0.5f, 0.5f, 1.0f};
-}
 
-struct EngineCore_impl::Impl
-{
-public:
-    void Init()
+    struct Impl
     {
-        m_window.Init();
+    public:
+        void Init()
+        {
+            m_window.Init();
 #ifdef _DEBUG
-        enableDebugLayer();
+            enableDebugLayer();
 #endif
 
-        // デバッグフラグ有効で DXGI ファクトリを生成
-        if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory))))
-        {
-            // 失敗した場合、デバッグフラグ無効で DXGI ファクトリを生成
-            if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_dxgiFactory))))
+            // デバッグフラグ有効で DXGI ファクトリを生成
+            if (FAILED(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG, IID_PPV_ARGS(&m_dxgiFactory))))
             {
-                throw std::runtime_error("failed to create DXGI Factory");
+                // 失敗した場合、デバッグフラグ無効で DXGI ファクトリを生成
+                if (FAILED(CreateDXGIFactory2(0, IID_PPV_ARGS(&m_dxgiFactory))))
+                {
+                    throw std::runtime_error("failed to create DXGI Factory");
+                }
             }
-        }
 
-        // 利用可能なアダプタを取得
-        std::vector<IDXGIAdapter*> availableAdapters{};
-        {
-            IDXGIAdapter* tmp = nullptr;
-            for (int i = 0; m_dxgiFactory->EnumAdapters(i, &tmp) != DXGI_ERROR_NOT_FOUND; ++i)
+            // 利用可能なアダプタを取得
+            std::vector<IDXGIAdapter*> availableAdapters{};
             {
-                availableAdapters.push_back(tmp);
+                IDXGIAdapter* tmp = nullptr;
+                for (int i = 0; m_dxgiFactory->EnumAdapters(i, &tmp) != DXGI_ERROR_NOT_FOUND; ++i)
+                {
+                    availableAdapters.push_back(tmp);
+                }
             }
-        }
 
-        // 最適なアダプタを選択
-        for (const auto adapter : availableAdapters)
-        {
-            DXGI_ADAPTER_DESC desc = {};
-            adapter->GetDesc(&desc);
-            std::wstring strDesc = desc.Description;
-            if (strDesc.find(L"NVIDIA") != std::string::npos)
+            // 最適なアダプタを選択
+            for (const auto adapter : availableAdapters)
             {
-                m_adapter = adapter;
-                break;
+                DXGI_ADAPTER_DESC desc = {};
+                adapter->GetDesc(&desc);
+                std::wstring strDesc = desc.Description;
+                if (strDesc.find(L"NVIDIA") != std::string::npos)
+                {
+                    m_adapter = adapter;
+                    break;
+                }
             }
-        }
 
-        if (not m_adapter)
-        {
-            throw std::runtime_error("failed to select adapter");
-        }
-
-        // Direct3D デバイスの初期化
-        static constexpr std::array levels = {
-            D3D_FEATURE_LEVEL_12_1,
-            D3D_FEATURE_LEVEL_12_0,
-            D3D_FEATURE_LEVEL_11_1,
-            D3D_FEATURE_LEVEL_11_0,
-        };
-
-        for (const auto level : levels)
-        {
-            if (D3D12CreateDevice(m_adapter, level, IID_PPV_ARGS(&m_device)) == S_OK)
+            if (not m_adapter)
             {
-                m_featureLevel = level;
-                break;
+                throw std::runtime_error("failed to select adapter");
             }
+
+            // Direct3D デバイスの初期化
+            static constexpr std::array levels = {
+                D3D_FEATURE_LEVEL_12_1,
+                D3D_FEATURE_LEVEL_12_0,
+                D3D_FEATURE_LEVEL_11_1,
+                D3D_FEATURE_LEVEL_11_0,
+            };
+
+            for (const auto level : levels)
+            {
+                if (D3D12CreateDevice(m_adapter, level, IID_PPV_ARGS(&m_device)) == S_OK)
+                {
+                    m_featureLevel = level;
+                    break;
+                }
+            }
+
+            // コマンドアロケータを生成
+            AssertWin32{"failed to create command allocator"sv}
+                | m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
+
+            // コマンドリストを生成
+            AssertWin32{"failed to create command list"sv}
+                | m_device->CreateCommandList(
+                    0,
+                    D3D12_COMMAND_LIST_TYPE_DIRECT,
+                    m_commandAllocator,
+                    nullptr,
+                    IID_PPV_ARGS(&m_commandList)
+                );
+
+            // コマンドキューを生成
+            D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+            commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE; // タイムアウトなし
+            commandQueueDesc.NodeMask = 0;
+            commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; // プライオリティ特に指定なし
+            commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            AssertWin32{"failed to create command queue"sv}
+                | m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_commandQueue));
+
+            // スワップチェインの設定
+            DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
+            swapchainDesc.Width = DefaultWindowSize.x;
+            swapchainDesc.Height = DefaultWindowSize.y;
+            swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            swapchainDesc.Stereo = false;
+            swapchainDesc.SampleDesc.Count = 1;
+            swapchainDesc.SampleDesc.Quality = 0;
+            swapchainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
+            swapchainDesc.BufferCount = 2;
+            swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
+            swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+            swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+            AssertWin32{"failed to create swap chain"sv}
+                | m_dxgiFactory->CreateSwapChainForHwnd(
+                    m_commandQueue,
+                    m_window.Handle(),
+                    &swapchainDesc,
+                    nullptr,
+                    nullptr,
+                    reinterpret_cast<IDXGISwapChain1**>(&m_swapChain)
+                );
+
+            // ディスクリプタヒープを生成
+            D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heapDesc.NodeMask = 0;
+            heapDesc.NumDescriptors = 2; // 表裏の２つ
+            heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+            AssertWin32{"failed to create descriptor heap"sv}
+                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeaps));
+
+            // AssertWin32{"failed to get swap chain description"sv}
+            //     | m_sapChain->GetDesc(&swapchainDesc);
+
+            m_backBuffers.resize(swapchainDesc.BufferCount);
+            D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
+            {
+                AssertWin32{"failed to get buffer"sv}
+                    | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&m_backBuffers[i]));
+                m_device->CreateRenderTargetView(m_backBuffers[i], nullptr, handle);
+                handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            }
+
+            // フェンスを生成
+            AssertWin32{"failed to create fence"sv}
+                | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
+
+            // ウィンドウ表示
+            m_window.Show();
         }
 
-        // コマンドアロケータを生成
-        AssertWin32{"failed to create command allocator"sv}
-            | m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
-
-        // コマンドリストを生成
-        AssertWin32{"failed to create command list"sv}
-            | m_device->CreateCommandList(
-                0,
-                D3D12_COMMAND_LIST_TYPE_DIRECT,
-                m_commandAllocator,
-                nullptr,
-                IID_PPV_ARGS(&m_commandList)
-            );
-
-        // コマンドキューを生成
-        D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
-        commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE; // タイムアウトなし
-        commandQueueDesc.NodeMask = 0;
-        commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; // プライオリティ特に指定なし
-        commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        AssertWin32{"failed to create command queue"sv}
-            | m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_commandQueue));
-
-        // スワップチェインの設定
-        DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
-        swapchainDesc.Width = DefaultWindowSize.x;
-        swapchainDesc.Height = DefaultWindowSize.y;
-        swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        swapchainDesc.Stereo = false;
-        swapchainDesc.SampleDesc.Count = 1;
-        swapchainDesc.SampleDesc.Quality = 0;
-        swapchainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
-        swapchainDesc.BufferCount = 2;
-        swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
-        swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-        AssertWin32{"failed to create swap chain"sv}
-            | m_dxgiFactory->CreateSwapChainForHwnd(
-                m_commandQueue,
-                m_window.Handle(),
-                &swapchainDesc,
-                nullptr,
-                nullptr,
-                reinterpret_cast<IDXGISwapChain1**>(&m_swapChain)
-            );
-
-        // ディスクリプタヒープを生成
-        D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-        heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-        heapDesc.NodeMask = 0;
-        heapDesc.NumDescriptors = 2; // 表裏の２つ
-        heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        AssertWin32{"failed to create descriptor heap"sv}
-            | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeaps));
-
-        // AssertWin32{"failed to get swap chain description"sv}
-        //     | m_sapChain->GetDesc(&swapchainDesc);
-
-        m_backBuffers.resize(swapchainDesc.BufferCount);
-        D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-        for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
+        void BeginFrame()
         {
-            AssertWin32{"failed to get buffer"sv}
-                | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&m_backBuffers[i]));
-            m_device->CreateRenderTargetView(m_backBuffers[i], nullptr, handle);
-            handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+            // バックバッファのインデックスを取得
+            const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+            // リソースバリア
+            m_barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+            m_barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+            m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
+            m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+            m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+            m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            m_commandList->ResourceBarrier(1, &m_barrierDesc);
+
+            // レンダーターゲットを指定
+            auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            rtvHandle.ptr += static_cast<ULONG_PTR>(
+                backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+            m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+            // 画面クリア
+            m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.GetPointer(), 0, nullptr);
+
+            // ビューポートの設定
+            Point windowSize = m_window.WindowSize();
+            D3D12_VIEWPORT viewport = {};
+            viewport.TopLeftX = 0.0f;
+            viewport.TopLeftY = 0.0f;
+            viewport.Width = static_cast<float>(windowSize.x);
+            viewport.Height = static_cast<float>(windowSize.y);
+            viewport.MinDepth = 0.0f;
+            viewport.MaxDepth = 1.0f;
+            m_commandList->RSSetViewports(1, &viewport);
+
+            // シザー矩形の設定
+            D3D12_RECT scissorRect = {};
+            scissorRect.left = 0;
+            scissorRect.top = 0;
+            scissorRect.right = scissorRect.left + windowSize.x;
+            scissorRect.bottom = scissorRect.top + windowSize.y;
+            m_commandList->RSSetScissorRects(1, &scissorRect);
         }
 
-        // フェンスを生成
-        AssertWin32{"failed to create fence"sv}
-            | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
-
-        // ウィンドウ表示
-        m_window.Show();
-    }
-
-    void BeginFrame()
-    {
-        // バックバッファのインデックスを取得
-        const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
-
-        // リソースバリア
-        m_barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        m_barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
-        m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-        m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        m_commandList->ResourceBarrier(1, &m_barrierDesc);
-
-        // レンダーターゲットを指定
-        auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-        rtvHandle.ptr += static_cast<ULONG_PTR>(
-            backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-        m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-
-        // 画面クリア
-        m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.GetPointer(), 0, nullptr);
-
-        // ビューポートの設定
-        Point windowSize = m_window.WindowSize();
-        D3D12_VIEWPORT viewport = {};
-        viewport.TopLeftX = 0.0f;
-        viewport.TopLeftY = 0.0f;
-        viewport.Width = static_cast<float>(windowSize.x);
-        viewport.Height = static_cast<float>(windowSize.y);
-        viewport.MinDepth = 0.0f;
-        viewport.MaxDepth = 1.0f;
-        m_commandList->RSSetViewports(1, &viewport);
-
-        // シザー矩形の設定
-        D3D12_RECT scissorRect = {};
-        scissorRect.left = 0;
-        scissorRect.top = 0;
-        scissorRect.right = scissorRect.left + windowSize.x;
-        scissorRect.bottom = scissorRect.top + windowSize.y;
-        m_commandList->RSSetScissorRects(1, &scissorRect);
-    }
-
-    void EndFrame()
-    {
-        // リソースバリア
-        m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-        m_commandList->ResourceBarrier(1, &m_barrierDesc);
-
-        // コマンドリストのクローズ
-        m_commandList->Close();
-
-        // コマンドリストの実行
-        ID3D12CommandList* commandLists[] = {m_commandList};
-        m_commandQueue->ExecuteCommandLists(1, commandLists);
-
-        // 実行の待機
-        m_fenceValue++;
-        m_commandQueue->Signal(m_fence, m_fenceValue);
-
-        if (m_fence->GetCompletedValue() != m_fenceValue)
+        void EndFrame()
         {
-            m_fence->SetEventOnCompletion(m_fenceValue, nullptr);
-            WaitForSingleObjectEx(nullptr, INFINITE, false);
+            // リソースバリア
+            m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+            m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+            m_commandList->ResourceBarrier(1, &m_barrierDesc);
+
+            // コマンドリストのクローズ
+            m_commandList->Close();
+
+            // コマンドリストの実行
+            ID3D12CommandList* commandLists[] = {m_commandList};
+            m_commandQueue->ExecuteCommandLists(1, commandLists);
+
+            // 実行の待機
+            m_fenceValue++;
+            m_commandQueue->Signal(m_fence, m_fenceValue);
+
+            if (m_fence->GetCompletedValue() != m_fenceValue)
+            {
+                m_fence->SetEventOnCompletion(m_fenceValue, nullptr);
+                WaitForSingleObjectEx(nullptr, INFINITE, false);
+            }
+
+            // コマンドアロケータのリセット
+            m_commandAllocator->Reset();
+
+            // コマンドリストのリセット
+            m_commandList->Reset(m_commandAllocator, nullptr);
+
+            // フリップ
+            m_swapChain->Present(1, 0);
         }
 
-        // コマンドアロケータのリセット
-        m_commandAllocator->Reset();
+        void Destroy()
+        {
+            m_window.Destroy();
+        }
 
-        // コマンドリストのリセット
-        m_commandList->Reset(m_commandAllocator, nullptr);
+        WindowCore m_window{};
 
-        // フリップ
-        m_swapChain->Present(1, 0);
-    }
+        ColorF32 m_clearColor{defaultClearColor};
 
-    void Destroy()
-    {
-        m_window.Destroy();
-    }
+        ID3D12Device* m_device{};
+        IDXGIFactory6* m_dxgiFactory{};
+        IDXGIAdapter* m_adapter{};
+        D3D_FEATURE_LEVEL m_featureLevel{};
 
-    WindowCore m_window{};
+        ID3D12CommandAllocator* m_commandAllocator{};
+        ID3D12GraphicsCommandList* m_commandList{};
+        ID3D12CommandQueue* m_commandQueue{};
+        IDXGISwapChain4* m_swapChain{};
+        ID3D12DescriptorHeap* m_rtvHeaps{};
 
-    ColorF32 m_clearColor{defaultClearColor};
+        ID3D12Fence* m_fence{};
+        UINT64 m_fenceValue{};
 
-    ID3D12Device* m_device{};
-    IDXGIFactory6* m_dxgiFactory{};
-    IDXGIAdapter* m_adapter{};
-    D3D_FEATURE_LEVEL m_featureLevel{};
+        D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
-    ID3D12CommandAllocator* m_commandAllocator{};
-    ID3D12GraphicsCommandList* m_commandList{};
-    ID3D12CommandQueue* m_commandQueue{};
-    IDXGISwapChain4* m_swapChain{};
-    ID3D12DescriptorHeap* m_rtvHeaps{};
-
-    ID3D12Fence* m_fence{};
-    UINT64 m_fenceValue{};
-
-    D3D12_RESOURCE_BARRIER m_barrierDesc{};
-
-    std::vector<ID3D12Resource*> m_backBuffers{};
-};
+        std::vector<ID3D12Resource*> m_backBuffers{};
+    } s_impl{};
+}
 
 namespace ZG
 {
-    EngineCore_impl::EngineCore_impl() :
-        p_impl(std::make_shared<Impl>())
-    {
-    }
-
     void EngineCore_impl::Init() const
     {
-        p_impl->Init();
+        s_impl.Init();
     }
 
     void EngineCore_impl::BeginFrame() const
     {
-        p_impl->BeginFrame();
+        s_impl.BeginFrame();
     }
 
     void EngineCore_impl::EndFrame() const
     {
-        p_impl->EndFrame();
+        s_impl.EndFrame();
     }
 
     void EngineCore_impl::Destroy() const
     {
-        p_impl->Destroy();
+        s_impl.Destroy();
     }
 
     ID3D12Device* EngineCore_impl::GetDevice() const
     {
-        assert(p_impl->m_device);
-        return p_impl->m_device;
+        assert(s_impl.m_device);
+        return s_impl.m_device;
     }
 
     ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
     {
-        assert(p_impl->m_commandList);
-        return p_impl->m_commandList;
+        assert(s_impl.m_commandList);
+        return s_impl.m_commandList;
     }
 }
