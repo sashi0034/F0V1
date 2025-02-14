@@ -60,3 +60,5 @@
 #include "../external/d3dx12.h"
 
 using namespace std::string_view_literals;
+
+using Microsoft::WRL::ComPtr;

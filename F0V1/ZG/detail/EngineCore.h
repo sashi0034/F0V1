@@ -15,13 +15,13 @@ namespace ZG::detail
 
         void Destroy() const;
 
-        ID3D12Device* GetDevice() const;
+        ComPtr<ID3D12Device> GetDevice() const;
 
-        ID3D12GraphicsCommandList* GetCommandList() const;
+        ComPtr<ID3D12GraphicsCommandList> GetCommandList() const;
 
         void ExecuteCommandList() const;
 
-        ID3D12CommandQueue* GetCommandQueue() const;
+        ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
     };
 
     inline constexpr auto EngineCore = EngineCore_impl{};

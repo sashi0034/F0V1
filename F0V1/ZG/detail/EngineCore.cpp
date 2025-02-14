@@ -176,7 +176,7 @@ namespace
                 | m_device->CreateCommandList(
                     0,
                     D3D12_COMMAND_LIST_TYPE_DIRECT,
-                    m_commandAllocator,
+                    m_commandAllocator.Get(),
                     nullptr,
                     IID_PPV_ARGS(&m_commandList)
                 );
@@ -206,12 +206,12 @@ namespace
             swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
             AssertWin32{"failed to create swap chain"sv}
                 | m_dxgiFactory->CreateSwapChainForHwnd(
-                    m_commandQueue,
+                    m_commandQueue.Get(),
                     m_window.Handle(),
                     &swapchainDesc,
                     nullptr,
                     nullptr,
-                    reinterpret_cast<IDXGISwapChain1**>(&m_swapChain)
+                    reinterpret_cast<IDXGISwapChain1**>(m_swapChain.GetAddressOf())
                 );
 
             // ディスクリプタヒープを生成
@@ -232,7 +232,7 @@ namespace
             {
                 AssertWin32{"failed to get buffer"sv}
                     | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&m_backBuffers[i]));
-                m_device->CreateRenderTargetView(m_backBuffers[i], nullptr, handle);
+                m_device->CreateRenderTargetView(m_backBuffers[i].Get(), nullptr, handle);
                 handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
             }
 
@@ -252,7 +252,7 @@ namespace
             // リソースバリア
             m_barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
             m_barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-            m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex];
+            m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex].Get();
             m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
             m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
@@ -289,12 +289,12 @@ namespace
 
         void ExecuteCommandList()
         {
-            ID3D12CommandList* commandLists[] = {m_commandList};
+            ID3D12CommandList* commandLists[] = {m_commandList.Get()};
             m_commandQueue->ExecuteCommandLists(1, commandLists);
 
             // 実行の待機
             m_fenceValue++;
-            m_commandQueue->Signal(m_fence, m_fenceValue);
+            m_commandQueue->Signal(m_fence.Get(), m_fenceValue);
 
             if (m_fence->GetCompletedValue() != m_fenceValue)
             {
@@ -322,7 +322,7 @@ namespace
             m_commandAllocator->Reset();
 
             // コマンドリストのリセット
-            m_commandList->Reset(m_commandAllocator, nullptr);
+            m_commandList->Reset(m_commandAllocator.Get(), nullptr);
 
             // フリップ
             m_swapChain->Present(1, 0);
@@ -342,18 +342,18 @@ namespace
         IDXGIAdapter* m_adapter{};
         D3D_FEATURE_LEVEL m_featureLevel{};
 
-        ID3D12CommandAllocator* m_commandAllocator{};
-        ID3D12GraphicsCommandList* m_commandList{};
-        ID3D12CommandQueue* m_commandQueue{};
-        IDXGISwapChain4* m_swapChain{};
-        ID3D12DescriptorHeap* m_rtvHeaps{};
+        ComPtr<ID3D12CommandAllocator> m_commandAllocator{};
+        ComPtr<ID3D12GraphicsCommandList> m_commandList{};
+        ComPtr<ID3D12CommandQueue> m_commandQueue{};
+        ComPtr<IDXGISwapChain4> m_swapChain{};
+        ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
 
-        ID3D12Fence* m_fence{};
+        ComPtr<ID3D12Fence> m_fence{};
         UINT64 m_fenceValue{};
 
         D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
-        std::vector<ID3D12Resource*> m_backBuffers{};
+        std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
     } s_impl{};
 }
 
@@ -379,13 +379,13 @@ namespace ZG
         s_impl.Destroy();
     }
 
-    ID3D12Device* EngineCore_impl::GetDevice() const
+    ComPtr<ID3D12Device> EngineCore_impl::GetDevice() const
     {
         assert(s_impl.m_device);
         return s_impl.m_device;
     }
 
-    ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
+    ComPtr<ID3D12GraphicsCommandList> EngineCore_impl::GetCommandList() const
     {
         assert(s_impl.m_commandList);
         return s_impl.m_commandList;
@@ -396,7 +396,7 @@ namespace ZG
         s_impl.ExecuteCommandList();
     }
 
-    ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
+    ComPtr<ID3D12CommandQueue> EngineCore_impl::GetCommandQueue() const
     {
         assert(s_impl.m_commandQueue);
         return s_impl.m_commandQueue;
