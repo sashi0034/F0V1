@@ -317,16 +317,16 @@ namespace ZG
         s_impl.Destroy();
     }
 
-    ComPtr<ID3D12Device> EngineCore_impl::GetDevice() const
+    ID3D12Device* EngineCore_impl::GetDevice() const
     {
         assert(s_impl.m_device);
         return s_impl.m_device;
     }
 
-    ComPtr<ID3D12GraphicsCommandList> EngineCore_impl::GetCommandList() const
+    ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
     {
         assert(s_impl.m_commandList);
-        return s_impl.m_commandList;
+        return s_impl.m_commandList.Get();
     }
 
     void EngineCore_impl::FlushCommandList() const
@@ -334,10 +334,10 @@ namespace ZG
         s_impl.FlushCommandList();
     }
 
-    ComPtr<ID3D12CommandQueue> EngineCore_impl::GetCommandQueue() const
+    ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
     {
         assert(s_impl.m_commandQueue);
-        return s_impl.m_commandQueue;
+        return s_impl.m_commandQueue.Get();
     }
 
     Size EngineCore_impl::GetSceneSize() const

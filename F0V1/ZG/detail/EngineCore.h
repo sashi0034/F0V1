@@ -17,13 +17,16 @@ namespace ZG::detail
 
         void Destroy() const;
 
-        ComPtr<ID3D12Device> GetDevice() const;
+        [[nodiscard]]
+        ID3D12Device* GetDevice() const;
 
-        ComPtr<ID3D12GraphicsCommandList> GetCommandList() const;
+        [[nodiscard]]
+        ID3D12GraphicsCommandList* GetCommandList() const;
 
         void FlushCommandList() const;
 
-        ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
+        [[nodiscard]]
+        ID3D12CommandQueue* GetCommandQueue() const;
 
         Size GetSceneSize() const;
     };
