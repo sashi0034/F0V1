@@ -13,6 +13,9 @@ namespace
 
 struct Buffer3D::Impl
 {
+    ComPtr<ID3D12Resource> m_vertBuffer{};
+    ComPtr<ID3D12Resource> m_indexBuffer{};
+
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView{};
     D3D12_INDEX_BUFFER_VIEW m_indexBufferView{};
 
@@ -39,7 +42,6 @@ struct Buffer3D::Impl
         resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
         // アップロード
-        ID3D12Resource* vertBuffer = nullptr;
         AssertWin32{"failed to create buffer"sv}
             | device->CreateCommittedResource(
                 &heapProperties,
@@ -47,25 +49,26 @@ struct Buffer3D::Impl
                 &resourceDesc,
                 D3D12_RESOURCE_STATE_GENERIC_READ,
                 nullptr,
-                IID_PPV_ARGS(&vertBuffer)
+                IID_PPV_ARGS(&m_vertBuffer)
             );
 
         // バッファの仮想アドレスを取得
         Vertex* vertMap{};
         AssertWin32{"failed to map vertex buffer"sv}
-            | vertBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vertMap));
+            | m_vertBuffer->Map(0, nullptr, reinterpret_cast<void**>(&vertMap));
 
         // マップしたメモリ位置へデータを転送
         std::ranges::copy(params.vertexes, vertMap);
 
         // アンマップ
-        vertBuffer->Unmap(0, nullptr);
+        m_vertBuffer->Unmap(0, nullptr);
 
-        m_vertexBufferView.BufferLocation = vertBuffer->GetGPUVirtualAddress();
+        m_vertexBufferView.BufferLocation = m_vertBuffer->GetGPUVirtualAddress();
         m_vertexBufferView.SizeInBytes = params.vertexes.size_in_bytes();
         m_vertexBufferView.StrideInBytes = sizeof(params.vertexes[0]);
 
-        ID3D12Resource* indexBuffer{};
+        // -----------------------------------------------
+
         resourceDesc.Width = sizeof(params.indices[0]) * params.indices.size();
         AssertWin32{"failed to create buffer"sv}
             | device->CreateCommittedResource(
@@ -74,21 +77,21 @@ struct Buffer3D::Impl
                 &resourceDesc,
                 D3D12_RESOURCE_STATE_GENERIC_READ,
                 nullptr,
-                IID_PPV_ARGS(&indexBuffer)
+                IID_PPV_ARGS(&m_indexBuffer)
             );
 
         // バッファの仮想アドレスを取得
         uint16_t* indexMap{};
         AssertWin32{"failed to map index buffer"sv}
-            | indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&indexMap));
+            | m_indexBuffer->Map(0, nullptr, reinterpret_cast<void**>(&indexMap));
 
         // マップしたメモリ位置へデータを転送
         std::ranges::copy(params.indices, indexMap);
 
         // アンマップ
-        indexBuffer->Unmap(0, nullptr);
+        m_indexBuffer->Unmap(0, nullptr);
 
-        m_indexBufferView.BufferLocation = indexBuffer->GetGPUVirtualAddress();
+        m_indexBufferView.BufferLocation = m_indexBuffer->GetGPUVirtualAddress();
         m_indexBufferView.SizeInBytes = params.indices.size_in_bytes();
         m_indexBufferView.Format = DXGI_FORMAT_R16_UINT;
     }

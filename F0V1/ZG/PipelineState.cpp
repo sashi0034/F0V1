@@ -10,8 +10,8 @@ using namespace ZG::detail;
 
 struct PipelineState::Impl
 {
-    ID3D12PipelineState* m_pipelineState;
-    ID3D12RootSignature* m_rootSignature;
+    ComPtr<ID3D12PipelineState> m_pipelineState;
+    ComPtr<ID3D12RootSignature> m_rootSignature;
 
     Impl(const PipelineStateParams& params)
     {
@@ -140,7 +140,7 @@ struct PipelineState::Impl
             rootSignatureBlob->Release();
         }
 
-        pipelineDesc.pRootSignature = m_rootSignature;
+        pipelineDesc.pRootSignature = m_rootSignature.Get();
 
         AssertWin32{"failed to create pipeline state"sv}
             | device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&m_pipelineState));
@@ -151,8 +151,8 @@ struct PipelineState::Internal
 {
     static void Push(const PipelineState& pipelineState)
     {
-        EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState);
-        EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature);
+        EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState.Get());
+        EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature.Get());
     }
 
     static void Pop()

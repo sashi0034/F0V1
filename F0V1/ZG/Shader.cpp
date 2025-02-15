@@ -14,8 +14,8 @@ using namespace ZG::detail;
 
 struct ZG::Shader_impl
 {
-    ID3DBlob* shaderBlob{};
-    ID3DBlob* errorBlob{};
+    ComPtr<ID3DBlob> shaderBlob{};
+    ComPtr<ID3DBlob> errorBlob{};
 
     std::string GetErrorMessage() const
     {
@@ -68,7 +68,7 @@ namespace ZG
         p_impl = createShader(params, "ps_5_0");
     }
 
-    ID3D10Blob* PixelShader::GetBlob() const
+    const ComPtr<ID3D10Blob>& PixelShader::GetBlob() const
     {
         return p_impl->shaderBlob;
     }
@@ -78,7 +78,7 @@ namespace ZG
         p_impl = createShader(params, "vs_5_0");
     }
 
-    ID3D10Blob* VertexShader::GetBlob() const
+    const ComPtr<ID3D10Blob>& VertexShader::GetBlob() const
     {
         return p_impl->shaderBlob;
     }

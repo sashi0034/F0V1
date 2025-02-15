@@ -32,8 +32,8 @@ namespace
 
 struct Texture::Impl
 {
-    ID3D12Resource* m_textureBuffer{};
-    ID3D12DescriptorHeap* m_descriptorHeap{};
+    ComPtr<ID3D12Resource> m_textureBuffer{};
+    ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
     Buffer3D m_buffer3D = makeVertexesAndIndicis();
 
     Impl(const std::wstring& filename)
@@ -135,7 +135,7 @@ struct Texture::Impl
         // アップロード用中間バッファからテクスチャバッファにコピー
         // アップロード用中間バッファにはフットプリントを指定し、テクスチャバッファにはインデックスを指定する
         D3D12_TEXTURE_COPY_LOCATION dstCopyLocation{};
-        dstCopyLocation.pResource = m_textureBuffer;
+        dstCopyLocation.pResource = m_textureBuffer.Get();
         dstCopyLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
         dstCopyLocation.SubresourceIndex = 0;
 
@@ -159,7 +159,7 @@ struct Texture::Impl
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource = m_textureBuffer;
+        barrier.Transition.pResource = m_textureBuffer.Get();
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
         barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
@@ -235,13 +235,13 @@ struct Texture::Impl
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.Texture2D.MipLevels = 1;
         EngineCore.GetDevice()->CreateShaderResourceView(
-            m_textureBuffer, &srvDesc, m_descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+            m_textureBuffer.Get(), &srvDesc, m_descriptorHeap->GetCPUDescriptorHandleForHeapStart());
     }
 
     void Draw() const
     {
         const auto commandList = EngineCore.GetCommandList();
-        commandList->SetDescriptorHeaps(1, &m_descriptorHeap);
+        commandList->SetDescriptorHeaps(1, m_descriptorHeap.GetAddressOf());
         commandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
         m_buffer3D.Draw();
     }

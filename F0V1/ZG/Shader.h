@@ -20,7 +20,7 @@ namespace ZG
     public:
         PixelShader(const ShaderParams& params);
 
-        ID3D10Blob* GetBlob() const;
+        const ComPtr<ID3D10Blob>& GetBlob() const;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;
@@ -31,7 +31,7 @@ namespace ZG
     public:
         VertexShader(const ShaderParams& params);
 
-        ID3D10Blob* GetBlob() const;
+        const ComPtr<ID3D10Blob>& GetBlob() const;
 
         class Internal;
 

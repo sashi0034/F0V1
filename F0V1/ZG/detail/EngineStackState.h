@@ -6,10 +6,10 @@ namespace ZG::detail
     class EngineStackState_impl
     {
     public:
-        void PushPipelineState(ID3D12PipelineState* pipelineState) const;
+        void PushPipelineState(const ComPtr<ID3D12PipelineState>& pipelineState) const;
         void PopPipelineState() const;
 
-        void PushRootSignature(ID3D12RootSignature* rootSignature) const;
+        void PushRootSignature(const ComPtr<ID3D12RootSignature>& rootSignature) const;
         void PopRootSignature() const;
     };
 
