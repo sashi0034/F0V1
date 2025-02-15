@@ -36,6 +36,8 @@ struct Texture::Impl
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
     Buffer3D m_buffer3D = makeVertexesAndIndicis();
 
+    ComPtr<ID3D12Resource> m_constantBuffer{};
+
     Impl(const std::wstring& filename)
     {
         DirectX::TexMetadata metadata{};
@@ -219,23 +221,66 @@ struct Texture::Impl
 
     void createDescriptorHeap(DXGI_FORMAT format)
     {
+        // 定数バッファ作成
+        using namespace DirectX;
+        const auto worldMat = XMMatrixRotationY(XM_PIDIV4);
+        constexpr XMFLOAT3 eye(0, 0, -5);
+        constexpr XMFLOAT3 target(0, 0, 0);
+        constexpr XMFLOAT3 up(0, 1, 0);
+        const auto viewMat = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
+        const auto sceneSize = EngineCore.GetSceneSize();
+        auto projMat = XMMatrixPerspectiveFovLH(
+            XM_PIDIV2, // 画角は90°
+            static_cast<float>(sceneSize.x) / static_cast<float>(sceneSize.y), // アスペクト比
+            1.0f, // 近い方
+            10.0f // 遠い方
+        );
+
+        const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+        const auto resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(XMMATRIX), 256));
+        AssertWin32{"failed to create commited resource"sv}
+            | EngineCore.GetDevice()->CreateCommittedResource(
+                &heapProperties,
+                D3D12_HEAP_FLAG_NONE,
+                &resourceDesc,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&m_constantBuffer));
+
+        XMMATRIX* mappedMat{};
+        AssertWin32{"failed to map constant buffer"sv}
+            | m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mappedMat));
+        *mappedMat = worldMat * viewMat * projMat;
+
         // ディスクリプタヒープの作成
         D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
         descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         descriptorHeapDesc.NodeMask = 0;
-        descriptorHeapDesc.NumDescriptors = 1;
+        descriptorHeapDesc.NumDescriptors = 2; // SRV と CBV の2つ
         descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         AssertWin32{"failed to create descriptor heap"sv}
             | EngineCore.GetDevice()->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
 
-        // 通常テクスチャビューの作成
+        // テクスチャビュー (SRV) 作成
+        auto basicHeapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Format = format;
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.Texture2D.MipLevels = 1;
-        EngineCore.GetDevice()->CreateShaderResourceView(
-            m_textureBuffer.Get(), &srvDesc, m_descriptorHeap->GetCPUDescriptorHandleForHeapStart());
+
+        EngineCore.GetDevice()->CreateShaderResourceView(m_textureBuffer.Get(), &srvDesc, basicHeapHandle);
+
+        // CBV 作成
+        basicHeapHandle.ptr += EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(
+            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+        cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
+        cbvDesc.SizeInBytes = static_cast<UINT>(m_constantBuffer->GetDesc().Width);
+
+        EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
     }
 
     void Draw() const
@@ -243,17 +288,21 @@ struct Texture::Impl
         const auto commandList = EngineCore.GetCommandList();
         commandList->SetDescriptorHeaps(1, m_descriptorHeap.GetAddressOf());
         commandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+
         m_buffer3D.Draw();
     }
 };
 
 namespace ZG
 {
-    Texture::Texture(std::wstring filename) : p_impl{std::make_shared<Impl>(filename)}, m_filename(std::move(filename))
+    Texture::Texture(std::wstring filename) :
+        p_impl{std::make_shared<Impl>(filename)},
+        m_filename(std::move(filename))
     {
     }
 
-    Texture::Texture(const Image& image) : p_impl{std::make_shared<Impl>(image)}
+    Texture::Texture(const Image& image) :
+        p_impl{std::make_shared<Impl>(image)}
     {
     }
 

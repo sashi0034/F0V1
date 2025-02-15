@@ -2,8 +2,4 @@
 
 namespace ZG::detail
 {
-    class EngineEntryPoint 
-    {
-    public:
-    };
 }

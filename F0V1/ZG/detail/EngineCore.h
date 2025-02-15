@@ -2,6 +2,8 @@
 
 #include <d3d12.h>
 
+#include "ZG/Value2D.h"
+
 namespace ZG::detail
 {
     class EngineCore_impl
@@ -22,6 +24,8 @@ namespace ZG::detail
         void ExecuteCommandList() const;
 
         ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
+
+        Size GetSceneSize() const;
     };
 
     inline constexpr auto EngineCore = EngineCore_impl{};

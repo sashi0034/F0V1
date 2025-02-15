@@ -10,6 +10,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "EngineWindow.h"
 #include "ZG/AssertObject.h"
 #include "ZG/Color.h"
 
@@ -24,72 +25,6 @@ namespace
 
     using namespace std::string_view_literals;
 
-    constexpr Point DefaultWindowSize{1280, 720};
-
-    LRESULT windowProcedure(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-    {
-        if (msg == WM_DESTROY)
-        {
-            PostQuitMessage(0);
-            return 0;
-        }
-
-        return DefWindowProc(hwnd, msg, wparam, lparam);
-    }
-
-    class WindowCore
-    {
-    public:
-        void Init()
-        {
-            m_windowClass.cbSize = sizeof(WNDCLASSEX);
-            m_windowClass.lpfnWndProc = static_cast<WNDPROC>(windowProcedure);
-            m_windowClass.lpszClassName = L"F0";
-            m_windowClass.hInstance = GetModuleHandle(nullptr);
-            RegisterClassEx(&m_windowClass);
-
-            // -----------------------------------------------
-
-            m_windowSize = DefaultWindowSize;
-
-            RECT windowRect{0, 0, m_windowSize.x, m_windowSize.y};
-            AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
-
-            m_handle = CreateWindow(
-                m_windowClass.lpszClassName,
-                L"F0",
-                WS_OVERLAPPEDWINDOW,
-                CW_USEDEFAULT,
-                CW_USEDEFAULT,
-                windowRect.right - windowRect.left,
-                windowRect.bottom - windowRect.top,
-                nullptr, // hWndParent
-                nullptr, // hMenu 
-                m_windowClass.hInstance, // hInstance, 
-                nullptr // lpParam
-            );
-        }
-
-        void Show()
-        {
-            ShowWindow(m_handle, SW_SHOW);
-        }
-
-        void Destroy()
-        {
-            UnregisterClass(m_windowClass.lpszClassName, m_windowClass.hInstance);
-        }
-
-        Point WindowSize() const { return m_windowSize; }
-
-        HWND Handle() const { return m_handle; }
-
-    private:
-        WNDCLASSEX m_windowClass{};
-        Point m_windowSize{};
-        HWND m_handle{};
-    };
-
     void enableDebugLayer()
     {
         ID3D12Debug* debugLayer = nullptr;
@@ -102,12 +37,14 @@ namespace
 
     constexpr ColorF32 defaultClearColor = {0.5f, 0.5f, 0.5f, 1.0f};
 
+    constexpr Size defaultSceneSize = {1280, 720};
+
     struct Impl
     {
     public:
         void Init()
         {
-            m_window.Init();
+            EngineWindow.Init();
 #ifdef _DEBUG
             enableDebugLayer();
 #endif
@@ -192,8 +129,8 @@ namespace
 
             // スワップチェインの設定
             DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
-            swapchainDesc.Width = DefaultWindowSize.x;
-            swapchainDesc.Height = DefaultWindowSize.y;
+            swapchainDesc.Width = m_sceneSize.x;
+            swapchainDesc.Height = m_sceneSize.y;
             swapchainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
             swapchainDesc.Stereo = false;
             swapchainDesc.SampleDesc.Count = 1;
@@ -207,7 +144,7 @@ namespace
             AssertWin32{"failed to create swap chain"sv}
                 | m_dxgiFactory->CreateSwapChainForHwnd(
                     m_commandQueue.Get(),
-                    m_window.Handle(),
+                    EngineWindow.Handle(),
                     &swapchainDesc,
                     nullptr,
                     nullptr,
@@ -241,7 +178,7 @@ namespace
                 | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
 
             // ウィンドウ表示
-            m_window.Show();
+            EngineWindow.Show();
         }
 
         void BeginFrame()
@@ -268,7 +205,7 @@ namespace
             m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
 
             // ビューポートの設定
-            Point windowSize = m_window.WindowSize();
+            Point windowSize = EngineWindow.WindowSize();
             D3D12_VIEWPORT viewport = {};
             viewport.TopLeftX = 0.0f;
             viewport.TopLeftY = 0.0f;
@@ -330,17 +267,18 @@ namespace
 
         void Destroy()
         {
-            m_window.Destroy();
+            EngineWindow.Destroy();
         }
 
-        WindowCore m_window{};
-
+        Point m_sceneSize{defaultSceneSize};
         ColorF32 m_clearColor{defaultClearColor};
 
         ID3D12Device* m_device{};
         IDXGIFactory6* m_dxgiFactory{};
         IDXGIAdapter* m_adapter{};
         D3D_FEATURE_LEVEL m_featureLevel{};
+
+        // FIXME: グローバルオブジェクトは ComPtr にしなくていいかも
 
         ComPtr<ID3D12CommandAllocator> m_commandAllocator{};
         ComPtr<ID3D12GraphicsCommandList> m_commandList{};
@@ -400,5 +338,10 @@ namespace ZG
     {
         assert(s_impl.m_commandQueue);
         return s_impl.m_commandQueue;
+    }
+
+    Size EngineCore_impl::GetSceneSize() const
+    {
+        return s_impl.m_sceneSize;
     }
 }

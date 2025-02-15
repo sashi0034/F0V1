@@ -91,17 +91,22 @@ struct PipelineState::Impl
 
         {
             // テクスチャを扱うためのディスクリプタテーブル
-            D3D12_DESCRIPTOR_RANGE descriptorTables = {};
-            descriptorTables.NumDescriptors = 1; // テクスチャひとつ
-            descriptorTables.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // 種別はテクスチャ
-            descriptorTables.BaseShaderRegister = 0; // 0 番スロットから
-            descriptorTables.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+            D3D12_DESCRIPTOR_RANGE descriptorTables[2] = {};
+            descriptorTables[0].NumDescriptors = 1; // テクスチャひとつ
+            descriptorTables[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // 種別はテクスチャ
+            descriptorTables[0].BaseShaderRegister = 0; // 0 番スロットから
+            descriptorTables[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+            descriptorTables[1].NumDescriptors = 1; // 定数バッファひとつ
+            descriptorTables[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV; // 種別は定数バッファ
+            descriptorTables[1].BaseShaderRegister = 0; // 0 番スロットから
+            descriptorTables[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
             D3D12_ROOT_PARAMETER rootParameter = {};
             rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            rootParameter.DescriptorTable.pDescriptorRanges = &descriptorTables;
-            rootParameter.DescriptorTable.NumDescriptorRanges = 1;
-            rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダーからアクセス
+            rootParameter.DescriptorTable.pDescriptorRanges = &descriptorTables[0];
+            rootParameter.DescriptorTable.NumDescriptorRanges = 2;
+            rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // すべてのシェーダからアクセス可能
 
             rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
             rootSignatureDesc.NumParameters = 1;
