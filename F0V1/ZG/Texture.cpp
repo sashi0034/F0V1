@@ -32,10 +32,15 @@ namespace
 
     PipelineState makePipelineState(const TextureOptions& options)
     {
+        // TODO: キャッシュする?
         return PipelineState{
             PipelineStateParams{
                 .pixelShader = options.pixelShader,
                 .vertexShader = options.vertexShader,
+                .vertexInput = {
+                    {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT},
+                    {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
+                },
                 .srvCount = 1,
                 .cbvCount = 1,
                 .uavCount = 1 // FIXME: 0 にしたい?

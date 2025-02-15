@@ -10,6 +10,27 @@ using namespace ZG::detail;
 
 namespace
 {
+    std::vector<D3D12_INPUT_ELEMENT_DESC> buildVertexInputLayout(const std::vector<VertexInputElement>& inputLayout)
+    {
+        std::vector<D3D12_INPUT_ELEMENT_DESC> result{};
+        result.reserve(inputLayout.size());
+
+        for (const auto& element : inputLayout)
+        {
+            D3D12_INPUT_ELEMENT_DESC desc = {};
+            desc.SemanticName = element.semanticName.c_str();
+            desc.SemanticIndex = element.semanticIndex;
+            desc.Format = element.format;
+            desc.InputSlot = 0;
+            desc.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+            desc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+            desc.InstanceDataStepRate = 0;
+            result.push_back(desc);
+        }
+
+        return result;
+    }
+
     ComPtr<ID3D12RootSignature> createRootSignature(uint32_t cbvCount, uint32_t srvCount, uint32_t uavCount)
     {
         D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
@@ -124,30 +145,9 @@ struct PipelineState::Impl
         pipelineDesc.DepthStencilState.DepthEnable = false;
         pipelineDesc.DepthStencilState.StencilEnable = false;
 
-        // TODO: input layout
-        D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-            {
-                "POSITION",
-                0,
-                DXGI_FORMAT_R32G32B32_FLOAT,
-                0,
-                D3D12_APPEND_ALIGNED_ELEMENT,
-                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-                0
-            },
-            {
-                "TEXCOORD",
-                0,
-                DXGI_FORMAT_R32G32_FLOAT,
-                0,
-                D3D12_APPEND_ALIGNED_ELEMENT,
-                D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
-                0
-            },
-        };
-
-        pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
-        pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
+        const auto inputLayout = buildVertexInputLayout(params.vertexInput);
+        pipelineDesc.InputLayout.pInputElementDescs = inputLayout.data();
+        pipelineDesc.InputLayout.NumElements = static_cast<UINT>(inputLayout.size());
 
         pipelineDesc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED; // ストリップ時のカットなし
         pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // 三角形で構成

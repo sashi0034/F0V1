@@ -3,10 +3,27 @@
 
 namespace ZG::detail
 {
+    struct VertexInputElement
+    {
+        std::string semanticName;
+        int semanticIndex;
+        DXGI_FORMAT format;
+
+        VertexInputElement() = default;
+
+        VertexInputElement(std::string semanticName, int semanticIndex, DXGI_FORMAT format) :
+            semanticName(std::move(semanticName)),
+            semanticIndex(semanticIndex),
+            format(format)
+        {
+        }
+    };
+
     struct PipelineStateParams
     {
         PixelShader pixelShader;
         VertexShader vertexShader;
+        std::vector<VertexInputElement> vertexInput;
         uint32_t srvCount{};
         uint32_t cbvCount{};
         uint32_t uavCount{};
