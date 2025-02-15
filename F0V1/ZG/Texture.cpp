@@ -8,6 +8,7 @@
 #include "System.h"
 #include "Utils.h"
 #include "detail/EngineCore.h"
+#include "detail/PipelineState.h"
 
 using namespace ZG;
 using namespace ZG::detail;
@@ -28,17 +29,29 @@ namespace
             }
         };
     }
+
+    PipelineState makePipelineState(const TextureOptions& options)
+    {
+        return PipelineState{
+            PipelineStateParams{
+                .pixelShader = options.pixelShader,
+                .vertexShader = options.vertexShader,
+            }
+        };
+    }
 }
 
 struct Texture::Impl
 {
+    PipelineState m_pipelineState;
+
     ComPtr<ID3D12Resource> m_textureBuffer{};
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
     Buffer3D m_buffer3D = makeVertexesAndIndicis();
 
     ComPtr<ID3D12Resource> m_constantBuffer{};
 
-    Impl(const std::wstring& filename)
+    Impl(const std::wstring& filename, const TextureOptions& options) : m_pipelineState(makePipelineState(options))
     {
         DirectX::TexMetadata metadata{};
         DirectX::ScratchImage scratchImage{};
@@ -176,7 +189,7 @@ struct Texture::Impl
         createDescriptorHeap(metadata.format);
     }
 
-    Impl(const Image& image)
+    Impl(const Image& image, const TextureOptions& options) : m_pipelineState(makePipelineState(options))
     {
         D3D12_HEAP_PROPERTIES heapProperties{};
         heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -285,6 +298,8 @@ struct Texture::Impl
 
     void Draw() const
     {
+        m_pipelineState.CommandSet();
+
         const auto commandList = EngineCore.GetCommandList();
         commandList->SetDescriptorHeaps(1, m_descriptorHeap.GetAddressOf());
         commandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
@@ -295,14 +310,14 @@ struct Texture::Impl
 
 namespace ZG
 {
-    Texture::Texture(std::wstring filename) :
-        p_impl{std::make_shared<Impl>(filename)},
+    Texture::Texture(std::wstring filename, const TextureOptions& options) :
+        p_impl{std::make_shared<Impl>(filename, options)},
         m_filename(std::move(filename))
     {
     }
 
-    Texture::Texture(const Image& image) :
-        p_impl{std::make_shared<Impl>(image)}
+    Texture::Texture(const Image& image, const TextureOptions& options) :
+        p_impl{std::make_shared<Impl>(image, options)}
     {
     }
 

@@ -3,6 +3,7 @@
 
 namespace ZG::detail
 {
+    // TODO: Obsolete?
     class EngineStackState_impl
     {
     public:

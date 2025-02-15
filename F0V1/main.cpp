@@ -3,7 +3,6 @@
 #include "ZG/Buffer3D.h"
 #include "ZG/Image.h"
 
-#include "ZG/PipelineState.h"
 #include "ZG/Shader.h"
 #include "ZG/System.h"
 #include "ZG/Texture.h"
@@ -30,7 +29,6 @@ void Main()
 
     const PixelShader pixelShader{ShaderParams{.filename = L"asset/basic_pixel.hlsl", .entryPoint = "PS"}};
     const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
-    const PipelineState pipelineState{PipelineStateParams{.pixelShader = pixelShader, .vertexShader = vertexShader}};
 
     Image image{Size{256, 256}};
     for (int x = 0; x < image.size().x; ++x)
@@ -45,15 +43,13 @@ void Main()
         }
     }
 
-    Texture noiseTexture{image};
+    Texture noiseTexture{image, TextureOptions{.pixelShader = pixelShader, .vertexShader = vertexShader}};
 
-    Texture pngTexture{L"asset/mii.png"};
+    Texture pngTexture{L"asset/mii.png", TextureOptions{.pixelShader = pixelShader, .vertexShader = vertexShader}};
 
     int count{};
     while (System::Update())
     {
-        const ScopedPipelineState scopedPipelineState{pipelineState};
-
         count++;
         if (count % 120 < 60)
         {

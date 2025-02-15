@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "Shader.h"
+#include "ZG/Shader.h"
 
-namespace ZG
+namespace ZG::detail
 {
     struct PipelineStateParams
     {
@@ -16,6 +16,8 @@ namespace ZG
     public:
         PipelineState(const PipelineStateParams& params);
 
+        void CommandSet() const;
+
         struct Internal;
 
     private:
@@ -23,14 +25,14 @@ namespace ZG
         std::shared_ptr<Impl> p_impl;
     };
 
-    class ScopedPipelineState : Uncopyable
-    {
-    public:
-        explicit ScopedPipelineState(const PipelineState& pipelineState);
-
-        ~ScopedPipelineState();
-
-    private:
-        size_t m_timestamp;
-    };
+    // class ScopedPipelineState : Uncopyable
+    // {
+    // public:
+    //     explicit ScopedPipelineState(const PipelineState& pipelineState);
+    //
+    //     ~ScopedPipelineState();
+    //
+    // private:
+    //     size_t m_timestamp;
+    // };
 }

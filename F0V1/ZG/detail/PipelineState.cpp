@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
 #include "PipelineState.h"
 
-#include "AssertObject.h"
-#include "detail/EngineCore.h"
-#include "detail/EngineStackState.h"
+#include "ZG/AssertObject.h"
+#include "EngineCore.h"
+#include "EngineStackState.h"
 
 using namespace ZG;
 using namespace ZG::detail;
@@ -130,7 +130,7 @@ struct PipelineState::Impl
             // -----------------------------------------------
 
             ID3D10Blob* rootSignatureBlob{};
-            AssertWin32{"failed to create root signature"sv}
+            AssertWin32{"failed to serialize root signature"sv}
                 | D3D12SerializeRootSignature(
                     &rootSignatureDesc,
                     D3D_ROOT_SIGNATURE_VERSION_1,
@@ -149,6 +149,13 @@ struct PipelineState::Impl
 
         AssertWin32{"failed to create pipeline state"sv}
             | device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&m_pipelineState));
+    }
+
+    void CommandSet() const
+    {
+        const auto commandList = EngineCore.GetCommandList();
+        commandList->SetPipelineState(m_pipelineState.Get());
+        commandList->SetGraphicsRootSignature(m_rootSignature.Get());
     }
 };
 
@@ -174,14 +181,19 @@ namespace ZG
     {
     }
 
-    ScopedPipelineState::ScopedPipelineState(const PipelineState& pipelineState) :
-        m_timestamp(0) // TODO
+    void PipelineState::CommandSet() const
     {
-        PipelineState::Internal::Push(pipelineState);
+        p_impl->CommandSet();
     }
 
-    ScopedPipelineState::~ScopedPipelineState()
-    {
-        PipelineState::Internal::Pop();
-    }
+    // ScopedPipelineState::ScopedPipelineState(const PipelineState& pipelineState) :
+    //     m_timestamp(0) // TODO
+    // {
+    //     PipelineState::Internal::Push(pipelineState);
+    // }
+    //
+    // ScopedPipelineState::~ScopedPipelineState()
+    // {
+    //     PipelineState::Internal::Pop();
+    // }
 }
