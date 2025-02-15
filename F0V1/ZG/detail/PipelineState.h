@@ -7,6 +7,9 @@ namespace ZG::detail
     {
         PixelShader pixelShader;
         VertexShader vertexShader;
+        uint32_t srvCount{};
+        uint32_t cbvCount{};
+        uint32_t uavCount{};
     };
 
     struct PipelineState_impl;

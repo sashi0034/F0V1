@@ -8,6 +8,78 @@
 using namespace ZG;
 using namespace ZG::detail;
 
+namespace
+{
+    ComPtr<ID3D12RootSignature> createRootSignature(uint32_t cbvCount, uint32_t srvCount, uint32_t uavCount)
+    {
+        D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+
+        // ディスクリプタテーブルの設定
+        D3D12_DESCRIPTOR_RANGE descriptorTables[3] = {};
+        descriptorTables[0].NumDescriptors = cbvCount;
+        descriptorTables[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        descriptorTables[0].BaseShaderRegister = 0;
+        descriptorTables[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        descriptorTables[1].NumDescriptors = srvCount;
+        descriptorTables[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+        descriptorTables[1].BaseShaderRegister = 0;
+        descriptorTables[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        descriptorTables[2].NumDescriptors = uavCount;
+        descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+        descriptorTables[2].BaseShaderRegister = 0;
+        descriptorTables[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        D3D12_ROOT_PARAMETER rootParameter = {};
+        rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        rootParameter.DescriptorTable.pDescriptorRanges = descriptorTables;
+        rootParameter.DescriptorTable.NumDescriptorRanges = 2;
+        rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+        rootSignatureDesc.NumParameters = 1;
+        rootSignatureDesc.pParameters = &rootParameter;
+        rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+        // -----------------------------------------------
+        // サンプラーの設定
+        D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
+        samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 横繰り返し
+        samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 縦繰り返し
+        samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 奥行繰り返し
+        samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK; // ボーダーの時は黒
+        samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT; // ニアレストネイバー
+        samplerDesc.MaxLOD = D3D12_FLOAT32_MAX; // ミップマップ最大値
+        samplerDesc.MinLOD = 0.0f; // ミップマップ最小値
+        samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // ?
+        samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダからアクセス
+
+        rootSignatureDesc.NumStaticSamplers = 1;
+        rootSignatureDesc.pStaticSamplers = &samplerDesc;
+
+        // -----------------------------------------------
+        // ルートシグネチャの作成
+        ComPtr<ID3D10Blob> rootSignatureBlob{};
+        AssertWin32{"failed to serialize root signature"sv}
+            | D3D12SerializeRootSignature(
+                &rootSignatureDesc,
+                D3D_ROOT_SIGNATURE_VERSION_1,
+                &rootSignatureBlob,
+                nullptr);
+
+        ComPtr<ID3D12RootSignature> rootSignature;
+        AssertWin32{"failed to create root signature"sv}
+            | EngineCore.GetDevice()->CreateRootSignature(
+                0,
+                rootSignatureBlob->GetBufferPointer(),
+                rootSignatureBlob->GetBufferSize(),
+                IID_PPV_ARGS(&rootSignature));
+        rootSignatureBlob->Release();
+
+        return rootSignature;
+    }
+}
+
 struct PipelineState::Impl
 {
     ComPtr<ID3D12PipelineState> m_pipelineState;
@@ -86,64 +158,7 @@ struct PipelineState::Impl
         pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングなし
         pipelineDesc.SampleDesc.Quality = 0; // クオリティ最低
 
-        // TODO: root signature 分離
-        D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
-
-        {
-            // テクスチャを扱うためのディスクリプタテーブル
-            D3D12_DESCRIPTOR_RANGE descriptorTables[2] = {};
-            descriptorTables[0].NumDescriptors = 1; // テクスチャひとつ
-            descriptorTables[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV; // 種別はテクスチャ
-            descriptorTables[0].BaseShaderRegister = 0; // 0 番スロットから
-            descriptorTables[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-            descriptorTables[1].NumDescriptors = 1; // 定数バッファひとつ
-            descriptorTables[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV; // 種別は定数バッファ
-            descriptorTables[1].BaseShaderRegister = 0; // 0 番スロットから
-            descriptorTables[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-            D3D12_ROOT_PARAMETER rootParameter = {};
-            rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-            rootParameter.DescriptorTable.pDescriptorRanges = &descriptorTables[0];
-            rootParameter.DescriptorTable.NumDescriptorRanges = 2;
-            rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL; // すべてのシェーダからアクセス可能
-
-            rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-            rootSignatureDesc.NumParameters = 1;
-            rootSignatureDesc.pParameters = &rootParameter;
-
-            // サンプラーの設定
-            D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
-            samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 横繰り返し
-            samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 縦繰り返し
-            samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP; // 奥行繰り返し
-            samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK; // ボーダーの時は黒
-            samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT; // ニアレストネイバー
-            samplerDesc.MaxLOD = D3D12_FLOAT32_MAX; // ミップマップ最大値
-            samplerDesc.MinLOD = 0.0f; // ミップマップ最小値
-            samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER; // ?
-            samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // ピクセルシェーダからアクセス
-
-            rootSignatureDesc.NumStaticSamplers = 1;
-            rootSignatureDesc.pStaticSamplers = &samplerDesc;
-
-            // -----------------------------------------------
-
-            ID3D10Blob* rootSignatureBlob{};
-            AssertWin32{"failed to serialize root signature"sv}
-                | D3D12SerializeRootSignature(
-                    &rootSignatureDesc,
-                    D3D_ROOT_SIGNATURE_VERSION_1,
-                    &rootSignatureBlob,
-                    nullptr);
-            AssertWin32{"failed to create root signature"sv}
-                | device->CreateRootSignature(
-                    0,
-                    rootSignatureBlob->GetBufferPointer(),
-                    rootSignatureBlob->GetBufferSize(),
-                    IID_PPV_ARGS(&m_rootSignature));
-            rootSignatureBlob->Release();
-        }
+        m_rootSignature = createRootSignature(params.cbvCount, params.srvCount, params.uavCount);
 
         pipelineDesc.pRootSignature = m_rootSignature.Get();
 
