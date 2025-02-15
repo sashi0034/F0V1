@@ -190,7 +190,7 @@ struct Texture::Impl
         commandList->ResourceBarrier(1, &barrier);
         commandList->Close();
 
-        EngineCore.ExecuteCommandList();
+        EngineCore.FlushCommandList();
 
         // -----------------------------------------------
         // ディスクリプタヒープの作成

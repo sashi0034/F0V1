@@ -21,7 +21,7 @@ namespace ZG::detail
 
         ComPtr<ID3D12GraphicsCommandList> GetCommandList() const;
 
-        void ExecuteCommandList() const;
+        void FlushCommandList() const;
 
         ComPtr<ID3D12CommandQueue> GetCommandQueue() const;
 

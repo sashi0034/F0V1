@@ -224,7 +224,7 @@ namespace
             m_commandList->RSSetScissorRects(1, &scissorRect);
         }
 
-        void ExecuteCommandList()
+        void FlushCommandList()
         {
             ID3D12CommandList* commandLists[] = {m_commandList.Get()};
             m_commandQueue->ExecuteCommandLists(1, commandLists);
@@ -240,6 +240,12 @@ namespace
                 WaitForSingleObjectEx(event, INFINITE, false);
                 CloseHandle(event);
             }
+
+            // コマンドアロケータのリセット
+            m_commandAllocator->Reset();
+
+            // コマンドリストのリセット
+            m_commandList->Reset(m_commandAllocator.Get(), nullptr);
         }
 
         void EndFrame()
@@ -253,13 +259,7 @@ namespace
             m_commandList->Close();
 
             // コマンドリストの実行
-            ExecuteCommandList();
-
-            // コマンドアロケータのリセット
-            m_commandAllocator->Reset();
-
-            // コマンドリストのリセット
-            m_commandList->Reset(m_commandAllocator.Get(), nullptr);
+            FlushCommandList();
 
             // フリップ
             m_swapChain->Present(1, 0);
@@ -329,9 +329,9 @@ namespace ZG
         return s_impl.m_commandList;
     }
 
-    void EngineCore_impl::ExecuteCommandList() const
+    void EngineCore_impl::FlushCommandList() const
     {
-        s_impl.ExecuteCommandList();
+        s_impl.FlushCommandList();
     }
 
     ComPtr<ID3D12CommandQueue> EngineCore_impl::GetCommandQueue() const
