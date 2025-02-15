@@ -30,7 +30,7 @@ namespace
         };
     }
 
-    PipelineState makePipelineState(const TextureOptions& options)
+    PipelineState makePipelineState(const TextureParams& options)
     {
         // TODO: キャッシュする?
         return PipelineState{
@@ -49,17 +49,13 @@ namespace
     }
 }
 
-struct Texture::Impl
+struct TextureBlob::Impl
 {
-    PipelineState m_pipelineState;
-
     ComPtr<ID3D12Resource> m_textureBuffer{};
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
-    Buffer3D m_buffer3D = makeVertexesAndIndicis();
+    DXGI_FORMAT m_format{};
 
-    ComPtr<ID3D12Resource> m_constantBuffer{};
-
-    Impl(const std::wstring& filename, const TextureOptions& options) : m_pipelineState(makePipelineState(options))
+    Impl(const std::wstring& filename)
     {
         DirectX::TexMetadata metadata{};
         DirectX::ScratchImage scratchImage{};
@@ -192,12 +188,10 @@ struct Texture::Impl
 
         EngineCore.FlushCommandList();
 
-        // -----------------------------------------------
-        // ディスクリプタヒープの作成
-        createDescriptorHeap(metadata.format);
+        m_format = metadata.format;
     }
 
-    Impl(const Image& image, const TextureOptions& options) : m_pipelineState(makePipelineState(options))
+    Impl(const Image& image)
     {
         D3D12_HEAP_PROPERTIES heapProperties{};
         heapProperties.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -236,8 +230,25 @@ struct Texture::Impl
                 image.size().x * sizeof(ColorU8),
                 image.size_in_bytes());
 
-        // ディスクリプタヒープの作成
-        createDescriptorHeap(DXGI_FORMAT_R8G8B8A8_UNORM);
+        m_format = resourceDesc.Format;
+    }
+};
+
+struct Texture::Impl
+{
+    TextureBlob m_blob;
+
+    PipelineState m_pipelineState;
+
+    Buffer3D m_buffer3D = makeVertexesAndIndicis();
+
+    ComPtr<ID3D12Resource> m_constantBuffer{};
+
+    Impl(const TextureBlob& blob, const TextureParams& options) :
+        m_blob(blob),
+        m_pipelineState(makePipelineState(options))
+    {
+        createDescriptorHeap(m_blob.p_impl->m_format);
     }
 
     void createDescriptorHeap(DXGI_FORMAT format)
@@ -280,10 +291,11 @@ struct Texture::Impl
         descriptorHeapDesc.NumDescriptors = 2; // SRV と CBV の2つ
         descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         AssertWin32{"failed to create descriptor heap"sv}
-            | EngineCore.GetDevice()->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
+            | EngineCore.GetDevice()->CreateDescriptorHeap(
+                &descriptorHeapDesc, IID_PPV_ARGS(&m_blob.p_impl->m_descriptorHeap));
 
         // CBV 作成
-        auto basicHeapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        auto basicHeapHandle = m_blob.p_impl->m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
         cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
@@ -301,7 +313,8 @@ struct Texture::Impl
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
         srvDesc.Texture2D.MipLevels = 1;
 
-        EngineCore.GetDevice()->CreateShaderResourceView(m_textureBuffer.Get(), &srvDesc, basicHeapHandle);
+        EngineCore.GetDevice()->CreateShaderResourceView(
+            m_blob.p_impl->m_textureBuffer.Get(), &srvDesc, basicHeapHandle);
     }
 
     void Draw() const
@@ -309,8 +322,10 @@ struct Texture::Impl
         m_pipelineState.CommandSet();
 
         const auto commandList = EngineCore.GetCommandList();
-        commandList->SetDescriptorHeaps(1, m_descriptorHeap.GetAddressOf());
-        commandList->SetGraphicsRootDescriptorTable(0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        commandList->SetDescriptorHeaps(
+            1, m_blob.p_impl->m_descriptorHeap.GetAddressOf());
+        commandList->SetGraphicsRootDescriptorTable(
+            0, m_blob.p_impl->m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
         m_buffer3D.Draw();
     }
@@ -318,18 +333,22 @@ struct Texture::Impl
 
 namespace ZG
 {
-    Texture::Texture(std::wstring filename, const TextureOptions& options) :
-        p_impl{std::make_shared<Impl>(filename, options)},
-        m_filename(std::move(filename))
+    TextureBlob::TextureBlob(const std::wstring& filename) :
+        p_impl{std::make_shared<Impl>(filename)}
     {
     }
 
-    Texture::Texture(const Image& image, const TextureOptions& options) :
-        p_impl{std::make_shared<Impl>(image, options)}
+    TextureBlob::TextureBlob(const Image& image) :
+        p_impl{std::make_shared<Impl>(image)}
     {
     }
 
-    void Texture::Draw() const
+    Texture::Texture(const TextureParams& params) :
+        p_impl{std::make_shared<Impl>(params.blob, params)}
+    {
+    }
+
+    void Texture::draw() const
     {
         p_impl->Draw();
     }

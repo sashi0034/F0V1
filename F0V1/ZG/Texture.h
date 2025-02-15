@@ -4,8 +4,23 @@
 
 namespace ZG
 {
-    struct TextureOptions
+    class TextureBlob
     {
+    public:
+        TextureBlob(const std::wstring& filename);
+
+        TextureBlob(const Image& image);
+
+        friend class Texture;
+
+    private:
+        struct Impl;
+        std::shared_ptr<Impl> p_impl;
+    };
+
+    struct TextureParams
+    {
+        TextureBlob blob;
         PixelShader pixelShader;
         VertexShader vertexShader;
     };
@@ -13,11 +28,9 @@ namespace ZG
     class Texture
     {
     public:
-        Texture(std::wstring filename, const TextureOptions& options);
+        Texture(const TextureParams& params);
 
-        Texture(const Image& image, const TextureOptions& options);
-
-        void Draw() const;
+        void draw() const;
 
     private:
         struct Impl;

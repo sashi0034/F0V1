@@ -43,9 +43,17 @@ void Main()
         }
     }
 
-    Texture noiseTexture{image, TextureOptions{.pixelShader = pixelShader, .vertexShader = vertexShader}};
+    const TextureBlob noiseBlob{image};
 
-    Texture pngTexture{L"asset/mii.png", TextureOptions{.pixelShader = pixelShader, .vertexShader = vertexShader}};
+    const TextureBlob pngBlob{L"asset/mii.png"};
+
+    const Texture noiseTexture{
+        TextureParams{.blob = noiseBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
+    };
+
+    const Texture pngTexture{
+        TextureParams{.blob = pngBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
+    };
 
     int count{};
     while (System::Update())
@@ -53,11 +61,11 @@ void Main()
         count++;
         if (count % 120 < 60)
         {
-            pngTexture.Draw();
+            pngTexture.draw();
         }
         else
         {
-            noiseTexture.Draw();
+            noiseTexture.draw();
         }
     }
 }
