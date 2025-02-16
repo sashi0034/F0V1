@@ -17,7 +17,7 @@ namespace
         std::vector<Mat4x4> m_worldMatStack{};
         Mat4x4 m_viewMat{};
         Mat4x4 m_projectionMat{};
-    } s_impl;
+    } s_engineStack;
 }
 
 namespace ZG::detail
@@ -65,37 +65,37 @@ namespace ZG::detail
     // }
     void EngineStackState_impl::PushWorldMatrix(const Mat4x4& worldMatrix) const
     {
-        s_impl.m_worldMatStack.push_back(worldMatrix);
+        s_engineStack.m_worldMatStack.push_back(worldMatrix);
     }
 
     void EngineStackState_impl::PopWorldMatrix() const
     {
-        assert(not s_impl.m_worldMatStack.empty());
-        s_impl.m_worldMatStack.pop_back();
+        assert(not s_engineStack.m_worldMatStack.empty());
+        s_engineStack.m_worldMatStack.pop_back();
     }
 
     [[nodiscard]] Mat4x4 EngineStackState_impl::GetWorldMatrix() const
     {
-        return s_impl.m_worldMatStack.empty() ? Mat4x4::Identity() : s_impl.m_worldMatStack.back();
+        return s_engineStack.m_worldMatStack.empty() ? Mat4x4::Identity() : s_engineStack.m_worldMatStack.back();
     }
 
     void EngineStackState_impl::SetViewMatrix(const Mat4x4& viewMatrix) const
     {
-        s_impl.m_viewMat = viewMatrix;
+        s_engineStack.m_viewMat = viewMatrix;
     }
 
     [[nodiscard]] Mat4x4 EngineStackState_impl::GetViewMatrix() const
     {
-        return s_impl.m_viewMat;
+        return s_engineStack.m_viewMat;
     }
 
     void EngineStackState_impl::SetProjectionMatrix(const Mat4x4& projectionMatrix) const
     {
-        s_impl.m_projectionMat = projectionMatrix;
+        s_engineStack.m_projectionMat = projectionMatrix;
     }
 
     [[nodiscard]] Mat4x4 EngineStackState_impl::GetProjectionMatrix() const
     {
-        return s_impl.m_projectionMat;
+        return s_engineStack.m_projectionMat;
     }
 }

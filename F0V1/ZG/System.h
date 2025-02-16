@@ -6,6 +6,8 @@ namespace ZG
     {
         bool Update();
 
+        double DeltaTime();
+
         void ModalError(const std::wstring& message);
     }
 }

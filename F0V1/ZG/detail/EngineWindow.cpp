@@ -71,33 +71,33 @@ namespace
         WNDCLASSEX m_windowClass{};
         Point m_windowSize{};
         HWND m_handle{};
-    } s_impl;
+    } s_engineWindow;
 }
 
 namespace ZG::detail
 {
     void EngineWindow_impl::Init() const
     {
-        s_impl.Init();
+        s_engineWindow.Init();
     }
 
     void EngineWindow_impl::Show() const
     {
-        s_impl.Show();
+        s_engineWindow.Show();
     }
 
     HWND EngineWindow_impl::Handle() const
     {
-        return s_impl.Handle();
+        return s_engineWindow.Handle();
     }
 
     Size EngineWindow_impl::WindowSize() const
     {
-        return s_impl.WindowSize();
+        return s_engineWindow.WindowSize();
     }
 
     void EngineWindow_impl::Destroy() const
     {
-        s_impl.Destroy();
+        s_engineWindow.Destroy();
     }
 }

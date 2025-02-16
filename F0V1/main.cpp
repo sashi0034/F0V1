@@ -78,7 +78,7 @@ void Main()
     int count{};
     while (System::Update())
     {
-        worldMat = worldMat.rotatedY(1.0_deg);
+        worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
         const Transformer3D t3d{worldMat};
 
         count++;

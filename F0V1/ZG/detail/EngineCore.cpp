@@ -13,6 +13,7 @@
 #include "EngineWindow.h"
 #include "ZG/AssertObject.h"
 #include "ZG/Color.h"
+#include "ZG/EngineTimer.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -179,6 +180,9 @@ namespace
 
             // ウィンドウ表示
             EngineWindow.Show();
+
+            // タイマーの初期化
+            EngineTimer.Reset();
         }
 
         void BeginFrame()
@@ -222,6 +226,9 @@ namespace
             scissorRect.right = scissorRect.left + windowSize.x;
             scissorRect.bottom = scissorRect.top + windowSize.y;
             m_commandList->RSSetScissorRects(1, &scissorRect);
+
+            // タイマーの更新
+            EngineTimer.Tick();
         }
 
         void FlushCommandList()
@@ -292,56 +299,56 @@ namespace
         D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
         std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
-    } s_impl{};
+    } s_engineCore{};
 }
 
 namespace ZG
 {
     void EngineCore_impl::Init() const
     {
-        s_impl.Init();
+        s_engineCore.Init();
     }
 
     void EngineCore_impl::BeginFrame() const
     {
-        s_impl.BeginFrame();
+        s_engineCore.BeginFrame();
     }
 
     void EngineCore_impl::EndFrame() const
     {
-        s_impl.EndFrame();
+        s_engineCore.EndFrame();
     }
 
     void EngineCore_impl::Destroy() const
     {
-        s_impl.Destroy();
+        s_engineCore.Destroy();
     }
 
     ID3D12Device* EngineCore_impl::GetDevice() const
     {
-        assert(s_impl.m_device);
-        return s_impl.m_device;
+        assert(s_engineCore.m_device);
+        return s_engineCore.m_device;
     }
 
     ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
     {
-        assert(s_impl.m_commandList);
-        return s_impl.m_commandList.Get();
+        assert(s_engineCore.m_commandList);
+        return s_engineCore.m_commandList.Get();
     }
 
     void EngineCore_impl::FlushCommandList() const
     {
-        s_impl.FlushCommandList();
+        s_engineCore.FlushCommandList();
     }
 
     ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
     {
-        assert(s_impl.m_commandQueue);
-        return s_impl.m_commandQueue.Get();
+        assert(s_engineCore.m_commandQueue);
+        return s_engineCore.m_commandQueue.Get();
     }
 
     Size EngineCore_impl::GetSceneSize() const
     {
-        return s_impl.m_sceneSize;
+        return s_engineCore.m_sceneSize;
     }
 }

@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ZG\EngineTimer.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <Content Include="asset\basic_pixel.hlsl" />
     <Content Include="asset\basic_vertex.hlsl" />
@@ -184,6 +185,7 @@
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
     <ClInclude Include="ZG\detail\PipelineState.h" />
+    <ClInclude Include="ZG\EngineTimer.h" />
     <ClInclude Include="ZG\Graphics3D.h" />
     <ClInclude Include="ZG\Image.h" />
     <ClInclude Include="ZG\Logger.h" />

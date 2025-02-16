@@ -2,6 +2,7 @@
 #include "System.h"
 
 #include "AssertObject.h"
+#include "EngineTimer.h"
 #include "detail/EngineCore.h"
 
 namespace
@@ -32,6 +33,11 @@ namespace ZG
 
         EngineCore.BeginFrame();
         return true;
+    }
+
+    double System::DeltaTime()
+    {
+        return EngineTimer.GetDeltaTime();
     }
 
     void System::ModalError(const std::wstring& message)
