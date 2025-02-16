@@ -176,17 +176,17 @@ struct PipelineState::Impl
 
 struct PipelineState::Internal
 {
-    static void Push(const PipelineState& pipelineState)
-    {
-        EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState.Get());
-        EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature.Get());
-    }
-
-    static void Pop()
-    {
-        EngineStackState.PopRootSignature();
-        EngineStackState.PopPipelineState();
-    }
+    // static void Push(const PipelineState& pipelineState)
+    // {
+    //     EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState.Get());
+    //     EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature.Get());
+    // }
+    //
+    // static void Pop()
+    // {
+    //     EngineStackState.PopRootSignature();
+    //     EngineStackState.PopPipelineState();
+    // }
 };
 
 namespace ZG

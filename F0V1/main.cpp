@@ -2,10 +2,14 @@
 
 #include "ZG/Buffer3D.h"
 #include "ZG/Image.h"
+#include "ZG/Mat4x4.h"
 
 #include "ZG/Shader.h"
 #include "ZG/System.h"
 #include "ZG/Texture.h"
+
+#include "ZG/Math.h"
+#include "ZG/Scene.h"
 
 using namespace ZG;
 
@@ -54,6 +58,17 @@ void Main()
     const Texture pngTexture{
         TextureParams{.blob = pngBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
     };
+
+    const Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
+
+    const Mat4x4 viewMat = Mat4x4::LookAt(Vec3{0, 0, -5}, Vec3{0, 0, 0}, Vec3{0, 1, 0});
+
+    const Mat4x4 projectionMat = Mat4x4::PerspectiveFov(
+        90.0_deg,
+        Scene::Size().horizontalAspectRatio(),
+        1.0f,
+        10.0f
+    );
 
     int count{};
     while (System::Update())

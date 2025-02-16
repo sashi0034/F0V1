@@ -20,10 +20,10 @@ namespace
         return Buffer3D{
             Buffer3DParams{
                 .vertexes = {
-                    {{-0.5f, -0.9f, 0.0f}, {0.0f, 1.0f}}, //左下
-                    {{-0.5f, 0.9f, 0.0f}, {0.0f, 0.0f}}, //左上
-                    {{0.5f, -0.9f, 0.0f}, {1.0f, 1.0f}}, //右下
-                    {{0.5f, 0.9f, 0.0f}, {1.0f, 0.0f}}, //右上
+                    {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, //左下
+                    {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, //左上
+                    {{1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, //右下
+                    {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, //右上
                 },
                 .indices = {0, 1, 2, 2, 1, 3}
             }
@@ -250,6 +250,8 @@ struct Texture::Impl
     {
         createDescriptorHeap(m_blob.p_impl->m_format);
     }
+
+    // TODO: 行列の更新をできるようにする
 
     void createDescriptorHeap(DXGI_FORMAT format)
     {

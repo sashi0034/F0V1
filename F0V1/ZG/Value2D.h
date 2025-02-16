@@ -49,6 +49,12 @@ namespace ZG
         {
             return {x / s, y / s};
         }
+
+        template <typename T = std::conditional<std::is_floating_point_v<Type>, Type, double>::type>
+        [[nodiscard]] constexpr T horizontalAspectRatio() const noexcept
+        {
+            return static_cast<T>(x) / static_cast<T>(y);
+        }
     };
 
     /// @brief Floating point 2D vector
@@ -58,7 +64,7 @@ namespace ZG
         using Value2D<Type>::Value2D;
     };
 
-    using Vec2D = Vector2D<double>;
+    using Vec2 = Vector2D<double>;
 
     /// @brief Integral 2D vector
     template <class Integer>
