@@ -48,6 +48,13 @@ namespace
             }
         };
     }
+
+    struct SceneState_b0
+    {
+        Mat4x4 worldMat;
+        Mat4x4 viewMat;
+        Mat4x4 projectionMat;
+    };
 }
 
 struct TextureBlob::Impl
@@ -245,7 +252,7 @@ struct Texture::Impl
 
     ComPtr<ID3D12Resource> m_constantBuffer{};
 
-    DirectX::XMMATRIX* m_mappedMat{};
+    SceneState_b0* m_mappedCB0{};
 
     Impl(const TextureBlob& blob, const TextureParams& options) :
         m_blob(blob),
@@ -262,7 +269,7 @@ struct Texture::Impl
         using namespace DirectX;
 
         const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        const auto resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(XMMATRIX), 256));
+        const auto resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(SceneState_b0), 256));
         AssertWin32{"failed to create commited resource"sv}
             | EngineCore.GetDevice()->CreateCommittedResource(
                 &heapProperties,
@@ -273,7 +280,8 @@ struct Texture::Impl
                 IID_PPV_ARGS(&m_constantBuffer));
 
         AssertWin32{"failed to map constant buffer"sv}
-            | m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedMat));
+            | m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedCB0));
+        // TODO: Unmap?
 
         // ディスクリプタヒープの作成
         D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
@@ -310,11 +318,13 @@ struct Texture::Impl
 
     void Draw() const
     {
-        m_pipelineState.CommandSet();
+        SceneState_b0 sceneState{};
+        sceneState.worldMat = EngineStackState.GetWorldMatrix().mat;
+        sceneState.viewMat = EngineStackState.GetViewMatrix().mat;
+        sceneState.projectionMat = EngineStackState.GetProjectionMatrix().mat;
+        *m_mappedCB0 = sceneState;
 
-        *m_mappedMat = (EngineStackState.GetWorldMatrix()
-            * EngineStackState.GetViewMatrix()
-            * EngineStackState.GetProjectionMatrix()).mat;
+        m_pipelineState.CommandSet();
 
         const auto commandList = EngineCore.GetCommandList();
         commandList->SetDescriptorHeaps(
