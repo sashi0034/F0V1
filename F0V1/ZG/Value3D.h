@@ -20,6 +20,22 @@ namespace ZG
         {
         }
 
+        template <typename U> requires std::is_convertible_v<U, value_type>
+        Value3D(const Value3D<U>& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
+        {
+        }
+
+        Value3D(DirectX::XMFLOAT3 xmf) : x(xmf.x), y(xmf.y), z(xmf.z)
+        {
+        }
+
+        Value3D(DirectX::XMVECTOR xmv)
+        {
+            DirectX::XMFLOAT3 tmp;
+            XMStoreFloat3(&tmp, xmv);
+            *this = tmp;
+        }
+
         [[nodiscard]] constexpr Value3D operator+(const Value3D& rhs) const
         {
             return Value3D(x + rhs.x, y + rhs.y, z + rhs.z);

@@ -30,6 +30,17 @@ namespace ZG
             return Mat4x4{DirectX::XMMatrixRotationZ(static_cast<float>(angle)) * mat};
         }
 
+        [[nodiscard]] Mat4x4 operator*(const Mat4x4& rhs) const
+        {
+            return Mat4x4{mat * rhs.mat};
+        }
+
+        template <typename T>
+        [[nodiscard]] Vector3D<T> operator*(const Vector3D<T>& rhs) const
+        {
+            return Vector3D<T>{XMVector3Transform(rhs.toXMV(), mat)};
+        }
+
         [[nodiscard]] static Mat4x4 Identity()
         {
             return Mat4x4{DirectX::XMMatrixIdentity()};

@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "ZG/Buffer3D.h"
+#include "ZG/Graphics3D.h"
 #include "ZG/Image.h"
 #include "ZG/Mat4x4.h"
 
@@ -10,6 +11,7 @@
 
 #include "ZG/Math.h"
 #include "ZG/Scene.h"
+#include "ZG/Transformer3D.h"
 
 using namespace ZG;
 
@@ -59,7 +61,7 @@ void Main()
         TextureParams{.blob = pngBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
     };
 
-    const Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
+    Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
 
     const Mat4x4 viewMat = Mat4x4::LookAt(Vec3{0, 0, -5}, Vec3{0, 0, 0}, Vec3{0, 1, 0});
 
@@ -70,9 +72,15 @@ void Main()
         10.0f
     );
 
+    Graphics3D::SetViewMatrix(viewMat);
+    Graphics3D::SetProjectionMatrix(projectionMat);
+
     int count{};
     while (System::Update())
     {
+        worldMat = worldMat.rotatedY(1.0_deg);
+        const Transformer3D t3d{worldMat};
+
         count++;
         if (count % 120 < 60)
         {
