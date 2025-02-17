@@ -10,6 +10,7 @@
 #include "ZG/Texture.h"
 
 #include "ZG/Math.h"
+#include "ZG/Model.h"
 #include "ZG/Scene.h"
 #include "ZG/Transformer3D.h"
 
@@ -71,6 +72,14 @@ void Main()
         1.0f,
         10.0f
     );
+
+    const Model model{
+        ModelParams{
+            .filename = "asset/robot_head.obj",
+            .pixelShader = pixelShader,
+            .vertexShader = vertexShader,
+        }
+    };
 
     Graphics3D::SetViewMatrix(viewMat);
     Graphics3D::SetProjectionMatrix(projectionMat);

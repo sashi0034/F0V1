@@ -139,7 +139,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
+    <ClCompile Include="ZG\Model.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <Content Include="asset\basic_pixel.hlsl" />
     <Content Include="asset\basic_vertex.hlsl" />
@@ -170,6 +172,8 @@
     <ClCompile Include="ZG\Value2D.cpp" />
     <Content Include="asset\fairy_1024x1024.png" />
     <Content Include="asset\mii.png" />
+    <Content Include="asset\robot_head.mtl" />
+    <Content Include="asset\robot_head.obj" />
     <Content Include="asset\violet_900x1600.png" />
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +195,7 @@
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\Mat4x4.h" />
     <ClInclude Include="ZG\Math.h" />
+    <ClInclude Include="ZG\Model.h" />
     <ClInclude Include="ZG\Scene.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
