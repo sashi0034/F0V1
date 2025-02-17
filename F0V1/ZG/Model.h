@@ -15,6 +15,8 @@ namespace ZG
     public:
         Model(const ModelParams& params);
 
+        void draw() const;
+
     private:
         struct Impl;
         std::shared_ptr<Impl> p_impl;

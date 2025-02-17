@@ -174,12 +174,15 @@
     <ClCompile Include="ZG\Value2D.cpp" />
     <Content Include="asset\fairy_1024x1024.png" />
     <Content Include="asset\mii.png" />
+    <Content Include="asset\model_pixel.hlsl" />
+    <Content Include="asset\model_vertex.hlsl" />
     <Content Include="asset\robot_head.mtl" />
     <Content Include="asset\robot_head.obj" />
     <Content Include="asset\violet_900x1600.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asset\basic.hlsli" />
+    <ClInclude Include="asset\model.hlsli" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\Array.h" />
     <ClInclude Include="ZG\AssertObject.h" />

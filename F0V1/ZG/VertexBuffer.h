@@ -6,6 +6,8 @@ namespace ZG
     class VertexBuffer_impl
     {
     public:
+        VertexBuffer_impl() = default;
+
         VertexBuffer_impl(int sizeInBytes, int strideInBytes);
 
         void upload(const void* data);
@@ -21,6 +23,8 @@ namespace ZG
     class VertexBuffer : public VertexBuffer_impl
     {
     public:
+        VertexBuffer() = default;
+
         VertexBuffer(int count) : VertexBuffer_impl(count * sizeof(Vertex), sizeof(Vertex))
         {
         }

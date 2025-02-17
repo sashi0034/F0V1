@@ -8,6 +8,8 @@ namespace ZG
     public:
         using index_type = uint16_t;
 
+        IndexBuffer();
+
         IndexBuffer(int count);
 
         IndexBuffer(const Array<index_type>& indices);

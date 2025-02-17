@@ -20,7 +20,7 @@ struct VertexBuffer_impl::Impl
 
         const D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(sizeInBytes);
 
-        // アップロード
+        // リソース作成
         AssertWin32{"failed to create buffer"sv}
             | device->CreateCommittedResource(
                 &heapProperties,
@@ -65,11 +65,13 @@ namespace ZG
 
     void VertexBuffer_impl::upload(const void* data)
     {
+        if (not p_impl) return;
         p_impl->Upload(data);
     }
 
     void VertexBuffer_impl::commandSet() const
     {
+        if (not p_impl) return;
         p_impl->CommandSet();
     }
 }

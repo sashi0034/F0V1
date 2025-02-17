@@ -61,11 +61,14 @@ void Main()
         10.0f
     );
 
+    const PixelShader modelPS{ShaderParams{.filename = L"asset/model_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader modelVS{ShaderParams{.filename = L"asset/model_vertex.hlsl", .entryPoint = "VS"}};
+
     const Model model{
         ModelParams{
             .filename = "asset/robot_head.obj",
-            .pixelShader = pixelShader,
-            .vertexShader = vertexShader,
+            .pixelShader = modelPS,
+            .vertexShader = modelVS,
         }
     };
 
@@ -78,14 +81,16 @@ void Main()
         worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
         const Transformer3D t3d{worldMat};
 
-        count++;
-        if (count % 120 < 60)
-        {
-            pngTexture.draw();
-        }
-        else
-        {
-            noiseTexture.draw();
-        }
+        model.draw();
+
+        // count++;
+        // if (count % 120 < 60)
+        // {
+        //     pngTexture.draw();
+        // }
+        // else
+        // {
+        //     noiseTexture.draw();
+        // }
     }
 }
