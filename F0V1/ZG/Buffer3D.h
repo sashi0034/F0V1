@@ -19,6 +19,8 @@ namespace ZG
 
     struct Buffer3D_impl;
 
+    // obsolete
+    // TODO: remove
     class Buffer3D
     {
     public:

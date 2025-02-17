@@ -141,8 +141,10 @@
   <ItemGroup>
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
+    <ClCompile Include="ZG\IndexBuffer.cpp" />
     <ClCompile Include="ZG\Model.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
+    <ClCompile Include="ZG\VertexBuffer.cpp" />
     <Content Include="asset\basic_pixel.hlsl" />
     <Content Include="asset\basic_vertex.hlsl" />
     <ClCompile Include="main.cpp" />
@@ -192,6 +194,7 @@
     <ClInclude Include="ZG\EngineTimer.h" />
     <ClInclude Include="ZG\Graphics3D.h" />
     <ClInclude Include="ZG\Image.h" />
+    <ClInclude Include="ZG\IndexBuffer.h" />
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\Mat4x4.h" />
     <ClInclude Include="ZG\Math.h" />
@@ -205,6 +208,7 @@
     <ClInclude Include="ZG\Value2D.h" />
     <ClInclude Include="ZG\Uncopyable.h" />
     <ClInclude Include="ZG\Value3D.h" />
+    <ClInclude Include="ZG\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj">

@@ -4,9 +4,11 @@
 #include <d3d12.h>
 
 #include "AssertObject.h"
-#include "Buffer3D.h"
+#include "Graphics3D.h"
+#include "IndexBuffer.h"
 #include "System.h"
 #include "Utils.h"
+#include "VertexBuffer.h"
 #include "detail/EngineCore.h"
 #include "detail/EngineStackState.h"
 #include "detail/PipelineState.h"
@@ -16,19 +18,25 @@ using namespace ZG::detail;
 
 namespace
 {
-    Buffer3D makeVertexesAndIndicis()
+    struct TextureVertex
     {
-        return Buffer3D{
-            Buffer3DParams{
-                .vertexes = {
-                    {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, //左下
-                    {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, //左上
-                    {{1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, //右下
-                    {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, //右上
-                },
-                .indices = {0, 1, 2, 2, 1, 3}
-            }
+        Float3 position;
+        Float2 uv;
+    };
+
+    VertexBuffer<TextureVertex> makeVertexBuffer()
+    {
+        return Array<TextureVertex>{
+            {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, //左下
+            {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, //左上
+            {{1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, //右下
+            {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, //右上
         };
+    }
+
+    IndexBuffer makeIndexBuffer()
+    {
+        return Array<uint16_t>{0, 1, 2, 2, 1, 3};
     }
 
     PipelineState makePipelineState(const TextureParams& options)
@@ -248,7 +256,8 @@ struct Texture::Impl
 
     PipelineState m_pipelineState;
 
-    Buffer3D m_buffer3D = makeVertexesAndIndicis();
+    VertexBuffer<TextureVertex> m_vertexBuffer{makeVertexBuffer()};
+    IndexBuffer m_indexBuffer{makeIndexBuffer()};
 
     ComPtr<ID3D12Resource> m_constantBuffer{};
 
@@ -332,7 +341,7 @@ struct Texture::Impl
         commandList->SetGraphicsRootDescriptorTable(
             0, m_blob.p_impl->m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-        m_buffer3D.Draw();
+        Graphics3D::DrawTriangles(m_vertexBuffer, m_indexBuffer);
     }
 };
 

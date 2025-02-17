@@ -66,6 +66,8 @@ namespace ZG
 
     using Vec2 = Vector2D<double>;
 
+    using Float2 = Vector2D<float>;
+
     /// @brief Integral 2D vector
     template <class Integer>
     struct Integer2D : Value2D<Integer>
