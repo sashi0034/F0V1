@@ -151,6 +151,7 @@ namespace
                     {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT},
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
                 },
+                .hasDepth = true,
                 .srvCount = 1,
                 .cbvCount = 1,
                 .uavCount = 1 // FIXME: 0 にしたい?

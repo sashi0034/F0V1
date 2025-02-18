@@ -42,7 +42,32 @@ namespace
 
     struct Impl
     {
-    public:
+        Point m_sceneSize{defaultSceneSize};
+        ColorF32 m_clearColor{defaultClearColor};
+
+        ID3D12Device* m_device{};
+        IDXGIFactory6* m_dxgiFactory{};
+        IDXGIAdapter* m_adapter{};
+        D3D_FEATURE_LEVEL m_featureLevel{};
+
+        // FIXME: グローバルオブジェクトは ComPtr にしなくていいかも
+
+        ComPtr<ID3D12CommandAllocator> m_commandAllocator{};
+        ComPtr<ID3D12GraphicsCommandList> m_commandList{};
+        ComPtr<ID3D12CommandQueue> m_commandQueue{};
+        ComPtr<IDXGISwapChain4> m_swapChain{};
+        ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
+
+        ComPtr<ID3D12Resource> m_depthBuffer{};
+        ComPtr<ID3D12DescriptorHeap> m_dsvHeap{};
+
+        ComPtr<ID3D12Fence> m_fence{};
+        UINT64 m_fenceValue{};
+
+        D3D12_RESOURCE_BARRIER m_barrierDesc{};
+
+        std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
+
         void Init()
         {
             EngineWindow.Init();
@@ -174,6 +199,9 @@ namespace
                 handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
             }
 
+            // 深度バッファを生成
+            createDepthBuffer();
+
             // フェンスを生成
             AssertWin32{"failed to create fence"sv}
                 | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
@@ -203,10 +231,12 @@ namespace
             auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
             rtvHandle.ptr += static_cast<ULONG_PTR>(
                 backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-            m_commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+            const auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+            m_commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
             // 画面クリア
             m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
+            m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
             // ビューポートの設定
             Point windowSize = EngineWindow.WindowSize();
@@ -277,28 +307,56 @@ namespace
             EngineWindow.Destroy();
         }
 
-        Point m_sceneSize{defaultSceneSize};
-        ColorF32 m_clearColor{defaultClearColor};
+    private:
+        void createDepthBuffer()
+        {
+            D3D12_RESOURCE_DESC desc{};
+            desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+            desc.Alignment = 0;
+            desc.Width = m_sceneSize.x;
+            desc.Height = m_sceneSize.y;
+            desc.DepthOrArraySize = 1;
+            desc.MipLevels = 1;
+            desc.Format = DXGI_FORMAT_D32_FLOAT;
+            desc.SampleDesc = {1, 0};
+            desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+            desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-        ID3D12Device* m_device{};
-        IDXGIFactory6* m_dxgiFactory{};
-        IDXGIAdapter* m_adapter{};
-        D3D_FEATURE_LEVEL m_featureLevel{};
+            D3D12_HEAP_PROPERTIES heapProperties{};
+            heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+            heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+            heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
-        // FIXME: グローバルオブジェクトは ComPtr にしなくていいかも
+            D3D12_CLEAR_VALUE clearValue{};
+            clearValue.Format = DXGI_FORMAT_D32_FLOAT;
+            clearValue.DepthStencil.Depth = 1.0f; // 深度値 1.0 でクリア
 
-        ComPtr<ID3D12CommandAllocator> m_commandAllocator{};
-        ComPtr<ID3D12GraphicsCommandList> m_commandList{};
-        ComPtr<ID3D12CommandQueue> m_commandQueue{};
-        ComPtr<IDXGISwapChain4> m_swapChain{};
-        ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
+            AssertWin32{"failed to create depth buffer"sv}
+                | m_device->CreateCommittedResource(
+                    &heapProperties,
+                    D3D12_HEAP_FLAG_NONE,
+                    &desc,
+                    D3D12_RESOURCE_STATE_DEPTH_WRITE,
+                    &clearValue,
+                    IID_PPV_ARGS(&m_depthBuffer)
+                );
 
-        ComPtr<ID3D12Fence> m_fence{};
-        UINT64 m_fenceValue{};
+            D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
+            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; // デプスステンシルビュー
+            heapDesc.NumDescriptors = 1;
 
-        D3D12_RESOURCE_BARRIER m_barrierDesc{};
+            AssertWin32{"failed to create descriptor heap"sv}
+                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_dsvHeap));
 
-        std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
+            // デプスステンシルビューの作成
+            D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+            dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+            dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+            m_device->CreateDepthStencilView(
+                m_depthBuffer.Get(), &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
+        }
     } s_engineCore{};
 }
 

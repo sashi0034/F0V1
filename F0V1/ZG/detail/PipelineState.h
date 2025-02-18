@@ -24,6 +24,7 @@ namespace ZG::detail
         PixelShader pixelShader;
         VertexShader vertexShader;
         std::vector<VertexInputElement> vertexInput;
+        bool hasDepth{};
         uint32_t srvCount{};
         uint32_t cbvCount{};
         uint32_t uavCount{};

@@ -142,8 +142,14 @@ struct PipelineState::Impl
         pipelineDesc.RasterizerState.ForcedSampleCount = 0;
         pipelineDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
-        pipelineDesc.DepthStencilState.DepthEnable = false;
-        pipelineDesc.DepthStencilState.StencilEnable = false;
+        if (params.hasDepth)
+        {
+            pipelineDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
+            pipelineDesc.DepthStencilState.DepthEnable = true;
+            pipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; // 書き込み可能
+            pipelineDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS; // デプステスト
+            pipelineDesc.DepthStencilState.StencilEnable = false;
+        }
 
         const auto inputLayout = buildVertexInputLayout(params.vertexInput);
         pipelineDesc.InputLayout.pInputElementDescs = inputLayout.data();
