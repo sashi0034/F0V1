@@ -27,8 +27,10 @@ namespace ZG
 
     void AssertObject::throwError() const
     {
+        const std::string errorWithId =
+            std::string{errorMessage} + " [" + std::to_string(index) + "]";
 #if _DEBUG
-        const auto message = ToUtf16(std::string(errorMessage));
+        const auto message = ToUtf16(errorWithId);
         const auto filename = ToUtf16(location.file_name());
         const std::wstring output =
             message + L"\n" + filename + L":" + std::to_wstring(location.line());
@@ -36,27 +38,25 @@ namespace ZG
         System::ModalError(output);
 #endif
 
-        if (not errorMessage.empty()) throw std::runtime_error(std::string(errorMessage));
+        if (not errorMessage.empty()) throw std::runtime_error(errorWithId);
         else throw std::runtime_error("An error occurred");
     }
 
     AssertWin32 AssertWin32::operator|(HRESULT result) const
     {
-        if (FAILED(result))
-        {
-            throwError();
-        }
+        if (FAILED(result)) throwError();
 
-        return *this;
+        auto next = *this;
+        next.index++;
+        return next;
     }
 
     AssertNotNull AssertNotNull::operator|(const void* ptr) const
     {
-        if (ptr == nullptr)
-        {
-            throwError();
-        }
+        if (ptr == nullptr) throwError();
 
-        return *this;
+        auto next = *this;
+        next.index++;
+        return next;
     }
 }

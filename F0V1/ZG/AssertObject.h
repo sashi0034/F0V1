@@ -10,6 +10,7 @@ namespace ZG
     struct AssertObject
     {
         std::string_view errorMessage;
+        int index{};
 #ifdef _DEBUG
         std::source_location location{};
 
