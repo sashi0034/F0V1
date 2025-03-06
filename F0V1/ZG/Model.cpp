@@ -47,10 +47,26 @@ namespace
         }
     };
 
-    struct ModelData
+    struct ModelMaterial
+    {
+        alignas(16) Float3 ambient; // アンビエント色
+        alignas(16) Float3 diffuse; // 拡散反射色
+        alignas(16) Float3 specular; // 鏡面反射色
+        alignas(16) float shininess; // 光沢
+    };
+
+    struct ShapeData
     {
         Array<ModelVertex> vertexBuffer{};
         Array<uint16_t> indexBuffer{};
+        std::string materialName;
+    };
+
+    struct ModelData
+    {
+        Array<ShapeData> shapes{};
+        Array<std::string> materialNames;
+        Array<ModelMaterial> materials{};
     };
 
     ModelData loadObj(const std::string& filename)
@@ -59,7 +75,8 @@ namespace
         Array<tinyobj::shape_t> shapes{};
         Array<tinyobj::material_t> materials{};
 
-        if (not tinyobj::LoadObj(&attrib, &shapes, &materials, nullptr, nullptr, filename.c_str()))
+        const auto baseDir = std::filesystem::path(filename).parent_path().string();
+        if (not tinyobj::LoadObj(&attrib, &shapes, &materials, nullptr, nullptr, filename.c_str(), baseDir.c_str()))
         {
             // TODO: handle error
             throw std::runtime_error("failed to load obj file");
@@ -88,9 +105,11 @@ namespace
 
         // 面データの取得
         ModelData modelData{};
-        std::unordered_map<IndexKey, unsigned int, IndexKeyHasher> indexMap{};
         for (const auto& shape : shapes)
         {
+            ShapeData shapeData{};
+            std::unordered_map<IndexKey, unsigned int, IndexKeyHasher> indexMap{};
+
             size_t indexOffset = 0;
             for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++)
             {
@@ -118,19 +137,34 @@ namespace
                             vertex.normal = normals[index.normal_index];
                         }
 
-                        const auto newIndex = modelData.vertexBuffer.size();
-                        modelData.vertexBuffer.push_back(vertex);
+                        const auto newIndex = shapeData.vertexBuffer.size();
+                        shapeData.vertexBuffer.push_back(vertex);
                         indexMap[key] = newIndex;
-                        modelData.indexBuffer.push_back(newIndex);
+                        shapeData.indexBuffer.push_back(newIndex);
                     }
                     else
                     {
-                        modelData.indexBuffer.push_back(iter->second);
+                        shapeData.indexBuffer.push_back(iter->second);
                     }
                 }
 
                 indexOffset += fv;
             }
+
+            modelData.shapes.push_back(shapeData);
+        }
+
+        // Material 情報の変換
+        for (const auto& m : materials)
+        {
+            modelData.materialNames.push_back(m.name);
+
+            ModelMaterial modelMat;
+            modelMat.ambient = Float3(m.ambient[0], m.ambient[1], m.ambient[2]);
+            modelMat.diffuse = Float3(m.diffuse[0], m.diffuse[1], m.diffuse[2]);
+            modelMat.specular = Float3(m.specular[0], m.specular[1], m.specular[2]);
+            modelMat.shininess = m.shininess;
+            modelData.materials.push_back(modelMat);
         }
 
         return modelData;
@@ -165,13 +199,18 @@ namespace
         Mat4x4 viewMat;
         Mat4x4 projectionMat;
     };
+
+    struct ShapeBuffer
+    {
+        VertexBuffer<ModelVertex> vertexBuffer;
+        IndexBuffer indexBuffer;
+    };
 }
 
 struct Model::Impl
 {
     ModelData m_modelData{};
-    VertexBuffer<ModelVertex> m_vertexBuffer{};
-    IndexBuffer m_indexBuffer{};
+    Array<ShapeBuffer> m_shapes{};
     PipelineState m_pipelineState;
 
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
@@ -180,11 +219,17 @@ struct Model::Impl
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
-        m_vertexBuffer(m_modelData.vertexBuffer),
-        m_indexBuffer(m_modelData.indexBuffer),
         m_pipelineState(makePipelineState(params))
     {
         createDescriptorHeap();
+
+        for (auto& shape : m_modelData.shapes)
+        {
+            ShapeBuffer shapeBuffer{};
+            shapeBuffer.vertexBuffer = VertexBuffer(shape.vertexBuffer);
+            shapeBuffer.indexBuffer = IndexBuffer{shape.indexBuffer};
+            m_shapes.push_back(shapeBuffer);
+        }
     }
 
     void createDescriptorHeap()
@@ -243,7 +288,11 @@ struct Model::Impl
         commandList->SetGraphicsRootDescriptorTable(
             0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
-        Graphics3D::DrawTriangles(m_vertexBuffer, m_indexBuffer);
+        for (size_t i = 0; i < m_shapes.size(); ++i)
+        {
+            const auto& shape = m_shapes[i];
+            Graphics3D::DrawTriangles(shape.vertexBuffer, shape.indexBuffer);
+        }
     }
 };
 

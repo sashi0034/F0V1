@@ -54,6 +54,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+// other standard libraries
+#include <filesystem>
+
 // external libraries
 #include "DirectXTex.h"
 
