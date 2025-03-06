@@ -4,6 +4,7 @@
 #include "ZG/AssertObject.h"
 #include "EngineCore.h"
 #include "EngineStackState.h"
+#include "ZG/System.h"
 
 using namespace ZG;
 using namespace ZG::detail;
@@ -36,7 +37,7 @@ namespace
         D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
         // ディスクリプタテーブルの設定
-        D3D12_DESCRIPTOR_RANGE descriptorTables[3] = {};
+        D3D12_DESCRIPTOR_RANGE descriptorTables[3] = {}; // FIXME: to 3
         descriptorTables[0].NumDescriptors = cbvCount;
         descriptorTables[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
         descriptorTables[0].BaseShaderRegister = 0;
@@ -47,9 +48,14 @@ namespace
         descriptorTables[1].BaseShaderRegister = 0;
         descriptorTables[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        descriptorTables[2].NumDescriptors = uavCount;
-        descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        descriptorTables[2].BaseShaderRegister = 0;
+        // descriptorTables[2].NumDescriptors = uavCount;
+        // descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+        // descriptorTables[2].BaseShaderRegister = 0;
+        // descriptorTables[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+        descriptorTables[2].NumDescriptors = 1; // FIXME
+        descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+        descriptorTables[2].BaseShaderRegister = 1;
         descriptorTables[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
         D3D12_ROOT_PARAMETER rootParameter = {};
@@ -58,8 +64,16 @@ namespace
         rootParameter.DescriptorTable.NumDescriptorRanges = 2;
         rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-        rootSignatureDesc.NumParameters = 1;
-        rootSignatureDesc.pParameters = &rootParameter;
+        D3D12_ROOT_PARAMETER rootParameter2 = {}; // TODO
+        rootParameter2.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        rootParameter2.DescriptorTable.pDescriptorRanges = &descriptorTables[2];
+        rootParameter2.DescriptorTable.NumDescriptorRanges = 1;
+        rootParameter2.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+        std::array<D3D12_ROOT_PARAMETER, 2> rootParameters = {rootParameter, rootParameter2}; // TODO
+
+        rootSignatureDesc.NumParameters = rootParameters.size();
+        rootSignatureDesc.pParameters = rootParameters.data();
         rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
         // -----------------------------------------------
@@ -81,12 +95,19 @@ namespace
         // -----------------------------------------------
         // ルートシグネチャの作成
         ComPtr<ID3D10Blob> rootSignatureBlob{};
-        AssertWin32{"failed to serialize root signature"sv}
-            | D3D12SerializeRootSignature(
-                &rootSignatureDesc,
-                D3D_ROOT_SIGNATURE_VERSION_1,
-                &rootSignatureBlob,
-                nullptr);
+        ComPtr<ID3DBlob> errorBlob = nullptr;
+        D3D12SerializeRootSignature(
+            &rootSignatureDesc,
+            D3D_ROOT_SIGNATURE_VERSION_1,
+            &rootSignatureBlob,
+            &errorBlob);
+        if (errorBlob)
+        {
+            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer())); // FIXME
+            errorBlob->Release();
+            System::ModalError(L"failed to serialize root signature");
+            throw std::runtime_error("failed to serialize root signature");
+        }
 
         ComPtr<ID3D12RootSignature> rootSignature;
         AssertWin32{"failed to create root signature"sv}

@@ -28,7 +28,7 @@ namespace ZG
     void AssertObject::throwError() const
     {
         const std::string errorWithId =
-            std::string{errorMessage} + " [" + std::to_string(index) + "]";
+            std::string{errorMessage} + " (" + std::to_string(index) + ")";
 #if _DEBUG
         const auto message = ToUtf16(errorWithId);
         const auto filename = ToUtf16(location.file_name());
