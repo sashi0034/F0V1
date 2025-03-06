@@ -59,7 +59,7 @@ namespace
     {
         Array<ModelVertex> vertexBuffer{};
         Array<uint16_t> indexBuffer{};
-        std::string materialName;
+        uint16_t materialIndex{};
     };
 
     struct ModelData
@@ -108,6 +108,8 @@ namespace
         for (const auto& shape : shapes)
         {
             ShapeData shapeData{};
+            shapeData.materialIndex = shape.mesh.material_ids.empty() ? 0 : shape.mesh.material_ids[0];
+
             std::unordered_map<IndexKey, unsigned int, IndexKeyHasher> indexMap{};
 
             size_t indexOffset = 0;
@@ -187,7 +189,7 @@ namespace
                 },
                 .hasDepth = true,
                 .srvCount = 1,
-                .cbvCount = 1,
+                .cbvCount = 2,
                 .uavCount = 1 // FIXME: 0 にしたい?
             }
         };
@@ -214,8 +216,11 @@ struct Model::Impl
     PipelineState m_pipelineState;
 
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
-    ComPtr<ID3D12Resource> m_constantBuffer{};
+    ComPtr<ID3D12Resource> m_cb0{};
     SceneState_b0* m_mappedCB0{};
+
+    ComPtr<ID3D12Resource> m_cb1{};
+    ModelMaterial* m_mappedCB1{};
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
@@ -238,19 +243,35 @@ struct Model::Impl
         using namespace DirectX;
 
         const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        const auto resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(SceneState_b0), 256));
+
+        // CB0
+        const auto resourceDesc0 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(SceneState_b0), 256));
         AssertWin32{"failed to create commited resource"sv}
             | EngineCore.GetDevice()->CreateCommittedResource(
                 &heapProperties,
                 D3D12_HEAP_FLAG_NONE,
-                &resourceDesc,
+                &resourceDesc0,
                 D3D12_RESOURCE_STATE_GENERIC_READ,
                 nullptr,
-                IID_PPV_ARGS(&m_constantBuffer));
+                IID_PPV_ARGS(&m_cb0));
 
         AssertWin32{"failed to map constant buffer"sv}
-            | m_constantBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedCB0));
+            | m_cb0->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedCB0));
         // TODO: Unmap?
+
+        // CB1
+        const auto resourceDesc1 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(ModelMaterial), 256));
+        AssertWin32{"failed to create commited resource"sv}
+            | EngineCore.GetDevice()->CreateCommittedResource(
+                &heapProperties,
+                D3D12_HEAP_FLAG_NONE,
+                &resourceDesc1,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&m_cb1));
+
+        AssertWin32{"failed to map constant buffer"sv}
+            | m_cb1->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedCB1));
 
         // ディスクリプタヒープの作成
         D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
@@ -266,9 +287,15 @@ struct Model::Impl
         auto basicHeapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-        cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
-        cbvDesc.SizeInBytes = static_cast<UINT>(m_constantBuffer->GetDesc().Width);
+        cbvDesc.BufferLocation = m_cb0->GetGPUVirtualAddress();
+        cbvDesc.SizeInBytes = static_cast<UINT>(m_cb0->GetDesc().Width);
+        EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
 
+        basicHeapHandle.ptr +=
+            EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+        cbvDesc.BufferLocation = m_cb1->GetGPUVirtualAddress();
+        cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1->GetDesc().Width);
         EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
     }
 
@@ -291,6 +318,7 @@ struct Model::Impl
         for (size_t i = 0; i < m_shapes.size(); ++i)
         {
             const auto& shape = m_shapes[i];
+            *m_mappedCB1 = m_modelData.materials[m_modelData.shapes[i].materialIndex]; // FIXME: これだとすべてのマテリアルが同じになってしまう
             Graphics3D::DrawTriangles(shape.vertexBuffer, shape.indexBuffer);
         }
     }
