@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "ZG/Array.h"
 #include "ZG/Shader.h"
 
 namespace ZG::detail
@@ -19,15 +20,27 @@ namespace ZG::detail
         }
     };
 
+    struct DescriptorTableElement
+    {
+        uint32_t srvCount{};
+        uint32_t cbvCount{};
+        uint32_t uavCount{};
+
+        DescriptorTableElement(uint32_t srvCount, uint32_t cbvCount, uint32_t uavCount) :
+            srvCount(srvCount),
+            cbvCount(cbvCount),
+            uavCount(uavCount)
+        {
+        }
+    };
+
     struct PipelineStateParams
     {
         PixelShader pixelShader;
         VertexShader vertexShader;
         std::vector<VertexInputElement> vertexInput;
         bool hasDepth{};
-        uint32_t srvCount{};
-        uint32_t cbvCount{};
-        uint32_t uavCount{};
+        Array<DescriptorTableElement> descriptorTable{};
     };
 
     struct PipelineState_impl;

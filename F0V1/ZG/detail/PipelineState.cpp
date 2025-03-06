@@ -5,6 +5,7 @@
 #include "EngineCore.h"
 #include "EngineStackState.h"
 #include "ZG/System.h"
+#include "ZG/Utils.h"
 
 using namespace ZG;
 using namespace ZG::detail;
@@ -32,45 +33,63 @@ namespace
         return result;
     }
 
-    ComPtr<ID3D12RootSignature> createRootSignature(uint32_t cbvCount, uint32_t srvCount, uint32_t uavCount)
+    ComPtr<ID3D12RootSignature> createRootSignature(const Array<DescriptorTableElement>& descriptorTable)
     {
         D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 
         // ディスクリプタテーブルの設定
-        D3D12_DESCRIPTOR_RANGE descriptorTables[3] = {}; // FIXME: to 3
-        descriptorTables[0].NumDescriptors = cbvCount;
-        descriptorTables[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-        descriptorTables[0].BaseShaderRegister = 0;
-        descriptorTables[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+        std::vector<D3D12_ROOT_PARAMETER> rootParameters{};
+        std::vector<std::vector<D3D12_DESCRIPTOR_RANGE>> descriptorRanges{};
+        int srvOffset{};
+        int cbvOffset{};
+        int uavOffset{};
+        descriptorRanges.resize(descriptorTable.size());
+        for (int i = 0; i < descriptorTable.size(); ++i)
+        {
+            if (descriptorTable[i].srvCount > 0)
+            {
+                D3D12_DESCRIPTOR_RANGE d{};
+                d.NumDescriptors = descriptorTable[i].srvCount;
+                d.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                d.BaseShaderRegister = srvOffset;
+                d.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        descriptorTables[1].NumDescriptors = srvCount;
-        descriptorTables[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-        descriptorTables[1].BaseShaderRegister = 0;
-        descriptorTables[1].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+                descriptorRanges[i].push_back(d);
+                srvOffset += descriptorTable[i].srvCount;
+            }
 
-        // descriptorTables[2].NumDescriptors = uavCount;
-        // descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-        // descriptorTables[2].BaseShaderRegister = 0;
-        // descriptorTables[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+            if (descriptorTable[i].cbvCount > 0)
+            {
+                D3D12_DESCRIPTOR_RANGE d{};
+                d.NumDescriptors = descriptorTable[i].cbvCount;
+                d.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+                d.BaseShaderRegister = cbvOffset;
+                d.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        descriptorTables[2].NumDescriptors = 1; // FIXME
-        descriptorTables[2].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-        descriptorTables[2].BaseShaderRegister = 1;
-        descriptorTables[2].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+                descriptorRanges[i].push_back(d);
+                cbvOffset += descriptorTable[i].cbvCount;
+            }
 
-        D3D12_ROOT_PARAMETER rootParameter = {};
-        rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        rootParameter.DescriptorTable.pDescriptorRanges = descriptorTables;
-        rootParameter.DescriptorTable.NumDescriptorRanges = 2;
-        rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+            if (descriptorTable[i].uavCount > 0)
+            {
+                D3D12_DESCRIPTOR_RANGE d{};
+                d.NumDescriptors = descriptorTable[i].uavCount;
+                d.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+                d.BaseShaderRegister = uavOffset;
+                d.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-        D3D12_ROOT_PARAMETER rootParameter2 = {}; // TODO
-        rootParameter2.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-        rootParameter2.DescriptorTable.pDescriptorRanges = &descriptorTables[2];
-        rootParameter2.DescriptorTable.NumDescriptorRanges = 1;
-        rootParameter2.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+                descriptorRanges[i].push_back(d);
+                uavOffset += descriptorTable[i].uavCount;
+            }
 
-        std::array<D3D12_ROOT_PARAMETER, 2> rootParameters = {rootParameter, rootParameter2}; // TODO
+            D3D12_ROOT_PARAMETER rootParameter = {};
+            rootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+            rootParameter.DescriptorTable.pDescriptorRanges = descriptorRanges[i].data();
+            rootParameter.DescriptorTable.NumDescriptorRanges = descriptorRanges[i].size();
+            rootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+            rootParameters.push_back(rootParameter);
+        }
 
         rootSignatureDesc.NumParameters = rootParameters.size();
         rootSignatureDesc.pParameters = rootParameters.data();
@@ -103,9 +122,7 @@ namespace
             &errorBlob);
         if (errorBlob)
         {
-            OutputDebugStringA(static_cast<char*>(errorBlob->GetBufferPointer())); // FIXME
-            errorBlob->Release();
-            System::ModalError(L"failed to serialize root signature");
+            System::ModalError(StringifyBlob(errorBlob.Get()));
             throw std::runtime_error("failed to serialize root signature");
         }
 
@@ -185,7 +202,7 @@ struct PipelineState::Impl
         pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングなし
         pipelineDesc.SampleDesc.Quality = 0; // クオリティ最低
 
-        m_rootSignature = createRootSignature(params.cbvCount, params.srvCount, params.uavCount);
+        m_rootSignature = createRootSignature(params.descriptorTable);
 
         pipelineDesc.pRootSignature = m_rootSignature.Get();
 

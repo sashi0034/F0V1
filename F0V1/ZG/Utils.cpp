@@ -21,4 +21,9 @@ namespace ZG
 
         return wstr;
     }
+
+    std::wstring StringifyBlob(ID3DBlob* blob)
+    {
+        return ToUtf16(std::string{static_cast<char*>(blob->GetBufferPointer()), blob->GetBufferSize()});
+    }
 }

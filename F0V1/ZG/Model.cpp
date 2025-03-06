@@ -188,9 +188,7 @@ namespace
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
                 },
                 .hasDepth = true,
-                .srvCount = 1,
-                .cbvCount = 1,
-                .uavCount = 1 // FIXME: 0 にしたい?
+                .descriptorTable = {{0, 1, 0}, {0, 2, 0}}
             }
         };
     }
@@ -287,7 +285,6 @@ struct Model::Impl
         {
             heapHandle.ptr += incrementSize;
 
-            const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
             const auto resourceDesc1 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(ModelMaterial), 256));
             AssertWin32{"failed to create commited resource"sv}
                 | EngineCore.GetDevice()->CreateCommittedResource(
@@ -308,7 +305,6 @@ struct Model::Impl
             m_cb1List[i]->Unmap(0, nullptr);
 
             // CBV 作成
-            D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
             cbvDesc.BufferLocation = m_cb1List[i]->GetGPUVirtualAddress();
             cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1List[i]->GetDesc().Width);
             EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
