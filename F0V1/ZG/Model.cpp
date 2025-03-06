@@ -215,11 +215,10 @@ struct Model::Impl
     Array<Array<ShapeBuffer>> m_shapes{};
     PipelineState m_pipelineState;
 
-    ComPtr<ID3D12DescriptorHeap> m_cameraDescriptorHeap{};
+    ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
     ComPtr<ID3D12Resource> m_cb0{};
     SceneState_b0* m_mappedCB0{};
 
-    ComPtr<ID3D12DescriptorHeap> m_materialDescriptorHeap{};
     Array<ComPtr<ID3D12Resource>> m_cb1List{};
 
     Impl(const ModelParams& params) :
@@ -235,12 +234,10 @@ struct Model::Impl
             m_shapes[shape.materialIndex].push_back(shapeBuffer);
         }
 
-        createCameraDescriptorHeap();
-
-        createMaterialDescriptorHeal();
+        createDescriptorHeap();
     }
 
-    void createCameraDescriptorHeap()
+    void createDescriptorHeap()
     {
         // 定数バッファ作成
         using namespace DirectX;
@@ -265,40 +262,31 @@ struct Model::Impl
         D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
         descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         descriptorHeapDesc.NodeMask = 0;
-        descriptorHeapDesc.NumDescriptors = 1;
+        descriptorHeapDesc.NumDescriptors = 1 + m_modelData.materials.size();
         descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
         AssertWin32{"failed to create descriptor heap"sv}
             | EngineCore.GetDevice()->CreateDescriptorHeap(
-                &descriptorHeapDesc, IID_PPV_ARGS(&m_cameraDescriptorHeap));
+                &descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
 
         // CBV 作成
-        auto heapHandle = m_cameraDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        auto heapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+        const auto incrementSize =
+            EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+        // CB0 View
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
         cbvDesc.BufferLocation = m_cb0->GetGPUVirtualAddress();
         cbvDesc.SizeInBytes = static_cast<UINT>(m_cb0->GetDesc().Width);
         EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
-    }
 
-    void createMaterialDescriptorHeal()
-    {
-        // ディスクリプタヒープの作成
-        D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
-        descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        descriptorHeapDesc.NodeMask = 0;
-        descriptorHeapDesc.NumDescriptors = 1 * m_modelData.materials.size();
-        descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        AssertWin32{"failed to create descriptor heap"sv}
-            | EngineCore.GetDevice()->CreateDescriptorHeap(
-                &descriptorHeapDesc, IID_PPV_ARGS(&m_materialDescriptorHeap));
+        // -----------------------------------------------
 
-        auto heapHandle = m_materialDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-        const auto incrementSize =
-            EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
+        // CB1 View
         m_cb1List.resize(m_modelData.materials.size());
         for (int i = 0; i < m_modelData.materials.size(); i++)
         {
+            heapHandle.ptr += incrementSize;
+
             const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
             const auto resourceDesc1 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(ModelMaterial), 256));
             AssertWin32{"failed to create commited resource"sv}
@@ -324,8 +312,6 @@ struct Model::Impl
             cbvDesc.BufferLocation = m_cb1List[i]->GetGPUVirtualAddress();
             cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1List[i]->GetDesc().Width);
             EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
-
-            heapHandle.ptr += incrementSize;
         }
     }
 
@@ -343,26 +329,25 @@ struct Model::Impl
 
         // カメラ行列設定
         commandList->SetDescriptorHeaps(
-            1, m_cameraDescriptorHeap.GetAddressOf());
+            1, m_descriptorHeap.GetAddressOf());
         commandList->SetGraphicsRootDescriptorTable(
-            0, m_cameraDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+            0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
         // マテリアル設定
-        commandList->SetDescriptorHeaps(1, m_materialDescriptorHeap.GetAddressOf());
-        auto materialHandle = m_materialDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+        auto materialHandle = m_descriptorHeap->GetGPUDescriptorHandleForHeapStart();
         const auto materialIncrementSize =
             EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         for (size_t materialId = 0; materialId < m_shapes.size(); ++materialId)
         {
+            materialHandle.ptr += materialIncrementSize;
+
             commandList->SetGraphicsRootDescriptorTable(1, materialHandle);
 
             for (auto& shape : m_shapes[materialId])
             {
                 Graphics3D::DrawTriangles(shape.vertexBuffer, shape.indexBuffer);
             }
-
-            materialHandle.ptr += materialIncrementSize;
         }
     }
 };
