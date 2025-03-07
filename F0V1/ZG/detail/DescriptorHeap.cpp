@@ -39,10 +39,13 @@ struct DescriptorHeap::Impl
 
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
 
+    Array<CbSrUaSet> m_descriptors{}; // for resource lifetime
+
     Array<Array<size_t>> m_handleOffsets{}; // tableId, materialId
 
     Impl(const DescriptorHeapParams& params)
     {
+        m_descriptors = params.descriptors;
         m_descriptorsCount = countDescriptors(params);
 
         // ディスクリプタヒープの作成

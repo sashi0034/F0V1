@@ -229,8 +229,6 @@ struct Model::Impl
 
     ConstantBuffer<ModelMaterial_b> m_cb1{};
 
-    Array<ShaderResourceTexture> m_diffuseTextureList{};
-
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
         m_pipelineState(makePipelineState(params))
@@ -248,6 +246,7 @@ struct Model::Impl
 
         // テクスチャ読み込み
         std::map<std::string, ShaderResourceTexture> textureMap{};
+        Array<ShaderResourceTexture> diffuseTextureList{};
         for (const auto& texturePath : m_modelData.materialDiffuseTextures)
         {
             if (not textureMap.contains(texturePath))
@@ -256,11 +255,11 @@ struct Model::Impl
                                          ? EnginePresetAsset.GetWhiteTexture()
                                          : ShaderResourceTexture{ToUtf16(texturePath)};
                 textureMap[texturePath] = texture;
-                m_diffuseTextureList.push_back(texture);
+                diffuseTextureList.push_back(texture);
             }
             else
             {
-                m_diffuseTextureList.push_back(textureMap[texturePath]);
+                diffuseTextureList.push_back(textureMap[texturePath]);
             }
         }
 
@@ -273,7 +272,7 @@ struct Model::Impl
         m_descriptorHeap = DescriptorHeap(DescriptorHeapParams{
             .table = descriptorTable,
             .materialCounts = {1, m_modelData.materials.size()},
-            .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {m_diffuseTextureList}, {}}},
+            .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {diffuseTextureList}, {}}},
         });
     }
 
