@@ -10,6 +10,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "EnginePresetAsset.h"
 #include "EngineWindow.h"
 #include "ZG/AssertObject.h"
 #include "ZG/Color.h"
@@ -211,6 +212,9 @@ namespace
 
             // タイマーの初期化
             EngineTimer.Reset();
+
+            // プリセットの初期化
+            EnginePresetAsset.Init();
         }
 
         void BeginFrame()
@@ -304,6 +308,8 @@ namespace
 
         void Destroy()
         {
+            EnginePresetAsset.Destroy();
+
             EngineWindow.Destroy();
         }
 

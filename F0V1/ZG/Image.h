@@ -12,6 +12,8 @@ namespace ZG
 
         Image(const Size& size);
 
+        Image(const Size& size, const ColorU8& fillColor);
+
         ColorU8* operator[](int32_t y);
 
         const ColorU8* operator[](int32_t y) const;

@@ -142,6 +142,7 @@
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
+    <ClCompile Include="ZG\detail\EnginePresetAsset.cpp" />
     <ClCompile Include="ZG\detail\ShaderResourceTexture.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
     <ClCompile Include="ZG\IndexBuffer.cpp" />
@@ -175,6 +176,9 @@
     <ClCompile Include="ZG\Transformer3D.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
     <ClCompile Include="ZG\Value2D.cpp" />
+    <Content Include="asset\cinnamon.mtl" />
+    <Content Include="asset\cinnamon.obj" />
+    <Content Include="asset\cinnamon_face.png" />
     <Content Include="asset\fairy_1024x1024.png" />
     <Content Include="asset\mii.png" />
     <Content Include="asset\model_pixel.hlsl" />
@@ -197,6 +201,7 @@
     <ClInclude Include="ZG\detail\DescriptorTable.h" />
     <ClInclude Include="ZG\detail\EngineCore.h" />
     <ClInclude Include="ZG\detail\EngineEntryPoint.h" />
+    <ClInclude Include="ZG\detail\EnginePresetAsset.h" />
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
     <ClInclude Include="ZG\detail\PipelineState.h" />

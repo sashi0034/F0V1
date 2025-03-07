@@ -13,6 +13,7 @@
 #include "VertexBuffer.h"
 #include "detail/DescriptorHeap.h"
 #include "detail/EngineCore.h"
+#include "detail/EnginePresetAsset.h"
 #include "detail/EngineStackState.h"
 #include "detail/PipelineState.h"
 
@@ -67,7 +68,8 @@ namespace
     struct ModelData
     {
         Array<ShapeData> shapes{};
-        Array<std::string> materialNames;
+        Array<std::string> materialNames{};
+        Array<std::string> materialDiffuseTextures{};
         Array<ModelMaterial_b> materials{};
     };
 
@@ -163,6 +165,10 @@ namespace
         {
             modelData.materialNames.push_back(m.name);
 
+            modelData.materialDiffuseTextures.push_back(m.diffuse_texname.empty()
+                                                            ? ""
+                                                            : baseDir + "/" + m.diffuse_texname);
+
             ModelMaterial_b modelMat;
             modelMat.ambient = Float3(m.ambient[0], m.ambient[1], m.ambient[2]);
             modelMat.diffuse = Float3(m.diffuse[0], m.diffuse[1], m.diffuse[2]);
@@ -177,7 +183,7 @@ namespace
     using namespace ZG;
     using namespace ZG::detail;
 
-    const DescriptorTable descriptorTable = {{1, 0, 0}, {1, 0, 0}};
+    const DescriptorTable descriptorTable = {{1, 0, 0}, {1, 1, 0}};
 
     PipelineState makePipelineState(const ModelParams& params)
     {
@@ -217,11 +223,13 @@ struct Model::Impl
     Array<Array<ShapeBuffer>> m_shapes{};
     PipelineState m_pipelineState;
 
-    DescriptorHeap m_descriptrHeap{};
+    DescriptorHeap m_descriptorHeap{};
 
     ConstantBuffer<SceneState_b0> m_cb0{};
 
     ConstantBuffer<ModelMaterial_b> m_cb1{};
+
+    Array<ShaderResourceTexture> m_diffuseTextureList{};
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
@@ -237,14 +245,35 @@ struct Model::Impl
         }
 
         // -----------------------------------------------
+
+        // テクスチャ読み込み
+        std::map<std::string, ShaderResourceTexture> textureMap{};
+        for (const auto& texturePath : m_modelData.materialDiffuseTextures)
+        {
+            if (not textureMap.contains(texturePath))
+            {
+                const auto texture = texturePath.empty()
+                                         ? EnginePresetAsset.GetWhiteTexture()
+                                         : ShaderResourceTexture{ToUtf16(texturePath)};
+                textureMap[texturePath] = texture;
+                m_diffuseTextureList.push_back(texture);
+            }
+            else
+            {
+                m_diffuseTextureList.push_back(textureMap[texturePath]);
+            }
+        }
+
+        // -----------------------------------------------
+
         m_cb0 = ConstantBuffer<SceneState_b0>{1};
 
         m_cb1 = ConstantBuffer<ModelMaterial_b>{m_modelData.materials};
 
-        m_descriptrHeap = DescriptorHeap(DescriptorHeapParams{
+        m_descriptorHeap = DescriptorHeap(DescriptorHeapParams{
             .table = descriptorTable,
             .materialCounts = {1, m_modelData.materials.size()},
-            .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {}, {}}},
+            .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {m_diffuseTextureList}, {}}},
         });
     }
 
@@ -259,13 +288,13 @@ struct Model::Impl
         m_pipelineState.CommandSet();
 
         // カメラ行列設定
-        m_descriptrHeap.CommandSet();
-        m_descriptrHeap.CommandSetTable(0);
+        m_descriptorHeap.CommandSet();
+        m_descriptorHeap.CommandSetTable(0);
 
         // マテリアル設定
         for (size_t materialId = 0; materialId < m_shapes.size(); ++materialId)
         {
-            m_descriptrHeap.CommandSetTable(1, materialId);
+            m_descriptorHeap.CommandSetTable(1, materialId);
 
             for (auto& shape : m_shapes[materialId])
             {

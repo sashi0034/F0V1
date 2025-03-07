@@ -25,7 +25,7 @@ void Main()
     const PixelShader pixelShader{ShaderParams{.filename = L"asset/basic_pixel.hlsl", .entryPoint = "PS"}};
     const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
 
-    Image image{Size{256, 256}};
+    Image image{Size{16, 16}};
     for (int x = 0; x < image.size().x; ++x)
     {
         for (int y = 0; y < image.size().y; ++y)
@@ -62,7 +62,7 @@ void Main()
 
     const Model model{
         ModelParams{
-            .filename = "asset/robot_head.obj",
+            .filename = "asset/cinnamon.obj", // "asset/robot_head.obj",
             .pixelShader = modelPS,
             .vertexShader = modelVS,
         }

@@ -16,6 +16,8 @@ namespace ZG::detail
 
         ShaderResourceTexture(const Image& image);
 
+        bool isEmpty() const;
+
         ID3D12Resource* getResource() const;
 
         DXGI_FORMAT getFormat() const;

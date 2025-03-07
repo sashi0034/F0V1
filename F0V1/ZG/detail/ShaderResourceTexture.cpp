@@ -206,6 +206,11 @@ namespace ZG::detail
     {
     }
 
+    bool ShaderResourceTexture::isEmpty() const
+    {
+        return p_impl == nullptr;
+    }
+
     ID3D12Resource* ShaderResourceTexture::getResource() const
     {
         return p_impl ? p_impl->m_textureBuffer.Get() : nullptr;

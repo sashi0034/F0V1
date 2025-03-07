@@ -8,6 +8,15 @@ namespace ZG
         m_data.resize(size.x * size.y);
     }
 
+    Image::Image(const Size& size, const ColorU8& fillColor) : m_size(size)
+    {
+        m_data.resize(size.x * size.y, fillColor);
+        for (auto& pixel : m_data)
+        {
+            pixel = fillColor;
+        }
+    }
+
     ColorU8* Image::operator[](int32_t y)
     {
         return &m_data[y * m_size.x];
