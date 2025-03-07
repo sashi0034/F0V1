@@ -3,6 +3,7 @@
 
 #include "Array.h"
 #include "AssertObject.h"
+#include "ConstantBuffer.h"
 #include "Graphics3D.h"
 #include "IndexBuffer.h"
 #include "Mat4x4.h"
@@ -214,10 +215,9 @@ struct Model::Impl
     PipelineState m_pipelineState;
 
     ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
-    ComPtr<ID3D12Resource> m_cb0{};
-    SceneState_b0* m_mappedCB0{};
+    ConstantBuffer<SceneState_b0> m_cb0{};
 
-    ComPtr<ID3D12Resource> m_cb1{};
+    ConstantBuffer<ModelMaterial> m_cb1{};
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
@@ -241,20 +241,7 @@ struct Model::Impl
         using namespace DirectX;
 
         // CB0
-        const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
-        const auto resourceDesc0 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(SceneState_b0), 256));
-        AssertWin32{"failed to create commited resource"sv}
-            | EngineCore.GetDevice()->CreateCommittedResource(
-                &heapProperties,
-                D3D12_HEAP_FLAG_NONE,
-                &resourceDesc0,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                IID_PPV_ARGS(&m_cb0));
-
-        AssertWin32{"failed to map constant buffer"sv}
-            | m_cb0->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedCB0));
-        // TODO: Unmap?
+        m_cb0 = ConstantBuffer<SceneState_b0>{1};
 
         // ディスクリプタヒープの作成
         D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
@@ -273,37 +260,12 @@ struct Model::Impl
 
         // CB0 View
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-        cbvDesc.BufferLocation = m_cb0->GetGPUVirtualAddress();
-        cbvDesc.SizeInBytes = static_cast<UINT>(m_cb0->GetDesc().Width);
+        cbvDesc.BufferLocation = m_cb0.bufferLocation();
+        cbvDesc.SizeInBytes = static_cast<UINT>(m_cb0.alignedSize());
         EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
 
         // -----------------------------------------------
-        constexpr auto materialBufferSize = AlignedSize(sizeof(ModelMaterial), 256);
-        const auto resourceDesc1 =
-            CD3DX12_RESOURCE_DESC::Buffer(materialBufferSize * m_modelData.materials.size());
-        AssertWin32{"failed to create commited resource"sv}
-            | EngineCore.GetDevice()->CreateCommittedResource(
-                &heapProperties,
-                D3D12_HEAP_FLAG_NONE,
-                &resourceDesc1,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
-                nullptr,
-                IID_PPV_ARGS(&m_cb1));
-
-        m_cb1->SetName(L"CB1");
-
-        uint8_t* mappedCB1;
-        AssertWin32{"failed to map constant buffer"sv}
-            | m_cb1->Map(0, nullptr, reinterpret_cast<void**>(&mappedCB1));
-
-        // マテリアル情報を転送
-        for (int i = 0; i < m_modelData.materials.size(); i++)
-        {
-            std::memcpy(mappedCB1, &m_modelData.materials[i], sizeof(ModelMaterial));
-            mappedCB1 += materialBufferSize;
-        }
-
-        m_cb1->Unmap(0, nullptr);
+        m_cb1 = ConstantBuffer<ModelMaterial>{m_modelData.materials};
 
         // CB1 View
         for (int i = 0; i < m_modelData.materials.size(); i++)
@@ -311,8 +273,8 @@ struct Model::Impl
             heapHandle.ptr += incrementSize;
 
             // CBV 作成
-            cbvDesc.BufferLocation = m_cb1->GetGPUVirtualAddress() + materialBufferSize * i;
-            cbvDesc.SizeInBytes = static_cast<UINT>(materialBufferSize);
+            cbvDesc.BufferLocation = m_cb1.bufferLocation() + m_cb1.alignedSize() * i;
+            cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1.alignedSize());
             EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
         }
     }
@@ -323,7 +285,7 @@ struct Model::Impl
         sceneState.worldMat = EngineStackState.GetWorldMatrix().mat;
         sceneState.viewMat = EngineStackState.GetViewMatrix().mat;
         sceneState.projectionMat = EngineStackState.GetProjectionMatrix().mat;
-        *m_mappedCB0 = sceneState;
+        m_cb0.upload(sceneState);
 
         m_pipelineState.CommandSet();
 
