@@ -217,7 +217,7 @@ struct Model::Impl
     ComPtr<ID3D12Resource> m_cb0{};
     SceneState_b0* m_mappedCB0{};
 
-    Array<ComPtr<ID3D12Resource>> m_cb1List{};
+    ComPtr<ID3D12Resource> m_cb1{};
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
@@ -278,35 +278,41 @@ struct Model::Impl
         EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
 
         // -----------------------------------------------
+        constexpr auto materialBufferSize = AlignedSize(sizeof(ModelMaterial), 256);
+        const auto resourceDesc1 =
+            CD3DX12_RESOURCE_DESC::Buffer(materialBufferSize * m_modelData.materials.size());
+        AssertWin32{"failed to create commited resource"sv}
+            | EngineCore.GetDevice()->CreateCommittedResource(
+                &heapProperties,
+                D3D12_HEAP_FLAG_NONE,
+                &resourceDesc1,
+                D3D12_RESOURCE_STATE_GENERIC_READ,
+                nullptr,
+                IID_PPV_ARGS(&m_cb1));
+
+        m_cb1->SetName(L"CB1");
+
+        uint8_t* mappedCB1;
+        AssertWin32{"failed to map constant buffer"sv}
+            | m_cb1->Map(0, nullptr, reinterpret_cast<void**>(&mappedCB1));
+
+        // マテリアル情報を転送
+        for (int i = 0; i < m_modelData.materials.size(); i++)
+        {
+            std::memcpy(mappedCB1, &m_modelData.materials[i], sizeof(ModelMaterial));
+            mappedCB1 += materialBufferSize;
+        }
+
+        m_cb1->Unmap(0, nullptr);
 
         // CB1 View
-        m_cb1List.resize(m_modelData.materials.size());
         for (int i = 0; i < m_modelData.materials.size(); i++)
         {
             heapHandle.ptr += incrementSize;
 
-            const auto resourceDesc1 = CD3DX12_RESOURCE_DESC::Buffer(AlignedSize(sizeof(ModelMaterial), 256));
-            AssertWin32{"failed to create commited resource"sv}
-                | EngineCore.GetDevice()->CreateCommittedResource(
-                    &heapProperties,
-                    D3D12_HEAP_FLAG_NONE,
-                    &resourceDesc1,
-                    D3D12_RESOURCE_STATE_GENERIC_READ,
-                    nullptr,
-                    IID_PPV_ARGS(&m_cb1List[i]));
-
-            ModelMaterial* mappedCB1;
-            AssertWin32{"failed to map constant buffer"sv}
-                | m_cb1List[i]->Map(0, nullptr, reinterpret_cast<void**>(&mappedCB1));
-
-            // マテリアル情報を転送
-            *mappedCB1 = m_modelData.materials[i];
-
-            m_cb1List[i]->Unmap(0, nullptr);
-
             // CBV 作成
-            cbvDesc.BufferLocation = m_cb1List[i]->GetGPUVirtualAddress();
-            cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1List[i]->GetDesc().Width);
+            cbvDesc.BufferLocation = m_cb1->GetGPUVirtualAddress() + materialBufferSize * i;
+            cbvDesc.SizeInBytes = static_cast<UINT>(materialBufferSize);
             EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
         }
     }
