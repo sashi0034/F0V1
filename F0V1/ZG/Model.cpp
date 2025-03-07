@@ -49,7 +49,7 @@ namespace
         }
     };
 
-    struct ModelMaterial
+    struct ModelMaterial_b
     {
         alignas(16) Float3 ambient; // アンビエント色
         alignas(16) Float3 diffuse; // 拡散反射色
@@ -68,7 +68,7 @@ namespace
     {
         Array<ShapeData> shapes{};
         Array<std::string> materialNames;
-        Array<ModelMaterial> materials{};
+        Array<ModelMaterial_b> materials{};
     };
 
     ModelData loadObj(const std::string& filename)
@@ -163,7 +163,7 @@ namespace
         {
             modelData.materialNames.push_back(m.name);
 
-            ModelMaterial modelMat;
+            ModelMaterial_b modelMat;
             modelMat.ambient = Float3(m.ambient[0], m.ambient[1], m.ambient[2]);
             modelMat.diffuse = Float3(m.diffuse[0], m.diffuse[1], m.diffuse[2]);
             modelMat.specular = Float3(m.specular[0], m.specular[1], m.specular[2]);
@@ -221,7 +221,7 @@ struct Model::Impl
 
     ConstantBuffer<SceneState_b0> m_cb0{};
 
-    ConstantBuffer<ModelMaterial> m_cb1{};
+    ConstantBuffer<ModelMaterial_b> m_cb1{};
 
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
@@ -239,7 +239,7 @@ struct Model::Impl
         // -----------------------------------------------
         m_cb0 = ConstantBuffer<SceneState_b0>{1};
 
-        m_cb1 = ConstantBuffer<ModelMaterial>{m_modelData.materials};
+        m_cb1 = ConstantBuffer<ModelMaterial_b>{m_modelData.materials};
 
         m_descriptrHeap = DescriptorHeap(DescriptorHeapParams{
             .table = descriptorTable,
