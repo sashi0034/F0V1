@@ -189,7 +189,7 @@ namespace
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
                 },
                 .hasDepth = true,
-                .descriptorTable = {{0, 1, 0}, {0, 2, 0}}
+                .descriptorTable = {{1, 0, 0}, {2, 0, 0}}
             }
         };
     }

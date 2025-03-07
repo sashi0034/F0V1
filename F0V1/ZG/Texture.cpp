@@ -130,8 +130,18 @@ struct Texture::Impl
             | EngineCore.GetDevice()->CreateDescriptorHeap(
                 &descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
 
-        // テクスチャビュー (SRV) 作成
+        // CBV 作成
         auto basicHeapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
+        cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
+        cbvDesc.SizeInBytes = static_cast<UINT>(m_constantBuffer->GetDesc().Width);
+
+        EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
+
+        // テクスチャビュー (SRV) 作成
+        basicHeapHandle.ptr += EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(
+            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
         srvDesc.Format = format;
@@ -141,16 +151,6 @@ struct Texture::Impl
 
         EngineCore.GetDevice()->CreateShaderResourceView(
             m_sr.getResource(), &srvDesc, basicHeapHandle);
-
-        // CBV 作成
-        basicHeapHandle.ptr += EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(
-            D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-        cbvDesc.BufferLocation = m_constantBuffer->GetGPUVirtualAddress();
-        cbvDesc.SizeInBytes = static_cast<UINT>(m_constantBuffer->GetDesc().Width);
-
-        EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, basicHeapHandle);
     }
 
     void Draw() const

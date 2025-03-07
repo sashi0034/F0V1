@@ -40,24 +40,12 @@ namespace
         // ディスクリプタテーブルの設定
         std::vector<D3D12_ROOT_PARAMETER> rootParameters{};
         std::vector<std::vector<D3D12_DESCRIPTOR_RANGE>> descriptorRanges{};
-        int srvOffset{};
         int cbvOffset{};
+        int srvOffset{};
         int uavOffset{};
         descriptorRanges.resize(descriptorTable.size());
         for (int i = 0; i < descriptorTable.size(); ++i)
         {
-            if (descriptorTable[i].srvCount > 0)
-            {
-                D3D12_DESCRIPTOR_RANGE d{};
-                d.NumDescriptors = descriptorTable[i].srvCount;
-                d.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-                d.BaseShaderRegister = srvOffset;
-                d.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
-
-                descriptorRanges[i].push_back(d);
-                srvOffset += descriptorTable[i].srvCount;
-            }
-
             if (descriptorTable[i].cbvCount > 0)
             {
                 D3D12_DESCRIPTOR_RANGE d{};
@@ -68,6 +56,18 @@ namespace
 
                 descriptorRanges[i].push_back(d);
                 cbvOffset += descriptorTable[i].cbvCount;
+            }
+
+            if (descriptorTable[i].srvCount > 0)
+            {
+                D3D12_DESCRIPTOR_RANGE d{};
+                d.NumDescriptors = descriptorTable[i].srvCount;
+                d.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+                d.BaseShaderRegister = srvOffset;
+                d.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+                descriptorRanges[i].push_back(d);
+                srvOffset += descriptorTable[i].srvCount;
             }
 
             if (descriptorTable[i].uavCount > 0)
