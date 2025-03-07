@@ -56,6 +56,8 @@
 
 // other standard libraries
 #include <filesystem>
+#include <optional>
+#include <variant>
 
 // external libraries
 #include "DirectXTex.h"

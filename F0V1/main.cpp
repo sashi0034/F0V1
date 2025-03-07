@@ -38,16 +38,12 @@ void Main()
         }
     }
 
-    const TextureBlob noiseBlob{image};
-
-    const TextureBlob pngBlob{L"asset/mii.png"};
-
     const Texture noiseTexture{
-        TextureParams{.blob = noiseBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
+        TextureParams{.source = image, .pixelShader = pixelShader, .vertexShader = vertexShader}
     };
 
     const Texture pngTexture{
-        TextureParams{.blob = pngBlob, .pixelShader = pixelShader, .vertexShader = vertexShader}
+        TextureParams{.source = L"asset/mii.png", .pixelShader = pixelShader, .vertexShader = vertexShader}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);

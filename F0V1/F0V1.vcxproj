@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
+    <ClCompile Include="ZG\detail\ShaderResourceTexture.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
     <ClCompile Include="ZG\IndexBuffer.cpp" />
     <ClCompile Include="ZG\Model.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
     <ClInclude Include="ZG\detail\PipelineState.h" />
+    <ClInclude Include="ZG\detail\ShaderResourceTexture.h" />
     <ClInclude Include="ZG\EngineTimer.h" />
     <ClInclude Include="ZG\Graphics3D.h" />
     <ClInclude Include="ZG\Image.h" />
@@ -213,6 +215,7 @@
     <ClInclude Include="ZG\Value2D.h" />
     <ClInclude Include="ZG\Uncopyable.h" />
     <ClInclude Include="ZG\Value3D.h" />
+    <ClInclude Include="ZG\Variant.h" />
     <ClInclude Include="ZG\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>

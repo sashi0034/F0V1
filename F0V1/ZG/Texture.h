@@ -1,26 +1,13 @@
 ﻿#pragma once
 #include "Image.h"
 #include "Shader.h"
+#include "Variant.h"
 
 namespace ZG
 {
-    class TextureBlob
-    {
-    public:
-        TextureBlob(const std::wstring& filename);
-
-        TextureBlob(const Image& image);
-
-        friend class Texture;
-
-    private:
-        struct Impl;
-        std::shared_ptr<Impl> p_impl;
-    };
-
     struct TextureParams
     {
-        TextureBlob blob;
+        Variant<std::wstring, Image> source;
         PixelShader pixelShader;
         VertexShader vertexShader;
     };
