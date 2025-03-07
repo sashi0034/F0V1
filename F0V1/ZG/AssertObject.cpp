@@ -59,4 +59,13 @@ namespace ZG
         next.index++;
         return next;
     }
+
+    AssertTrue AssertTrue::operator|(bool condition) const
+    {
+        if (not condition) throwError();
+
+        auto next = *this;
+        next.index++;
+        return next;
+    }
 }

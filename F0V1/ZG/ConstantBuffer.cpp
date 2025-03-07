@@ -89,6 +89,11 @@ namespace ZG
         if (p_impl) p_impl->Upload(static_cast<const uint8_t*>(data), count);
     }
 
+    uint32_t ConstantBuffer_impl::count() const
+    {
+        return p_impl ? p_impl->m_count : 0;
+    }
+
     size_t ConstantBuffer_impl::alignedSize() const
     {
         return p_impl ? p_impl->m_alignedSize : 0;

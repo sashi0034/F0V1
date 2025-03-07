@@ -33,4 +33,9 @@ namespace ZG
     {
         AssertNotNull operator |(const void* ptr) const;
     };
+
+    struct AssertTrue : AssertObject
+    {
+        AssertTrue operator |(bool condition) const;
+    };
 }

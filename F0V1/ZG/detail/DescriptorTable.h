@@ -9,7 +9,7 @@ namespace ZG::detail
         uint32_t srvCount{};
         uint32_t uavCount{};
 
-        DescriptorTableElement(uint32_t cbvCount, uint32_t srvCount, uint32_t uavCount) :
+        constexpr DescriptorTableElement(uint32_t cbvCount, uint32_t srvCount, uint32_t uavCount) :
             cbvCount(cbvCount),
             srvCount(srvCount),
             uavCount(uavCount)

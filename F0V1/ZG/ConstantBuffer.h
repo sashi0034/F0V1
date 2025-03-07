@@ -12,6 +12,8 @@ namespace ZG
 
         void upload(const void* data, uint32_t count) const;
 
+        uint32_t count() const;
+
         size_t alignedSize() const;
 
         uint64_t bufferLocation() const;

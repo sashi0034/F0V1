@@ -11,6 +11,7 @@
 #include "Value2D.h"
 #include "Value3D.h"
 #include "VertexBuffer.h"
+#include "detail/DescriptorHeap.h"
 #include "detail/EngineCore.h"
 #include "detail/EngineStackState.h"
 #include "detail/PipelineState.h"
@@ -176,6 +177,8 @@ namespace
     using namespace ZG;
     using namespace ZG::detail;
 
+    const DescriptorTable descriptorTable = {{1, 0, 0}, {1, 0, 0}};
+
     PipelineState makePipelineState(const ModelParams& params)
     {
         // TODO: キャッシュする?
@@ -189,7 +192,7 @@ namespace
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
                 },
                 .hasDepth = true,
-                .descriptorTable = {{1, 0, 0}, {2, 0, 0}}
+                .descriptorTable = descriptorTable,
             }
         };
     }
@@ -214,7 +217,8 @@ struct Model::Impl
     Array<Array<ShapeBuffer>> m_shapes{};
     PipelineState m_pipelineState;
 
-    ComPtr<ID3D12DescriptorHeap> m_descriptorHeap{};
+    DescriptorHeap m_descriptrHeap{};
+
     ConstantBuffer<SceneState_b0> m_cb0{};
 
     ConstantBuffer<ModelMaterial> m_cb1{};
@@ -232,51 +236,16 @@ struct Model::Impl
             m_shapes[shape.materialIndex].push_back(shapeBuffer);
         }
 
-        createDescriptorHeap();
-    }
-
-    void createDescriptorHeap()
-    {
-        // 定数バッファ作成
-        using namespace DirectX;
-
-        // CB0
+        // -----------------------------------------------
         m_cb0 = ConstantBuffer<SceneState_b0>{1};
 
-        // ディスクリプタヒープの作成
-        D3D12_DESCRIPTOR_HEAP_DESC descriptorHeapDesc = {};
-        descriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        descriptorHeapDesc.NodeMask = 0;
-        descriptorHeapDesc.NumDescriptors = 1 + m_modelData.materials.size();
-        descriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        AssertWin32{"failed to create descriptor heap"sv}
-            | EngineCore.GetDevice()->CreateDescriptorHeap(
-                &descriptorHeapDesc, IID_PPV_ARGS(&m_descriptorHeap));
-
-        // CBV 作成
-        auto heapHandle = m_descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-        const auto incrementSize =
-            EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-        // CB0 View
-        D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
-        cbvDesc.BufferLocation = m_cb0.bufferLocation();
-        cbvDesc.SizeInBytes = static_cast<UINT>(m_cb0.alignedSize());
-        EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
-
-        // -----------------------------------------------
         m_cb1 = ConstantBuffer<ModelMaterial>{m_modelData.materials};
 
-        // CB1 View
-        for (int i = 0; i < m_modelData.materials.size(); i++)
-        {
-            heapHandle.ptr += incrementSize;
-
-            // CBV 作成
-            cbvDesc.BufferLocation = m_cb1.bufferLocation() + m_cb1.alignedSize() * i;
-            cbvDesc.SizeInBytes = static_cast<UINT>(m_cb1.alignedSize());
-            EngineCore.GetDevice()->CreateConstantBufferView(&cbvDesc, heapHandle);
-        }
+        m_descriptrHeap = DescriptorHeap(DescriptorHeapParams{
+            .table = descriptorTable,
+            .materialCounts = {1, m_modelData.materials.size()},
+            .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {}, {}}},
+        });
     }
 
     void Draw() const
@@ -289,24 +258,14 @@ struct Model::Impl
 
         m_pipelineState.CommandSet();
 
-        const auto commandList = EngineCore.GetCommandList();
-
         // カメラ行列設定
-        commandList->SetDescriptorHeaps(
-            1, m_descriptorHeap.GetAddressOf());
-        commandList->SetGraphicsRootDescriptorTable(
-            0, m_descriptorHeap->GetGPUDescriptorHandleForHeapStart());
+        m_descriptrHeap.CommandSet();
+        m_descriptrHeap.CommandSetTable(0);
 
         // マテリアル設定
-        auto materialHandle = m_descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-        const auto materialIncrementSize =
-            EngineCore.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
         for (size_t materialId = 0; materialId < m_shapes.size(); ++materialId)
         {
-            materialHandle.ptr += materialIncrementSize;
-
-            commandList->SetGraphicsRootDescriptorTable(1, materialHandle);
+            m_descriptrHeap.CommandSetTable(1, materialId);
 
             for (auto& shape : m_shapes[materialId])
             {

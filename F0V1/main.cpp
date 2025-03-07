@@ -77,16 +77,16 @@ void Main()
         worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
         const Transformer3D t3d{worldMat};
 
-        model.draw();
+        // model.draw();
 
-        // count++;
-        // if (count % 120 < 60)
-        // {
-        //     pngTexture.draw();
-        // }
-        // else
-        // {
-        //     noiseTexture.draw();
-        // }
+        count++;
+        if (count % 120 < 60)
+        {
+            pngTexture.draw();
+        }
+        else
+        {
+            noiseTexture.draw();
+        }
     }
 }
