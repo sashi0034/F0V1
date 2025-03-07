@@ -97,7 +97,7 @@ namespace
         Array<Float2> texCoords{};
         for (size_t i = 0; i < attrib.texcoords.size(); i += 2)
         {
-            texCoords.emplace_back(attrib.texcoords[i], attrib.texcoords[i + 1]);
+            texCoords.emplace_back(attrib.texcoords[i], 1.0f - attrib.texcoords[i + 1]);
         }
 
         // 法線の取得
