@@ -5,6 +5,7 @@
 #include "EngineCore.h"
 #include "EnginePresetAsset.h"
 #include "EngineStackState.h"
+#include "ZG/Logger.h"
 #include "ZG/System.h"
 #include "ZG/Utils.h"
 
@@ -147,6 +148,21 @@ struct PipelineState::Impl
 
     Impl(const PipelineStateParams& params)
     {
+        if (SUCCEEDED(createPipelineState(params))) return;
+
+        LogWarning.Writeln(L"failed to create pipeline state with user shaders, using stub shaders instead");
+
+        auto params2 = params;
+        params2.pixelShader = EnginePresetAsset.GetStubPS();
+        params2.vertexShader = EnginePresetAsset.GetStubVS();
+
+        if (SUCCEEDED(createPipelineState(params2))) return;
+
+        throw std::runtime_error("failed to create pipeline state");
+    }
+
+    HRESULT createPipelineState(const PipelineStateParams& params)
+    {
         const auto device = EngineCore.GetDevice();
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
 
@@ -209,8 +225,7 @@ struct PipelineState::Impl
 
         pipelineDesc.pRootSignature = m_rootSignature.Get();
 
-        AssertWin32{"failed to create pipeline state"sv}
-            | device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&m_pipelineState));
+        return device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&m_pipelineState));
     }
 
     void CommandSet() const

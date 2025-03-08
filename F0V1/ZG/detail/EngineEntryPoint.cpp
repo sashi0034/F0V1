@@ -19,11 +19,11 @@ void Main();
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    Logger.HR().Writeln(L"application start");
+    LogInfo.HR().Writeln(L"application start");
 
     EngineCore.Init();
 
-    Logger.HR().Writeln(L"message loop start");
+    LogInfo.HR().Writeln(L"message loop start");
 
     // -----------------------------------------------
 
@@ -33,16 +33,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
     catch (const std::exception& e)
     {
-        Logger.HR().Writeln(L"exception occurred: " + ToUtf16(e.what()));
+        LogInfo.HR().Writeln(L"exception occurred: " + ToUtf16(e.what()));
     }
 
     // -----------------------------------------------
 
-    Logger.HR().Writeln(L"message loop end");
+    LogInfo.HR().Writeln(L"message loop end");
 
     EngineCore.Destroy();
 
-    Logger.HR().Writeln(L"application end");
+    LogInfo.HR().Writeln(L"application end");
 
     return 0;
 }

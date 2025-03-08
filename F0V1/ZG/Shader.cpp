@@ -54,7 +54,7 @@ namespace
                 message += ToUtf16(result->GetErrorMessage());
             }
 
-            System::ModalError(message);
+            LogError.Writeln(message);
             return nullptr;
         }
 
