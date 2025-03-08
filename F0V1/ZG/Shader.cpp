@@ -55,6 +55,7 @@ namespace
             }
 
             System::ModalError(message);
+            return nullptr;
         }
 
         return result;
@@ -68,9 +69,14 @@ namespace ZG
         p_impl = createShader(params, "ps_5_0");
     }
 
-    const ComPtr<ID3D10Blob>& PixelShader::GetBlob() const
+    bool PixelShader::isEmpty() const
     {
-        return p_impl->shaderBlob;
+        return p_impl == nullptr;
+    }
+
+    ID3D10Blob* PixelShader::GetBlob() const
+    {
+        return p_impl ? p_impl->shaderBlob.Get() : nullptr;
     }
 
     VertexShader::VertexShader(const ShaderParams& params)
@@ -78,8 +84,13 @@ namespace ZG
         p_impl = createShader(params, "vs_5_0");
     }
 
-    const ComPtr<ID3D10Blob>& VertexShader::GetBlob() const
+    bool VertexShader::isEmpty() const
     {
-        return p_impl->shaderBlob;
+        return p_impl == nullptr;
+    }
+
+    ID3D10Blob* VertexShader::GetBlob() const
+    {
+        return p_impl ? p_impl->shaderBlob.Get() : nullptr;
     }
 }

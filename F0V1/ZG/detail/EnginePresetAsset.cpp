@@ -3,6 +3,7 @@
 
 #include "ShaderResourceTexture.h"
 #include "ZG/Image.h"
+#include "ZG/Shader.h"
 #include "ZG/Value2D.h"
 
 using namespace ZG;
@@ -15,10 +16,18 @@ namespace
     {
         ShaderResourceTexture m_whiteTexture;
 
+        VertexShader m_stubVS;
+
+        PixelShader m_stubPS;
+
         Impl()
         {
             const Image whiteImage{Size{16, 16}, ColorU8{255}};
             m_whiteTexture = ShaderResourceTexture(whiteImage);
+
+            m_stubVS = VertexShader{ShaderParams{.filename = L"engine/stub.hlsl", .entryPoint = "VS"}};
+
+            m_stubPS = PixelShader{ShaderParams{.filename = L"engine/stub.hlsl", .entryPoint = "PS"}};
         }
     };
 
@@ -40,5 +49,15 @@ namespace ZG::detail
     ShaderResourceTexture EnginePresetAsset_impl::GetWhiteTexture() const
     {
         return s_enginePresetAsset->m_whiteTexture;
+    }
+
+    VertexShader EnginePresetAsset_impl::GetStubVS() const
+    {
+        return s_enginePresetAsset->m_stubVS;
+    }
+
+    PixelShader EnginePresetAsset_impl::GetStubPS() const
+    {
+        return s_enginePresetAsset->m_stubPS;
     }
 }

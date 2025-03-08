@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ShaderResourceTexture.h"
+#include "ZG/Shader.h"
 
 namespace ZG::detail
 {
@@ -11,6 +12,10 @@ namespace ZG::detail
         void Destroy() const;
 
         ShaderResourceTexture GetWhiteTexture() const;
+
+        VertexShader GetStubVS() const;
+
+        PixelShader GetStubPS() const;
     };
 
     inline constexpr auto EnginePresetAsset = EnginePresetAsset_impl{};

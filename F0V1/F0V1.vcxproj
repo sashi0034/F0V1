@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Content Include="engine\stub.hlsl" />
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
@@ -230,9 +231,6 @@
     <ProjectReference Include="..\external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj">
       <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="engine\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

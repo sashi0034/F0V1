@@ -3,6 +3,7 @@
 
 #include "ZG/AssertObject.h"
 #include "EngineCore.h"
+#include "EnginePresetAsset.h"
 #include "EngineStackState.h"
 #include "ZG/System.h"
 #include "ZG/Utils.h"
@@ -149,11 +150,13 @@ struct PipelineState::Impl
         const auto device = EngineCore.GetDevice();
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
 
-        pipelineDesc.VS.pShaderBytecode = params.vertexShader.GetBlob()->GetBufferPointer();
-        pipelineDesc.VS.BytecodeLength = params.vertexShader.GetBlob()->GetBufferSize();
+        const auto vs = params.vertexShader.isEmpty() ? EnginePresetAsset.GetStubVS() : params.vertexShader;
+        pipelineDesc.VS.pShaderBytecode = vs.GetBlob()->GetBufferPointer();
+        pipelineDesc.VS.BytecodeLength = vs.GetBlob()->GetBufferSize();
 
-        pipelineDesc.PS.pShaderBytecode = params.pixelShader.GetBlob()->GetBufferPointer();
-        pipelineDesc.PS.BytecodeLength = params.pixelShader.GetBlob()->GetBufferSize();
+        const auto ps = params.pixelShader.isEmpty() ? EnginePresetAsset.GetStubPS() : params.pixelShader;
+        pipelineDesc.PS.pShaderBytecode = ps.GetBlob()->GetBufferPointer();
+        pipelineDesc.PS.BytecodeLength = ps.GetBlob()->GetBufferSize();
 
         pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // 0xffffffff
 

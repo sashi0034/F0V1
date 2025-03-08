@@ -18,9 +18,13 @@ namespace ZG
     class PixelShader
     {
     public:
-        PixelShader(const ShaderParams& params);
+        PixelShader() = default;
 
-        const ComPtr<ID3D10Blob>& GetBlob() const;
+        explicit PixelShader(const ShaderParams& params);
+
+        [[nodiscard]] bool isEmpty() const;
+
+        [[nodiscard]] ID3D10Blob* GetBlob() const;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;
@@ -29,9 +33,13 @@ namespace ZG
     class VertexShader
     {
     public:
-        VertexShader(const ShaderParams& params);
+        VertexShader() = default;
 
-        const ComPtr<ID3D10Blob>& GetBlob() const;
+        explicit VertexShader(const ShaderParams& params);
+
+        [[nodiscard]] bool isEmpty() const;
+
+        [[nodiscard]] ID3D10Blob* GetBlob() const;
 
         class Internal;
 
