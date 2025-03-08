@@ -3,7 +3,6 @@
 
 #include "AssertObject.h"
 #include "EngineTimer.h"
-#include "TimestampPtr.h"
 #include "detail/EngineCore.h"
 
 namespace

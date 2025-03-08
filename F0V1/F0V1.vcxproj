@@ -215,7 +215,6 @@
     <ClInclude Include="ZG\Image.h" />
     <ClInclude Include="ZG\IndexBuffer.h" />
     <ClInclude Include="ZG\ITimestamp.h" />
-    <ClInclude Include="ZG\TimestampPtr.h" />
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\Mat4x4.h" />
     <ClInclude Include="ZG\Math.h" />
