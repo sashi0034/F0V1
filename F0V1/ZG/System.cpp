@@ -3,6 +3,7 @@
 
 #include "AssertObject.h"
 #include "EngineTimer.h"
+#include "TimestampPtr.h"
 #include "detail/EngineCore.h"
 
 namespace
@@ -38,6 +39,11 @@ namespace ZG
     double System::DeltaTime()
     {
         return EngineTimer.GetDeltaTime();
+    }
+
+    uint64_t System::FrameCount()
+    {
+        return EngineTimer.GetFrameCount();
     }
 
     void System::ModalError(const std::wstring& message)

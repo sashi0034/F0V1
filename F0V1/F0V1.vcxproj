@@ -143,6 +143,7 @@
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
+    <ClCompile Include="ZG\detail\EngineHotReloader.cpp" />
     <ClCompile Include="ZG\detail\EnginePresetAsset.cpp" />
     <ClCompile Include="ZG\detail\ShaderResourceTexture.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
@@ -202,15 +203,19 @@
     <ClInclude Include="ZG\detail\DescriptorTable.h" />
     <ClInclude Include="ZG\detail\EngineCore.h" />
     <ClInclude Include="ZG\detail\EngineEntryPoint.h" />
+    <ClInclude Include="ZG\detail\EngineHotReloader.h" />
     <ClInclude Include="ZG\detail\EnginePresetAsset.h" />
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
+    <ClInclude Include="ZG\detail\IEngineInternalAsset.h" />
     <ClInclude Include="ZG\detail\PipelineState.h" />
     <ClInclude Include="ZG\detail\ShaderResourceTexture.h" />
     <ClInclude Include="ZG\EngineTimer.h" />
     <ClInclude Include="ZG\Graphics3D.h" />
     <ClInclude Include="ZG\Image.h" />
     <ClInclude Include="ZG\IndexBuffer.h" />
+    <ClInclude Include="ZG\ITimestamp.h" />
+    <ClInclude Include="ZG\TimestampPtr.h" />
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\Mat4x4.h" />
     <ClInclude Include="ZG\Math.h" />

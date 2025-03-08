@@ -167,12 +167,12 @@ struct PipelineState::Impl
         D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc = {};
 
         const auto vs = params.vertexShader.isEmpty() ? EnginePresetAsset.GetStubVS() : params.vertexShader;
-        pipelineDesc.VS.pShaderBytecode = vs.GetBlob()->GetBufferPointer();
-        pipelineDesc.VS.BytecodeLength = vs.GetBlob()->GetBufferSize();
+        pipelineDesc.VS.pShaderBytecode = vs.getBlob()->GetBufferPointer();
+        pipelineDesc.VS.BytecodeLength = vs.getBlob()->GetBufferSize();
 
         const auto ps = params.pixelShader.isEmpty() ? EnginePresetAsset.GetStubPS() : params.pixelShader;
-        pipelineDesc.PS.pShaderBytecode = ps.GetBlob()->GetBufferPointer();
-        pipelineDesc.PS.BytecodeLength = ps.GetBlob()->GetBufferSize();
+        pipelineDesc.PS.pShaderBytecode = ps.getBlob()->GetBufferPointer();
+        pipelineDesc.PS.BytecodeLength = ps.getBlob()->GetBufferSize();
 
         pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK; // 0xffffffff
 

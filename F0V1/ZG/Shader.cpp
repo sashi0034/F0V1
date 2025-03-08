@@ -12,8 +12,9 @@
 using namespace ZG;
 using namespace ZG::detail;
 
-struct ZG::Shader_impl
+struct ZG::Shader_impl : ITimestamp
 {
+    uint64_t m_timestamp{};
     ComPtr<ID3DBlob> shaderBlob{};
     ComPtr<ID3DBlob> errorBlob{};
 
@@ -22,6 +23,11 @@ struct ZG::Shader_impl
         if (not errorBlob) return "";
         return std::string{static_cast<char*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize()};
     }
+
+    uint64_t timestamp() override
+    {
+        return m_timestamp;
+    }
 };
 
 namespace
@@ -29,6 +35,7 @@ namespace
     std::shared_ptr<Shader_impl> createShader(const ShaderParams& params, const char* target)
     {
         auto result = std::make_shared<Shader_impl>();
+        result->m_timestamp = System::FrameCount();
 
         const auto compileResult = D3DCompileFromFile(
             (params.filename).c_str(),
@@ -42,23 +49,21 @@ namespace
             &result->errorBlob
         );
 
-        if (FAILED(compileResult))
-        {
-            std::wstring message = L"failed to compile shader: ";
-            if (compileResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
-            {
-                message += L"file not found";
-            }
-            else
-            {
-                message += ToUtf16(result->GetErrorMessage());
-            }
+        if (SUCCEEDED(compileResult)) return result;
+        // -----------------------------------------------
 
-            LogError.Writeln(message);
-            return nullptr;
+        std::wstring message = L"failed to compile shader: ";
+        if (compileResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+        {
+            message += L"file not found";
+        }
+        else
+        {
+            message += ToUtf16(result->GetErrorMessage());
         }
 
-        return result;
+        LogError.Writeln(message);
+        return nullptr;
     }
 }
 
@@ -74,7 +79,12 @@ namespace ZG
         return p_impl == nullptr;
     }
 
-    ID3D10Blob* PixelShader::GetBlob() const
+    std::shared_ptr<ITimestamp> PixelShader::timestamp() const
+    {
+        return p_impl;
+    }
+
+    ID3D10Blob* PixelShader::getBlob() const
     {
         return p_impl ? p_impl->shaderBlob.Get() : nullptr;
     }
@@ -89,7 +99,7 @@ namespace ZG
         return p_impl == nullptr;
     }
 
-    ID3D10Blob* VertexShader::GetBlob() const
+    ID3D10Blob* VertexShader::getBlob() const
     {
         return p_impl ? p_impl->shaderBlob.Get() : nullptr;
     }

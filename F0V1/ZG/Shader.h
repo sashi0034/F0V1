@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <d3dcommon.h>
 
+#include "ITimestamp.h"
 #include "Uncopyable.h"
 
 namespace ZG
@@ -24,7 +25,9 @@ namespace ZG
 
         [[nodiscard]] bool isEmpty() const;
 
-        [[nodiscard]] ID3D10Blob* GetBlob() const;
+        [[nodiscard]] std::shared_ptr<ITimestamp> timestamp() const;
+
+        [[nodiscard]] ID3D10Blob* getBlob() const;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;
@@ -39,9 +42,7 @@ namespace ZG
 
         [[nodiscard]] bool isEmpty() const;
 
-        [[nodiscard]] ID3D10Blob* GetBlob() const;
-
-        class Internal;
+        [[nodiscard]] ID3D10Blob* getBlob() const;
 
     private:
         std::shared_ptr<Shader_impl> p_impl;

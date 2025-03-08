@@ -10,6 +10,8 @@ namespace ZG::detail
         void Tick() const;
 
         double GetDeltaTime() const;
+
+        uint64_t GetFrameCount() const;
     };
 
     inline constexpr auto EngineTimer = EngineTimer_impl{};

@@ -8,6 +8,8 @@ namespace ZG
 
         double DeltaTime();
 
+        uint64_t FrameCount();
+
         void ModalError(const std::wstring& message);
     }
 }
