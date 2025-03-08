@@ -106,11 +106,14 @@ namespace ZG
     VertexShader::VertexShader(const ShaderParams& params)
         : p_impl{std::make_shared<Shader_impl>(params, "vs_5_0"sv)}
     {
+#ifdef _DEBUG
+        EngineHotReloader.TrackAsset(p_impl, {FileWatcher(p_impl->m_params.filename).timestamp()});
+#endif
     }
 
     bool VertexShader::isEmpty() const
     {
-        return p_impl == nullptr;
+        return p_impl == nullptr || p_impl->shaderBlob == nullptr;
     }
 
     std::shared_ptr<ITimestamp> VertexShader::timestamp() const
