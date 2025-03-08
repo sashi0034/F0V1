@@ -94,6 +94,7 @@ namespace ZG
 
     std::shared_ptr<ITimestamp> PixelShader::timestamp() const
     {
+        if (not p_impl) return InvalidTimestamp;
         return p_impl;
     }
 
@@ -110,6 +111,12 @@ namespace ZG
     bool VertexShader::isEmpty() const
     {
         return p_impl == nullptr;
+    }
+
+    std::shared_ptr<ITimestamp> VertexShader::timestamp() const
+    {
+        if (not p_impl) return InvalidTimestamp;
+        return p_impl;
     }
 
     ID3D10Blob* VertexShader::getBlob() const

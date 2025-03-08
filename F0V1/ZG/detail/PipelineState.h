@@ -39,8 +39,6 @@ namespace ZG::detail
 
         void CommandSet() const;
 
-        struct Internal;
-
     private:
         struct Impl;
         std::shared_ptr<Impl> p_impl;

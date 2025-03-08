@@ -36,16 +36,20 @@ namespace
 
         void Update()
         {
-            for (int i = 0; i < m_elements.size(); ++i)
+            int reloadedCount{};
+            for (reloadedCount = 0; reloadedCount < m_elements.size(); ++reloadedCount)
             {
                 bool reloaded = checkHotReload();
                 if (not reloaded) break;
+            }
 
-                if (i == m_elements.size() - 1)
-                {
-                    LogWarning.Writeln(L"the timestamps of some elements have not been updated in hot reload");
-                    break;
-                }
+            if (reloadedCount == m_elements.size())
+            {
+                LogWarning.Writeln(L"the timestamps of some elements have not been updated in hot reload");
+            }
+            else if (reloadedCount > 0)
+            {
+                LogInfo.HR().Writeln(std::format(L"hot reloaded {} elements", reloadedCount));
             }
         }
 

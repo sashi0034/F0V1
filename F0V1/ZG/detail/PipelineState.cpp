@@ -3,8 +3,9 @@
 
 #include "ZG/AssertObject.h"
 #include "EngineCore.h"
+#include "EngineHotReloader.h"
 #include "EnginePresetAsset.h"
-#include "EngineStackState.h"
+#include "IEngineHotReloadable.h"
 #include "ZG/Logger.h"
 #include "ZG/System.h"
 #include "ZG/Utils.h"
@@ -134,25 +135,41 @@ namespace
                 0,
                 rootSignatureBlob->GetBufferPointer(),
                 rootSignatureBlob->GetBufferSize(),
-                IID_PPV_ARGS(&rootSignature));
+                IID_PPV_ARGS(rootSignature.ReleaseAndGetAddressOf()));
         rootSignatureBlob->Release();
 
         return rootSignature;
     }
 }
 
-struct PipelineState::Impl
+struct PipelineState::Impl : IEngineHotReloadable
 {
+    uint64_t m_timestamp{};
+
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12RootSignature> m_rootSignature;
+    PipelineStateParams m_params;
 
-    Impl(const PipelineStateParams& params)
+    Impl(const PipelineStateParams& params) :
+        m_params(params)
     {
-        if (SUCCEEDED(createPipelineState(params))) return;
+        Impl::HotReload();
+    }
+
+    uint64_t timestamp() const override
+    {
+        return m_timestamp;
+    }
+
+    void HotReload() override
+    {
+        m_timestamp = System::FrameCount();
+
+        if (SUCCEEDED(createPipelineState(m_params))) return;
 
         LogWarning.Writeln(L"failed to create pipeline state with user shaders, using stub shaders instead");
 
-        auto params2 = params;
+        auto params2 = m_params;
         params2.pixelShader = EnginePresetAsset.GetStubPS();
         params2.vertexShader = EnginePresetAsset.GetStubVS();
 
@@ -221,11 +238,14 @@ struct PipelineState::Impl
         pipelineDesc.SampleDesc.Count = 1; // マルチサンプリングなし
         pipelineDesc.SampleDesc.Quality = 0; // クオリティ最低
 
+        m_rootSignature.Reset();
         m_rootSignature = createRootSignature(params.descriptorTable);
 
         pipelineDesc.pRootSignature = m_rootSignature.Get();
 
-        return device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&m_pipelineState));
+        return device->CreateGraphicsPipelineState(
+            &pipelineDesc,
+            IID_PPV_ARGS(m_pipelineState.ReleaseAndGetAddressOf()));
     }
 
     void CommandSet() const
@@ -236,41 +256,17 @@ struct PipelineState::Impl
     }
 };
 
-struct PipelineState::Internal
-{
-    // static void Push(const PipelineState& pipelineState)
-    // {
-    //     EngineStackState.PushPipelineState(pipelineState.p_impl->m_pipelineState.Get());
-    //     EngineStackState.PushRootSignature(pipelineState.p_impl->m_rootSignature.Get());
-    // }
-    //
-    // static void Pop()
-    // {
-    //     EngineStackState.PopRootSignature();
-    //     EngineStackState.PopPipelineState();
-    // }
-};
-
 namespace ZG
 {
     PipelineState::PipelineState(const PipelineStateParams& params) :
         p_impl(std::make_shared<Impl>(params))
     {
+        EngineHotReloader.TrackAsset(
+            p_impl, {p_impl->m_params.pixelShader.timestamp(), p_impl->m_params.vertexShader.timestamp()});
     }
 
     void PipelineState::CommandSet() const
     {
         p_impl->CommandSet();
     }
-
-    // ScopedPipelineState::ScopedPipelineState(const PipelineState& pipelineState) :
-    //     m_timestamp(0) // TODO
-    // {
-    //     PipelineState::Internal::Push(pipelineState);
-    // }
-    //
-    // ScopedPipelineState::~ScopedPipelineState()
-    // {
-    //     PipelineState::Internal::Pop();
-    // }
 }

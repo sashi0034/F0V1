@@ -42,6 +42,8 @@ namespace ZG
 
         [[nodiscard]] bool isEmpty() const;
 
+        [[nodiscard]] std::shared_ptr<ITimestamp> timestamp() const;
+
         [[nodiscard]] ID3D10Blob* getBlob() const;
 
     private:
