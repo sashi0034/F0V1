@@ -4,19 +4,28 @@
 #include <d3dcompiler.h>
 
 #include "AssertObject.h"
+#include "FileWatcher.h"
 #include "Logger.h"
 #include "System.h"
 #include "Utils.h"
-#include "detail/EngineCore.h"
+#include "detail/EngineHotReloader.h"
+#include "detail/IEngineHotReloadable.h"
 
 using namespace ZG;
 using namespace ZG::detail;
 
-struct ZG::Shader_impl : ITimestamp
+struct ZG::Shader_impl : IEngineHotReloadable
 {
     uint64_t m_timestamp{};
     ComPtr<ID3DBlob> shaderBlob{};
     ComPtr<ID3DBlob> errorBlob{};
+    ShaderParams m_params{};
+    std::string_view m_target{};
+
+    Shader_impl(const ShaderParams& params, std::string_view target) : m_params(params), m_target(target)
+    {
+        Shader_impl::HotReload();
+    }
 
     std::string GetErrorMessage() const
     {
@@ -24,33 +33,31 @@ struct ZG::Shader_impl : ITimestamp
         return std::string{static_cast<char*>(errorBlob->GetBufferPointer()), errorBlob->GetBufferSize()};
     }
 
-    uint64_t timestamp() override
+    uint64_t timestamp() const override
     {
         return m_timestamp;
     }
-};
 
-namespace
-{
-    std::shared_ptr<Shader_impl> createShader(const ShaderParams& params, const char* target)
+    void HotReload() override
     {
-        auto result = std::make_shared<Shader_impl>();
-        result->m_timestamp = System::FrameCount();
+        m_timestamp = System::FrameCount();
 
         const auto compileResult = D3DCompileFromFile(
-            (params.filename).c_str(),
+            (m_params.filename).c_str(),
             nullptr,
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
-            params.entryPoint.c_str(),
-            target,
+            m_params.entryPoint.c_str(),
+            m_target.data(),
             D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, // FIXME
             0,
-            &result->shaderBlob,
-            &result->errorBlob
+            shaderBlob.ReleaseAndGetAddressOf(),
+            errorBlob.ReleaseAndGetAddressOf()
         );
 
-        if (SUCCEEDED(compileResult)) return result;
+        if (SUCCEEDED(compileResult)) return;
         // -----------------------------------------------
+
+        if (shaderBlob != nullptr) shaderBlob->Release();
 
         std::wstring message = L"failed to compile shader: ";
         if (compileResult == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
@@ -59,24 +66,30 @@ namespace
         }
         else
         {
-            message += ToUtf16(result->GetErrorMessage());
+            message += ToUtf16(GetErrorMessage());
         }
 
         LogError.Writeln(message);
-        return nullptr;
     }
+};
+
+namespace
+{
 }
 
 namespace ZG
 {
     PixelShader::PixelShader(const ShaderParams& params)
+        : p_impl{std::make_shared<Shader_impl>(params, "ps_5_0"sv)}
     {
-        p_impl = createShader(params, "ps_5_0");
+#ifdef _DEBUG
+        EngineHotReloader.TrackAsset(p_impl, {FileWatcher(p_impl->m_params.filename).timestamp()});
+#endif
     }
 
     bool PixelShader::isEmpty() const
     {
-        return p_impl == nullptr;
+        return p_impl == nullptr || p_impl->shaderBlob == nullptr;
     }
 
     std::shared_ptr<ITimestamp> PixelShader::timestamp() const
@@ -90,8 +103,8 @@ namespace ZG
     }
 
     VertexShader::VertexShader(const ShaderParams& params)
+        : p_impl{std::make_shared<Shader_impl>(params, "vs_5_0"sv)}
     {
-        p_impl = createShader(params, "vs_5_0");
     }
 
     bool VertexShader::isEmpty() const

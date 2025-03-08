@@ -10,6 +10,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "EngineHotReloader.h"
 #include "EnginePresetAsset.h"
 #include "EngineWindow.h"
 #include "ZG/Array.h"
@@ -275,6 +276,9 @@ namespace
                     updatablePtr->Update();
                 }
             }
+
+            // ホットリローダの更新
+            EngineHotReloader.Update();
         }
 
         void FlushCommandList()
@@ -320,6 +324,8 @@ namespace
 
         void Destroy()
         {
+            EngineHotReloader.Destroy();
+
             EnginePresetAsset.Destroy();
 
             EngineWindow.Destroy();

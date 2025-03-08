@@ -55,6 +55,8 @@
 #include <unordered_set>
 
 // other standard libraries
+#include <iso646.h>
+
 #include <filesystem>
 #include <optional>
 #include <variant>

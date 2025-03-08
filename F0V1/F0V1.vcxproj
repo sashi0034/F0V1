@@ -208,7 +208,7 @@
     <ClInclude Include="ZG\detail\EnginePresetAsset.h" />
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
-    <ClInclude Include="ZG\detail\IEngineInternalAsset.h" />
+    <ClInclude Include="ZG\detail\IEngineHotReloadable.h" />
     <ClInclude Include="ZG\detail\IEngineUpdatable.h" />
     <ClInclude Include="ZG\detail\PipelineState.h" />
     <ClInclude Include="ZG\detail\ShaderResourceTexture.h" />

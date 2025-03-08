@@ -2,6 +2,7 @@
 #include "FileWatcher.h"
 
 #include "System.h"
+#include "Utils.h"
 #include "detail/EngineCore.h"
 #include "detail/IEngineUpdatable.h"
 
@@ -40,7 +41,7 @@ struct FileWatcher::Impl : IEngineUpdatable, ITimestamp
         }
     }
 
-    uint64_t timestamp() override
+    uint64_t timestamp() const override
     {
         return m_timestamp;
     }
@@ -52,6 +53,11 @@ namespace ZG
         : p_impl(std::make_shared<Impl>(path))
     {
         EngineCore.AddUpdatable(p_impl);
+    }
+
+    FileWatcher::FileWatcher(const std::wstring& path)
+        : FileWatcher(ToUtf8(path))
+    {
     }
 
     std::shared_ptr<ITimestamp> FileWatcher::timestamp() const

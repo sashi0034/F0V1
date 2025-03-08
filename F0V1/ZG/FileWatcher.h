@@ -10,6 +10,8 @@ namespace ZG
 
         FileWatcher(const std::string& path);
 
+        FileWatcher(const std::wstring& path);
+
         std::shared_ptr<ITimestamp> timestamp() const;
 
     private:

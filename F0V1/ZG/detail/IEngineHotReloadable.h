@@ -3,7 +3,7 @@
 
 namespace ZG::detail
 {
-    class IEngineInternalAsset : public ITimestamp
+    class IEngineHotReloadable : public ITimestamp
     {
     public:
         virtual void HotReload() = 0;
