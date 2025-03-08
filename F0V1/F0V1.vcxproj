@@ -149,8 +149,6 @@
     <ClCompile Include="ZG\Model.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <ClCompile Include="ZG\VertexBuffer.cpp" />
-    <Content Include="asset\basic_pixel.hlsl" />
-    <Content Include="asset\basic_vertex.hlsl" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -176,20 +174,22 @@
     <ClCompile Include="ZG\Transformer3D.cpp" />
     <ClCompile Include="ZG\Utils.cpp" />
     <ClCompile Include="ZG\Value2D.cpp" />
-    <Content Include="asset\cinnamon.mtl" />
-    <Content Include="asset\cinnamon.obj" />
-    <Content Include="asset\cinnamon_face.png" />
-    <Content Include="asset\fairy_1024x1024.png" />
-    <Content Include="asset\mii.png" />
-    <Content Include="asset\model_pixel.hlsl" />
-    <Content Include="asset\model_vertex.hlsl" />
-    <Content Include="asset\robot_head.mtl" />
-    <Content Include="asset\robot_head.obj" />
-    <Content Include="asset\violet_900x1600.png" />
+    <Content Include="asset\image\fairy_1024x1024.png" />
+    <Content Include="asset\image\mii.png" />
+    <Content Include="asset\image\violet_900x1600.png" />
+    <Content Include="asset\model\cinnamon.mtl" />
+    <Content Include="asset\model\cinnamon.obj" />
+    <Content Include="asset\model\cinnamon_face.png" />
+    <Content Include="asset\model\robot_head.mtl" />
+    <Content Include="asset\model\robot_head.obj" />
+    <Content Include="asset\shader\basic_pixel.hlsl" />
+    <Content Include="asset\shader\basic_vertex.hlsl" />
+    <Content Include="asset\shader\model_pixel.hlsl" />
+    <Content Include="asset\shader\model_vertex.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="asset\basic.hlsli" />
-    <ClInclude Include="asset\model.hlsli" />
+    <ClInclude Include="asset\shader\basic.hlsli" />
+    <ClInclude Include="asset\shader\model.hlsli" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\Array.h" />
     <ClInclude Include="ZG\AssertObject.h" />
@@ -230,6 +230,9 @@
     <ProjectReference Include="..\external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj">
       <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="engine\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

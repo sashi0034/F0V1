@@ -22,8 +22,8 @@ namespace
 
 void Main()
 {
-    const PixelShader pixelShader{ShaderParams{.filename = L"asset/basic_pixel.hlsl", .entryPoint = "PS"}};
-    const VertexShader vertexShader{ShaderParams{.filename = L"asset/basic_vertex.hlsl", .entryPoint = "VS"}};
+    const PixelShader pixelShader{ShaderParams{.filename = L"asset/shader/basic_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader vertexShader{ShaderParams{.filename = L"asset/shader/basic_vertex.hlsl", .entryPoint = "VS"}};
 
     Image image{Size{16, 16}};
     for (int x = 0; x < image.size().x; ++x)
@@ -43,7 +43,7 @@ void Main()
     };
 
     const Texture pngTexture{
-        TextureParams{.source = L"asset/mii.png", .pixelShader = pixelShader, .vertexShader = vertexShader}
+        TextureParams{.source = L"asset/image/mii.png", .pixelShader = pixelShader, .vertexShader = vertexShader}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
@@ -57,12 +57,12 @@ void Main()
         10.0f
     );
 
-    const PixelShader modelPS{ShaderParams{.filename = L"asset/model_pixel.hlsl", .entryPoint = "PS"}};
-    const VertexShader modelVS{ShaderParams{.filename = L"asset/model_vertex.hlsl", .entryPoint = "VS"}};
+    const PixelShader modelPS{ShaderParams{.filename = L"asset/shader/model_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader modelVS{ShaderParams{.filename = L"asset/shader/model_vertex.hlsl", .entryPoint = "VS"}};
 
     const Model model{
         ModelParams{
-            .filename = "asset/cinnamon.obj", // "asset/robot_head.obj",
+            .filename = "asset/model/robot_head.obj", // "asset/model/cinnamon.obj"
             .pixelShader = modelPS,
             .vertexShader = modelVS,
         }
