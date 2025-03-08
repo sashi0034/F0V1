@@ -22,6 +22,23 @@ namespace ZG
         return wstr;
     }
 
+    std::string ToUtf8(const std::wstring& wstr)
+    {
+        // Get the required buffer size for the UTF-8 string (including null terminator)
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, nullptr, 0, nullptr, nullptr);
+
+        // Create a buffer to hold the UTF-8 string
+        std::string str(size_needed, 0);
+
+        // Perform the conversion from UTF-16 to UTF-8
+        WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), -1, &str[0], size_needed, nullptr, nullptr);
+
+        // Remove the null terminator added by WideCharToMultiByte
+        str.resize(size_needed - 1);
+
+        return str;
+    }
+
     std::wstring StringifyBlob(ID3DBlob* blob)
     {
         return ToUtf16(std::string{static_cast<char*>(blob->GetBufferPointer()), blob->GetBufferSize()});

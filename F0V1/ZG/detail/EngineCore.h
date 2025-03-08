@@ -2,6 +2,7 @@
 
 #include <d3d12.h>
 
+#include "IEngineUpdatable.h"
 #include "ZG/Value2D.h"
 
 namespace ZG::detail
@@ -29,6 +30,8 @@ namespace ZG::detail
         ID3D12CommandQueue* GetCommandQueue() const;
 
         Size GetSceneSize() const;
+
+        void AddUpdatable(const std::weak_ptr<IEngineUpdatable>& updatable) const;
     };
 
     inline constexpr auto EngineCore = EngineCore_impl{};

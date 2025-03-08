@@ -12,6 +12,7 @@
 
 #include "EnginePresetAsset.h"
 #include "EngineWindow.h"
+#include "ZG/Array.h"
 #include "ZG/AssertObject.h"
 #include "ZG/Color.h"
 #include "ZG/EngineTimer.h"
@@ -68,6 +69,8 @@ namespace
         D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
         std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
+
+        Array<std::weak_ptr<IEngineUpdatable>> m_updatableList{};
 
         void Init()
         {
@@ -263,6 +266,15 @@ namespace
 
             // タイマーの更新
             EngineTimer.Tick();
+
+            // アップデータの更新
+            for (auto& updatable : m_updatableList)
+            {
+                if (const auto updatablePtr = updatable.lock())
+                {
+                    updatablePtr->Update();
+                }
+            }
         }
 
         void FlushCommandList()
@@ -414,5 +426,10 @@ namespace ZG
     Size EngineCore_impl::GetSceneSize() const
     {
         return s_engineCore.m_sceneSize;
+    }
+
+    void EngineCore_impl::AddUpdatable(const std::weak_ptr<IEngineUpdatable>& updatable) const
+    {
+        s_engineCore.m_updatableList.push_back(updatable);
     }
 }
