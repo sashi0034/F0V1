@@ -142,6 +142,7 @@
     <Content Include="engine\stub.hlsl" />
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
+    <ClCompile Include="ZG\detail\CommandList.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
     <ClCompile Include="ZG\detail\EngineHotReloader.cpp" />
     <ClCompile Include="ZG\detail\EnginePresetAsset.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="ZG\Color.h" />
     <ClInclude Include="ZG\Concepts.h" />
     <ClInclude Include="ZG\ConstantBuffer.h" />
+    <ClInclude Include="ZG\detail\CommandList.h" />
     <ClInclude Include="ZG\detail\DescriptorHeap.h" />
     <ClInclude Include="ZG\detail\DescriptorTable.h" />
     <ClInclude Include="ZG\detail\EngineCore.h" />

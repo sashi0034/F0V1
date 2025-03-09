@@ -10,6 +10,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 
+#include "CommandList.h"
 #include "EngineHotReloader.h"
 #include "EnginePresetAsset.h"
 #include "EngineWindow.h"
@@ -55,17 +56,13 @@ namespace
 
         // FIXME: グローバルオブジェクトは ComPtr にしなくていいかも
 
-        ComPtr<ID3D12CommandAllocator> m_commandAllocator{};
-        ComPtr<ID3D12GraphicsCommandList> m_commandList{};
-        ComPtr<ID3D12CommandQueue> m_commandQueue{};
+        CommandList m_commandList{};
+
         ComPtr<IDXGISwapChain4> m_swapChain{};
         ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
 
         ComPtr<ID3D12Resource> m_depthBuffer{};
         ComPtr<ID3D12DescriptorHeap> m_dsvHeap{};
-
-        ComPtr<ID3D12Fence> m_fence{};
-        UINT64 m_fenceValue{};
 
         D3D12_RESOURCE_BARRIER m_barrierDesc{};
 
@@ -135,28 +132,8 @@ namespace
                 }
             }
 
-            // コマンドアロケータを生成
-            AssertWin32{"failed to create command allocator"sv}
-                | m_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&m_commandAllocator));
-
-            // コマンドリストを生成
-            AssertWin32{"failed to create command list"sv}
-                | m_device->CreateCommandList(
-                    0,
-                    D3D12_COMMAND_LIST_TYPE_DIRECT,
-                    m_commandAllocator.Get(),
-                    nullptr,
-                    IID_PPV_ARGS(&m_commandList)
-                );
-
-            // コマンドキューを生成
-            D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
-            commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE; // タイムアウトなし
-            commandQueueDesc.NodeMask = 0;
-            commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL; // プライオリティ特に指定なし
-            commandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-            AssertWin32{"failed to create command queue"sv}
-                | m_device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&m_commandQueue));
+            // コマンドリストの作成
+            m_commandList = CommandList{CommandListType::Direct};
 
             // スワップチェインの設定
             DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
@@ -174,7 +151,7 @@ namespace
             swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
             AssertWin32{"failed to create swap chain"sv}
                 | m_dxgiFactory->CreateSwapChainForHwnd(
-                    m_commandQueue.Get(),
+                    m_commandList.GetCommandQueue(),
                     EngineWindow.Handle(),
                     &swapchainDesc,
                     nullptr,
@@ -207,10 +184,6 @@ namespace
             // 深度バッファを生成
             createDepthBuffer();
 
-            // フェンスを生成
-            AssertWin32{"failed to create fence"sv}
-                | m_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_fence));
-
             // ウィンドウ表示
             EngineWindow.Show();
 
@@ -223,6 +196,8 @@ namespace
 
         void BeginFrame()
         {
+            const auto commandList = m_commandList.GetCommandList();
+
             // バックバッファのインデックスを取得
             const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
 
@@ -233,18 +208,18 @@ namespace
             m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
             m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-            m_commandList->ResourceBarrier(1, &m_barrierDesc);
+            commandList->ResourceBarrier(1, &m_barrierDesc);
 
             // レンダーターゲットを指定
             auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
             rtvHandle.ptr += static_cast<ULONG_PTR>(
                 backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
             const auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
-            m_commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+            commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
             // 画面クリア
-            m_commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
-            m_commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+            commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
+            commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
             // ビューポートの設定
             Point windowSize = EngineWindow.WindowSize();
@@ -255,7 +230,7 @@ namespace
             viewport.Height = static_cast<float>(windowSize.y);
             viewport.MinDepth = 0.0f;
             viewport.MaxDepth = 1.0f;
-            m_commandList->RSSetViewports(1, &viewport);
+            commandList->RSSetViewports(1, &viewport);
 
             // シザー矩形の設定
             D3D12_RECT scissorRect = {};
@@ -263,7 +238,7 @@ namespace
             scissorRect.top = 0;
             scissorRect.right = scissorRect.left + windowSize.x;
             scissorRect.bottom = scissorRect.top + windowSize.y;
-            m_commandList->RSSetScissorRects(1, &scissorRect);
+            commandList->RSSetScissorRects(1, &scissorRect);
 
             // タイマーの更新
             EngineTimer.Tick();
@@ -281,42 +256,18 @@ namespace
             EngineHotReloader.Update();
         }
 
-        void FlushCommandList()
-        {
-            ID3D12CommandList* commandLists[] = {m_commandList.Get()};
-            m_commandQueue->ExecuteCommandLists(1, commandLists);
-
-            // 実行の待機
-            m_fenceValue++;
-            m_commandQueue->Signal(m_fence.Get(), m_fenceValue);
-
-            if (m_fence->GetCompletedValue() != m_fenceValue)
-            {
-                const auto event = CreateEvent(nullptr, false, false, nullptr);
-                m_fence->SetEventOnCompletion(m_fenceValue, event);
-                WaitForSingleObjectEx(event, INFINITE, false);
-                CloseHandle(event);
-            }
-
-            // コマンドアロケータのリセット
-            m_commandAllocator->Reset();
-
-            // コマンドリストのリセット
-            m_commandList->Reset(m_commandAllocator.Get(), nullptr);
-        }
-
         void EndFrame()
         {
             // リソースバリア
             m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
             m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-            m_commandList->ResourceBarrier(1, &m_barrierDesc);
+            m_commandList.GetCommandList()->ResourceBarrier(1, &m_barrierDesc);
 
             // コマンドリストのクローズ
-            m_commandList->Close();
+            m_commandList.GetCommandList()->Close();
 
             // コマンドリストの実行
-            FlushCommandList();
+            m_commandList.Flush();
 
             // フリップ
             m_swapChain->Present(1, 0);
@@ -414,19 +365,19 @@ namespace ZG
 
     ID3D12GraphicsCommandList* EngineCore_impl::GetCommandList() const
     {
-        assert(s_engineCore.m_commandList);
-        return s_engineCore.m_commandList.Get();
+        assert(s_engineCore.m_commandList.GetCommandList());
+        return s_engineCore.m_commandList.GetCommandList();
     }
 
     void EngineCore_impl::FlushCommandList() const
     {
-        s_engineCore.FlushCommandList();
+        s_engineCore.m_commandList.Flush();
     }
 
     ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
     {
-        assert(s_engineCore.m_commandQueue);
-        return s_engineCore.m_commandQueue.Get();
+        assert(s_engineCore.m_commandList.GetCommandQueue());
+        return s_engineCore.m_commandList.GetCommandQueue();
     }
 
     Size EngineCore_impl::GetSceneSize() const
