@@ -135,19 +135,11 @@ struct ShaderResourceTexture::Impl
 
         copyCommandList->CopyTextureRegion(&dstCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
 
-        D3D12_RESOURCE_BARRIER barrier{};
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource = m_textureBuffer.Get();
-        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-
-        // TODO: 最適化
+        const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(
+            m_textureBuffer.Get(),
+            D3D12_RESOURCE_STATE_COPY_DEST,
+            D3D12_RESOURCE_STATE_COPY_SOURCE);
         copyCommandList->ResourceBarrier(1, &barrier);
-        copyCommandList->Close();
-
-        EngineCore.FlushCopyCommandList();
 
         m_format = metadata.format;
     }
