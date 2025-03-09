@@ -57,6 +57,7 @@ namespace
         // FIXME: グローバルオブジェクトは ComPtr にしなくていいかも
 
         CommandList m_commandList{};
+        CommandList m_copyCommandList{};
 
         ComPtr<IDXGISwapChain4> m_swapChain{};
         ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
@@ -134,6 +135,8 @@ namespace
 
             // コマンドリストの作成
             m_commandList = CommandList{CommandListType::Direct};
+
+            m_copyCommandList = CommandList{CommandListType::Copy};
 
             // スワップチェインの設定
             DXGI_SWAP_CHAIN_DESC1 swapchainDesc = {};
@@ -369,15 +372,15 @@ namespace ZG
         return s_engineCore.m_commandList.GetCommandList();
     }
 
-    void EngineCore_impl::FlushCommandList() const
+    ID3D12GraphicsCommandList* EngineCore_impl::GetCopyCommandList() const
     {
-        s_engineCore.m_commandList.Flush();
+        assert(s_engineCore.m_copyCommandList.GetCommandList());
+        return s_engineCore.m_copyCommandList.GetCommandList();
     }
 
-    ID3D12CommandQueue* EngineCore_impl::GetCommandQueue() const
+    void EngineCore_impl::FlushCopyCommandList() const
     {
-        assert(s_engineCore.m_commandList.GetCommandQueue());
-        return s_engineCore.m_commandList.GetCommandQueue();
+        s_engineCore.m_copyCommandList.Flush();
     }
 
     Size EngineCore_impl::GetSceneSize() const

@@ -24,10 +24,10 @@ namespace ZG::detail
         [[nodiscard]]
         ID3D12GraphicsCommandList* GetCommandList() const;
 
-        void FlushCommandList() const;
-
         [[nodiscard]]
-        ID3D12CommandQueue* GetCommandQueue() const;
+        ID3D12GraphicsCommandList* GetCopyCommandList() const;
+
+        void FlushCopyCommandList() const;
 
         Size GetSceneSize() const;
 

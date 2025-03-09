@@ -131,22 +131,23 @@ struct ShaderResourceTexture::Impl
             static_cast<UINT>(AlignedSize(rawImage->rowPitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT));
         srcCopyLocation.PlacedFootprint.Footprint.Format = rawImage->format;
 
-        const auto commandList = EngineCore.GetCommandList();
-        commandList->CopyTextureRegion(&dstCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
+        const auto copyCommandList = EngineCore.GetCopyCommandList();
 
-        // TODO: 描画ルーチンの中で実行された場合に対応
+        copyCommandList->CopyTextureRegion(&dstCopyLocation, 0, 0, 0, &srcCopyLocation, nullptr);
+
         D3D12_RESOURCE_BARRIER barrier{};
         barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
         barrier.Transition.pResource = m_textureBuffer.Get();
         barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
         barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
 
-        commandList->ResourceBarrier(1, &barrier);
-        commandList->Close();
+        // TODO: 最適化
+        copyCommandList->ResourceBarrier(1, &barrier);
+        copyCommandList->Close();
 
-        EngineCore.FlushCommandList();
+        EngineCore.FlushCopyCommandList();
 
         m_format = metadata.format;
     }
