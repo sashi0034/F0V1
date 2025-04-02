@@ -20,8 +20,15 @@ namespace
 
         for (const auto& dependency : dependencies)
         {
-            if (targetTimestamp < dependency->timestamp())
+            const auto dependencyTimestamp = dependency->timestamp();
+            if (dependencyTimestamp == InvalidTimestampValue)
             {
+                break;
+            }
+
+            if (targetTimestamp < dependencyTimestamp)
+            {
+                // 依存先のアセットが最近更新されたので、ターゲットをホットリロードする
                 target.HotReload();
                 return true;
             }
@@ -36,15 +43,18 @@ namespace
 
         void Update()
         {
+            // 更新可能が発生しない状態になるするまでホットリロードを適応する
+            // 正常に更新が走る場合、要素個数以上の回数の更新は発生しない
             int reloadedCount{};
             for (reloadedCount = 0; reloadedCount < m_elements.size(); ++reloadedCount)
             {
-                bool reloaded = checkHotReload();
+                const bool reloaded = checkHotReload();
                 if (not reloaded) break;
             }
 
             if (reloadedCount == m_elements.size())
             {
+                // いずれかの要素が正常に更新されない異常発生
                 LogWarning.Writeln(L"the timestamps of some elements have not been updated in hot reload");
             }
             else if (reloadedCount > 0)
@@ -53,6 +63,7 @@ namespace
             }
         }
 
+        // 全要素を探索し、ホットリロード可能な要素があれば適応する
         bool checkHotReload()
         {
             bool hotReloaded{};
@@ -65,6 +76,7 @@ namespace
                 }
                 else
                 {
+                    // アセットが破棄されたので削除する
                     m_elements.erase(m_elements.begin() + i);
                 }
             }
