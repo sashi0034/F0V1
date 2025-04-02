@@ -29,8 +29,6 @@ namespace ZG::detail
 
         void FlushCopyCommandList() const;
 
-        void CommandSetDefaultRenderTargets() const;
-
         Size GetSceneSize() const;
 
         void AddUpdatable(const std::weak_ptr<IEngineUpdatable>& updatable) const;

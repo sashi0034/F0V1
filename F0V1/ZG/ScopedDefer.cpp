@@ -40,9 +40,4 @@ namespace ZG
             m_active = false;
         }
     }
-
-    void DisposableScopedDefer::Dispose()
-    {
-        dispose();
-    }
 }

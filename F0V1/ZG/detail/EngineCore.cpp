@@ -18,6 +18,7 @@
 #include "ZG/AssertObject.h"
 #include "ZG/Color.h"
 #include "ZG/EngineTimer.h"
+#include "ZG/RenderTarget.h"
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -60,14 +61,9 @@ namespace
         CommandList m_copyCommandList{};
 
         ComPtr<IDXGISwapChain4> m_swapChain{};
-        ComPtr<ID3D12DescriptorHeap> m_rtvHeaps{};
 
-        ComPtr<ID3D12Resource> m_depthBuffer{};
-        ComPtr<ID3D12DescriptorHeap> m_dsvHeap{};
-
-        D3D12_RESOURCE_BARRIER m_barrierDesc{};
-
-        std::vector<ComPtr<ID3D12Resource>> m_backBuffers{};
+        RenderTarget m_backBuffer{};
+        ScopedRenderTarget m_scopedBackBuffer{};
 
         Array<std::weak_ptr<IEngineUpdatable>> m_updatableList{};
 
@@ -162,30 +158,17 @@ namespace
                     reinterpret_cast<IDXGISwapChain1**>(m_swapChain.GetAddressOf())
                 );
 
-            // ディスクリプタヒープを生成
-            D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
-            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-            heapDesc.NodeMask = 0;
-            heapDesc.NumDescriptors = 2; // 表裏の２つ
-            heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-            AssertWin32{"failed to create descriptor heap"sv}
-                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_rtvHeaps));
-
-            // AssertWin32{"failed to get swap chain description"sv}
-            //     | m_sapChain->GetDesc(&swapchainDesc);
-
-            m_backBuffers.resize(swapchainDesc.BufferCount);
-            D3D12_CPU_DESCRIPTOR_HANDLE handle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-            for (size_t i = 0; i < swapchainDesc.BufferCount; ++i)
-            {
-                AssertWin32{"failed to get buffer"sv}
-                    | m_swapChain->GetBuffer(static_cast<UINT>(i), IID_PPV_ARGS(&m_backBuffers[i]));
-                m_device->CreateRenderTargetView(m_backBuffers[i].Get(), nullptr, handle);
-                handle.ptr += m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-            }
-
-            // 深度バッファを生成
-            createDepthBuffer();
+            // バックバッファ作成
+            m_backBuffer = RenderTarget{
+                {
+                    .bufferCount = static_cast<int>(swapchainDesc.BufferCount),
+                    .size = m_sceneSize,
+                    .color = m_clearColor,
+                    .pixelShader = {},
+                    .vertexShader = {},
+                },
+                m_swapChain.Get()
+            };
 
             // ウィンドウ表示
             EngineWindow.Show();
@@ -201,19 +184,9 @@ namespace
         {
             const auto commandList = m_commandList.GetCommandList();
 
-            // バックバッファのインデックスを取得
+            // バックバッファを設定
             const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
-
-            // リソースバリア
-            m_barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-            m_barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-            m_barrierDesc.Transition.pResource = m_backBuffers[backBufferIndex].Get();
-            m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-            m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-            commandList->ResourceBarrier(1, &m_barrierDesc); // backBuffer を PRESENT から RENDER_TARGET に変更
-
-            CommandSetDefaultRenderTargets(true);
+            m_scopedBackBuffer = m_backBuffer.scopedBind(backBufferIndex);
 
             // ビューポートの設定
             Point windowSize = EngineWindow.WindowSize();
@@ -250,32 +223,10 @@ namespace
             EngineHotReloader.Update();
         }
 
-        void CommandSetDefaultRenderTargets(bool clear)
-        {
-            const auto commandList = m_commandList.GetCommandList();
-            const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
-
-            // レンダーターゲットを指定
-            auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-            rtvHandle.ptr += static_cast<ULONG_PTR>(
-                backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-            const auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
-            commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
-
-            if (clear)
-            {
-                // 画面クリア
-                commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
-                commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-            }
-        }
-
         void EndFrame()
         {
-            // リソースバリアとクローズ
-            m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-            m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-            m_commandList.GetCommandList()->ResourceBarrier(1, &m_barrierDesc);
+            // バックバッファ反映
+            m_scopedBackBuffer.dispose();
 
             // コマンドリストのクローズ
             m_copyCommandList.GetCommandList()->Close();
@@ -299,55 +250,6 @@ namespace
         }
 
     private:
-        void createDepthBuffer()
-        {
-            D3D12_RESOURCE_DESC desc{};
-            desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-            desc.Alignment = 0;
-            desc.Width = m_sceneSize.x;
-            desc.Height = m_sceneSize.y;
-            desc.DepthOrArraySize = 1;
-            desc.MipLevels = 1;
-            desc.Format = DXGI_FORMAT_D32_FLOAT;
-            desc.SampleDesc = {1, 0};
-            desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-            desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-            D3D12_HEAP_PROPERTIES heapProperties{};
-            heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-            heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-            heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-
-            D3D12_CLEAR_VALUE clearValue{};
-            clearValue.Format = DXGI_FORMAT_D32_FLOAT;
-            clearValue.DepthStencil.Depth = 1.0f; // 深度値 1.0 でクリア
-
-            AssertWin32{"failed to create depth buffer"sv}
-                | m_device->CreateCommittedResource(
-                    &heapProperties,
-                    D3D12_HEAP_FLAG_NONE,
-                    &desc,
-                    D3D12_RESOURCE_STATE_DEPTH_WRITE,
-                    &clearValue,
-                    IID_PPV_ARGS(&m_depthBuffer)
-                );
-
-            D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
-            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; // デプスステンシルビュー
-            heapDesc.NumDescriptors = 1;
-
-            AssertWin32{"failed to create descriptor heap"sv}
-                | m_device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_dsvHeap));
-
-            // デプスステンシルビューの作成
-            D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-            dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-            dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-            dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-            m_device->CreateDepthStencilView(
-                m_depthBuffer.Get(), &dsvDesc, m_dsvHeap->GetCPUDescriptorHandleForHeapStart());
-        }
     } s_engineCore{};
 }
 
@@ -394,11 +296,6 @@ namespace ZG
     void EngineCore_impl::FlushCopyCommandList() const
     {
         s_engineCore.m_copyCommandList.Flush();
-    }
-
-    void EngineCore_impl::CommandSetDefaultRenderTargets() const
-    {
-        s_engineCore.CommandSetDefaultRenderTargets(false);
     }
 
     Size EngineCore_impl::GetSceneSize() const

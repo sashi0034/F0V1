@@ -19,18 +19,10 @@ namespace ZG
 
         ~ScopedDefer();
 
+        void dispose();
+
     private:
         std::function<void()> m_func;
         bool m_active;
-
-    protected:
-        void dispose();
-    };
-
-    class DisposableScopedDefer : public ScopedDefer
-    {
-    public:
-        /// @brief 遅延実行する予定であった処理を強制的に実行してから解除する
-        void Dispose();
     };
 }

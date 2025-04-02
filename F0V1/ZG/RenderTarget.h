@@ -9,22 +9,33 @@ namespace ZG
 {
     struct RenderTargetParams
     {
+        int bufferCount{1};
         Size size;
         ColorF32 color;
         PixelShader pixelShader;
         VertexShader vertexShader;
     };
 
+    class ScopedRenderTarget : public ScopedDefer
+    {
+    public:
+        using ScopedDefer::ScopedDefer;
+    };
+
     class RenderTarget
     {
     public:
+        RenderTarget() = default;
+
         RenderTarget(const RenderTargetParams& params);
 
-        [[nodiscard]]
-        ScopedDefer scopedBind() const;
+        RenderTarget(const RenderTargetParams& params, IDXGISwapChain* swapChain);
 
         [[nodiscard]]
-        Texture texture() const;
+        ScopedRenderTarget scopedBind(int index = 0) const;
+
+        [[nodiscard]]
+        Texture texture(int index = 0) const;
 
     private:
         struct Impl;
