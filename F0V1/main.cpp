@@ -11,6 +11,7 @@
 
 #include "ZG/Math.h"
 #include "ZG/Model.h"
+#include "ZG/RenderTarget.h"
 #include "ZG/Scene.h"
 #include "ZG/Transformer3D.h"
 
@@ -71,22 +72,39 @@ void Main()
     Graphics3D::SetViewMatrix(viewMat);
     Graphics3D::SetProjectionMatrix(projectionMat);
 
+    RenderTarget renderTarget{
+        {
+            .size = Scene::Size(),
+            .color = ColorF32{1, 1, 0.5, 1},
+            // .pixelShader = pixelShader,
+            // .vertexShader = vertexShader
+        }
+    };
+
     int count{};
     while (System::Update())
     {
-        worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
-        const Transformer3D t3d{worldMat};
+        renderTarget.commandSet();
 
-        // model.draw();
+        {
+            worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
+            const Transformer3D t3d{worldMat};
 
-        count++;
-        if (count % 120 < 60)
-        {
-            pngTexture.draw();
+            model.draw();
         }
-        else
-        {
-            noiseTexture.draw();
-        }
+
+        // TODO: 元のコンテクスに戻してから描画
+
+        renderTarget.texture().draw();
+
+        // count++;
+        // if (count % 120 < 60)
+        // {
+        //     pngTexture.draw();
+        // }
+        // else
+        // {
+        //     noiseTexture.draw();
+        // }
     }
 }

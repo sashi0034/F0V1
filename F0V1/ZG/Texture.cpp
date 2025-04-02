@@ -82,20 +82,7 @@ struct Texture::Impl
     Impl(const TextureParams& options) :
         m_pipelineState(makePipelineState(options))
     {
-        if (const auto path = options.source.tryGet<std::wstring>())
-        {
-            m_sr = ShaderResourceTexture{*path};
-        }
-        else if (const auto image = options.source.tryGet<Image>())
-        {
-            m_sr = ShaderResourceTexture{*image};
-        }
-        else
-        {
-            assert(false);
-        }
-
-        // -----------------------------------------------
+        m_sr = ShaderResourceTexture{options.source};
 
         m_cb0 = ConstantBuffer<SceneState_b0>{1};
 
@@ -132,6 +119,6 @@ namespace ZG
 
     void Texture::draw() const
     {
-        p_impl->Draw();
+        if (p_impl) p_impl->Draw();
     }
 }

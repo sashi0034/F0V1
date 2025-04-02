@@ -7,7 +7,7 @@ namespace ZG
 {
     struct TextureParams
     {
-        Variant<std::wstring, Image> source;
+        Variant<std::wstring, Image, ID3D12Resource*> source; // FIXME: ComPtr のまま渡したいかも?
         PixelShader pixelShader;
         VertexShader vertexShader;
     };
@@ -15,6 +15,8 @@ namespace ZG
     class Texture
     {
     public:
+        Texture() = default;
+
         Texture(const TextureParams& params);
 
         void draw() const;

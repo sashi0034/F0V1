@@ -268,7 +268,6 @@ namespace
 
             // コマンドリストのクローズ
             m_copyCommandList.GetCommandList()->Close();
-
             m_commandList.GetCommandList()->Close();
 
             // コマンドリストの実行

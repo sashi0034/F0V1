@@ -1,9 +1,6 @@
 ﻿#pragma once
-
-namespace ZG
-{
-    class Image;
-}
+#include "ZG/Image.h"
+#include "ZG/Variant.h"
 
 namespace ZG::detail
 {
@@ -12,9 +9,7 @@ namespace ZG::detail
     public:
         ShaderResourceTexture() = default;
 
-        ShaderResourceTexture(const std::wstring& filename);
-
-        ShaderResourceTexture(const Image& image);
+        ShaderResourceTexture(const Variant<std::wstring, Image, ID3D12Resource*>& source);
 
         bool isEmpty() const;
 

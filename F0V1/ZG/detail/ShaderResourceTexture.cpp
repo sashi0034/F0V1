@@ -7,6 +7,7 @@
 #include "ZG/Image.h"
 #include "ZG/System.h"
 #include "ZG/Utils.h"
+#include "ZG/Variant.h"
 
 using namespace ZG::detail;
 
@@ -185,18 +186,34 @@ struct ShaderResourceTexture::Impl
 
         m_format = resourceDesc.Format;
     }
+
+    Impl(ID3D12Resource* resource)
+    {
+        m_textureBuffer = ComPtr<ID3D12Resource>(resource);
+        m_format = resource->GetDesc().Format;
+    }
 };
 
 namespace ZG::detail
 {
-    ShaderResourceTexture::ShaderResourceTexture(const std::wstring& filename)
-        : p_impl(std::make_shared<Impl>(filename))
+    ShaderResourceTexture::ShaderResourceTexture(const Variant<std::wstring, Image, ID3D12Resource*>& source)
     {
-    }
-
-    ShaderResourceTexture::ShaderResourceTexture(const Image& image)
-        : p_impl(std::make_shared<Impl>(image))
-    {
+        if (const auto path = source.tryGet<std::wstring>())
+        {
+            p_impl = std::make_shared<Impl>(*path);
+        }
+        else if (const auto image = source.tryGet<Image>())
+        {
+            p_impl = std::make_shared<Impl>(*image);
+        }
+        else if (const auto resource = source.tryGet<ID3D12Resource*>())
+        {
+            p_impl = std::make_shared<Impl>(*resource);
+        }
+        else
+        {
+            assert(false);
+        }
     }
 
     bool ShaderResourceTexture::isEmpty() const

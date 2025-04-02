@@ -151,6 +151,7 @@
     <ClCompile Include="ZG\FileWatcher.cpp" />
     <ClCompile Include="ZG\IndexBuffer.cpp" />
     <ClCompile Include="ZG\Model.cpp" />
+    <ClCompile Include="ZG\RenderTarget.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <ClCompile Include="ZG\VertexBuffer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="ZG\Mat4x4.h" />
     <ClInclude Include="ZG\Math.h" />
     <ClInclude Include="ZG\Model.h" />
+    <ClInclude Include="ZG\RenderTarget.h" />
     <ClInclude Include="ZG\Scene.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
