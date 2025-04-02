@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Color.h"
+#include "ScopedDefer.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "Value2D.h"
@@ -19,8 +20,10 @@ namespace ZG
     public:
         RenderTarget(const RenderTargetParams& params);
 
-        void commandSet() const;
+        [[nodiscard]]
+        ScopedDefer scopedBind() const;
 
+        [[nodiscard]]
         Texture texture() const;
 
     private:

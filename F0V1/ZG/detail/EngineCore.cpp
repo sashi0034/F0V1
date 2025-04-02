@@ -211,18 +211,9 @@ namespace
             m_barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
             m_barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
             m_barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-            commandList->ResourceBarrier(1, &m_barrierDesc);
+            commandList->ResourceBarrier(1, &m_barrierDesc); // backBuffer を PRESENT から RENDER_TARGET に変更
 
-            // レンダーターゲットを指定
-            auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-            rtvHandle.ptr += static_cast<ULONG_PTR>(
-                backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
-            const auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
-            commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
-
-            // 画面クリア
-            commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
-            commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+            CommandSetDefaultRenderTargets(true);
 
             // ビューポートの設定
             Point windowSize = EngineWindow.WindowSize();
@@ -257,6 +248,26 @@ namespace
 
             // ホットリローダの更新
             EngineHotReloader.Update();
+        }
+
+        void CommandSetDefaultRenderTargets(bool clear)
+        {
+            const auto commandList = m_commandList.GetCommandList();
+            const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
+
+            // レンダーターゲットを指定
+            auto rtvHandle = m_rtvHeaps->GetCPUDescriptorHandleForHeapStart();
+            rtvHandle.ptr += static_cast<ULONG_PTR>(
+                backBufferIndex * m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
+            const auto dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
+            commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+
+            if (clear)
+            {
+                // 画面クリア
+                commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
+                commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+            }
         }
 
         void EndFrame()
@@ -383,6 +394,11 @@ namespace ZG
     void EngineCore_impl::FlushCopyCommandList() const
     {
         s_engineCore.m_copyCommandList.Flush();
+    }
+
+    void EngineCore_impl::CommandSetDefaultRenderTargets() const
+    {
+        s_engineCore.CommandSetDefaultRenderTargets(false);
     }
 
     Size EngineCore_impl::GetSceneSize() const

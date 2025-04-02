@@ -23,8 +23,8 @@ namespace
 
 void Main()
 {
-    const PixelShader pixelShader{ShaderParams{.filename = L"asset/shader/basic_pixel.hlsl", .entryPoint = "PS"}};
-    const VertexShader vertexShader{ShaderParams{.filename = L"asset/shader/basic_vertex.hlsl", .entryPoint = "VS"}};
+    const PixelShader texturePS{ShaderParams{.filename = L"asset/shader/basic_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader textureVS{ShaderParams{.filename = L"asset/shader/basic_vertex.hlsl", .entryPoint = "VS"}};
 
     Image image{Size{16, 16}};
     for (int x = 0; x < image.size().x; ++x)
@@ -40,11 +40,11 @@ void Main()
     }
 
     const Texture noiseTexture{
-        TextureParams{.source = image, .pixelShader = pixelShader, .vertexShader = vertexShader}
+        TextureParams{.source = image, .pixelShader = texturePS, .vertexShader = textureVS}
     };
 
     const Texture pngTexture{
-        TextureParams{.source = L"asset/image/mii.png", .pixelShader = pixelShader, .vertexShader = vertexShader}
+        TextureParams{.source = L"asset/image/mii.png", .pixelShader = texturePS, .vertexShader = textureVS}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
@@ -76,24 +76,22 @@ void Main()
         {
             .size = Scene::Size(),
             .color = ColorF32{1, 1, 0.5, 1},
-            // .pixelShader = pixelShader,
-            // .vertexShader = vertexShader
+            .pixelShader = texturePS,
+            .vertexShader = textureVS
         }
     };
 
     int count{};
     while (System::Update())
     {
-        renderTarget.commandSet();
-
         {
+            const auto rt = renderTarget.scopedBind();
+
             worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
             const Transformer3D t3d{worldMat};
 
             model.draw();
         }
-
-        // TODO: 元のコンテクスに戻してから描画
 
         renderTarget.texture().draw();
 

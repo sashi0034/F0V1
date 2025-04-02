@@ -21,10 +21,14 @@ struct RenderTarget::Impl
     ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap{};
     ComPtr<ID3D12DescriptorHeap> m_dsvDescriptorHeap{};
 
+    ColorF32 m_clearColor{};
+
     Texture m_texture{};
 
     Impl(const RenderTargetParams& params)
     {
+        m_clearColor = params.color;
+
         const auto device = EngineCore.GetDevice();
 
         {
@@ -41,10 +45,10 @@ struct RenderTarget::Impl
 
             D3D12_CLEAR_VALUE clearValue{};
             clearValue.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-            clearValue.Color[0] = params.color.r;
-            clearValue.Color[1] = params.color.g;
-            clearValue.Color[2] = params.color.b;
-            clearValue.Color[3] = params.color.a;
+            clearValue.Color[0] = m_clearColor.r;
+            clearValue.Color[1] = m_clearColor.g;
+            clearValue.Color[2] = m_clearColor.b;
+            clearValue.Color[3] = m_clearColor.a;
 
             const auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
@@ -113,19 +117,35 @@ struct RenderTarget::Impl
         };
     }
 
-    void CommandSet() const
+    ScopedDefer ScopedBind()
     {
         const auto commandList = EngineCore.GetCommandList();
 
-        // const auto resourceBarrierDesc = CD3DX12_RESOURCE_BARRIER::Transition(
-        //     m_rtvResource.Get(),
-        //     D3D12_RESOURCE_STATE_RENDER_TARGET,
-        //     D3D12_RESOURCE_STATE_RENDER_TARGET);
-        // commandList->ResourceBarrier(1, &resourceBarrierDesc);
+        const auto resourceBarrierDesc = CD3DX12_RESOURCE_BARRIER::Transition(
+            m_rtvResource.Get(),
+            D3D12_RESOURCE_STATE_PRESENT,
+            D3D12_RESOURCE_STATE_RENDER_TARGET);
+        commandList->ResourceBarrier(1, &resourceBarrierDesc);
 
         const auto rtvHandle = m_rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         const auto dsvHandle = m_dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
         commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+
+        commandList->ClearRenderTargetView(rtvHandle, m_clearColor.getPointer(), 0, nullptr);
+        commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+        return ScopedDefer{
+            [this, commandList]
+            {
+                const auto resourceBarrierDesc = CD3DX12_RESOURCE_BARRIER::Transition(
+                    m_rtvResource.Get(),
+                    D3D12_RESOURCE_STATE_RENDER_TARGET,
+                    D3D12_RESOURCE_STATE_PRESENT);
+                commandList->ResourceBarrier(1, &resourceBarrierDesc);
+
+                EngineCore.CommandSetDefaultRenderTargets(); // FIXME: 入れ子場の RenderTarget に対応
+            }
+        };
     }
 };
 
@@ -135,9 +155,9 @@ namespace ZG
     {
     }
 
-    void RenderTarget::commandSet() const
+    ScopedDefer RenderTarget::scopedBind() const
     {
-        if (p_impl) p_impl->CommandSet();
+        return p_impl ? p_impl->ScopedBind() : ScopedDefer{};
     }
 
     Texture RenderTarget::texture() const
