@@ -5,6 +5,9 @@
 
 #include "Graphics3D.h"
 #include "IndexBuffer.h"
+#include "Mat3x2.h"
+#include "Rect.h"
+#include "Scene.h"
 #include "VertexBuffer.h"
 #include "detail/DescriptorHeap.h"
 #include "detail/EngineCore.h"
@@ -23,15 +26,45 @@ namespace
         Float2 uv;
     };
 
-    VertexBuffer<TextureVertex> makeVertexBuffer()
+    class TextureVertexData
     {
-        return Array<TextureVertex>{
-            {{-1.0f, -1.0f, 0.0f}, {0.0f, 1.0f}}, //左下
-            {{-1.0f, 1.0f, 0.0f}, {0.0f, 0.0f}}, //左上
-            {{1.0f, -1.0f, 0.0f}, {1.0f, 1.0f}}, //右下
-            {{1.0f, 1.0f, 0.0f}, {1.0f, 0.0f}}, //右上
-        };
-    }
+    public:
+        TextureVertexData()
+        {
+            Reset();
+        }
+
+        void Reset()
+        {
+            m_vertexes.resize(4);
+            TransformPosition({-1.0f, 1.0f}, {1.0f, -1.0f});
+            TransformUV({0.0f, 0.0f}, {1.0f, 1.0f});
+        }
+
+        void TransformPosition(const Float2& tl, const Float2& br)
+        {
+            m_vertexes[0].position = {tl.x, tl.y, 0.0f}; // 左下
+            m_vertexes[1].position = {tl.x, br.y, 0.0f}; // 左上
+            m_vertexes[2].position = {br.x, tl.y, 0.0f}; // 右下
+            m_vertexes[3].position = {br.x, br.y, 0.0f}; // 右上
+        }
+
+        void TransformUV(const Float2& tl, const Float2& br)
+        {
+            m_vertexes[0].uv = {tl.x, tl.y}; // 左下
+            m_vertexes[1].uv = {tl.x, br.y}; // 左上
+            m_vertexes[2].uv = {br.x, tl.y}; // 右下
+            m_vertexes[3].uv = {br.x, br.y}; // 右上
+        }
+
+        const Array<TextureVertex>& Get() const
+        {
+            return m_vertexes;
+        }
+
+    private:
+        Array<TextureVertex> m_vertexes{};
+    };
 
     IndexBuffer makeIndexBuffer()
     {
@@ -70,7 +103,8 @@ struct Texture::Impl
 
     PipelineState m_pipelineState;
 
-    VertexBuffer<TextureVertex> m_vertexBuffer{makeVertexBuffer()};
+    TextureVertexData m_textureVertexData;
+    VertexBuffer<TextureVertex> m_vertexBuffer{m_textureVertexData.Get()};
     IndexBuffer m_indexBuffer{makeIndexBuffer()};
 
     ComPtr<ID3D12Resource> m_constantBuffer{};
@@ -93,7 +127,17 @@ struct Texture::Impl
         });
     }
 
-    void Draw() const
+    void DrawInternal() const
+    {
+        m_pipelineState.CommandSet();
+
+        m_descriptorHeap.CommandSet();
+        m_descriptorHeap.CommandSetTable(0);
+
+        Graphics3D::DrawTriangles(m_vertexBuffer, m_indexBuffer);
+    }
+
+    void Draw3D()
     {
         SceneState_b0 sceneState{};
         sceneState.worldMat = EngineStackState.GetWorldMatrix().mat;
@@ -101,12 +145,22 @@ struct Texture::Impl
         sceneState.projectionMat = EngineStackState.GetProjectionMatrix().mat;
         m_cb0.upload(sceneState);
 
-        m_pipelineState.CommandSet();
+        m_textureVertexData.Reset();
+        m_vertexBuffer.upload(m_textureVertexData.Get());
 
-        m_descriptorHeap.CommandSet();
-        m_descriptorHeap.CommandSetTable(0);
+        DrawInternal();
+    }
 
-        Graphics3D::DrawTriangles(m_vertexBuffer, m_indexBuffer);
+    // 2D
+    void Draw(const RectF& region)
+    {
+        const auto mat3x2 = Mat3x2::Screen(Scene::Size()); // TODO
+        const auto transformedTL = mat3x2.transformPoint(region.tl());
+        const auto transformedBR = mat3x2.transformPoint(region.br());
+        m_textureVertexData.TransformPosition(transformedTL, transformedBR);
+        m_vertexBuffer.upload(m_textureVertexData.Get());
+
+        DrawInternal();
     }
 };
 
@@ -117,8 +171,13 @@ namespace ZG
     {
     }
 
-    void Texture::draw() const
+    void Texture::draw(const RectF& region) const
     {
-        if (p_impl) p_impl->Draw();
+        if (p_impl) p_impl->Draw(region);
+    }
+
+    void Texture::draw3D() const
+    {
+        if (p_impl) p_impl->Draw3D();
     }
 }

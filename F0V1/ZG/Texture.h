@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Image.h"
+#include "Rect.h"
 #include "Shader.h"
 #include "Variant.h"
 
@@ -19,7 +20,9 @@ namespace ZG
 
         Texture(const TextureParams& params);
 
-        void draw() const;
+        void draw(const RectF& region) const;
+
+        void draw3D() const;
 
     private:
         struct Impl;

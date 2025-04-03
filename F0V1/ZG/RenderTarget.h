@@ -12,8 +12,6 @@ namespace ZG
         int bufferCount{1};
         Size size;
         ColorF32 color;
-        PixelShader pixelShader;
-        VertexShader vertexShader;
     };
 
     class ScopedRenderTarget : public ScopedDefer
@@ -29,13 +27,14 @@ namespace ZG
 
         RenderTarget(const RenderTargetParams& params);
 
+        /** @internal */
         RenderTarget(const RenderTargetParams& params, IDXGISwapChain* swapChain);
 
         [[nodiscard]]
         ScopedRenderTarget scopedBind(int index = 0) const;
 
         [[nodiscard]]
-        Texture texture(int index = 0) const;
+        ID3D12Resource* getResource(int index = 0) const;
 
     private:
         struct Impl;

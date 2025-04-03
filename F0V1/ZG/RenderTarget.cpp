@@ -31,8 +31,6 @@ struct RenderTarget::Impl : ImplBase
 
     ColorF32 m_clearColor{};
 
-    std::vector<Texture> m_textures{};
-
     Impl(const RenderTargetParams& params, IDXGISwapChain* swapChain = nullptr)
     {
         m_clearColor = params.color;
@@ -151,24 +149,6 @@ struct RenderTarget::Impl : ImplBase
                 nullptr,
                 dsvHandle);
         }
-
-        // -----------------------------------------------
-
-        if (not swapChain)
-        {
-            // FIXME?
-            m_textures.resize(params.bufferCount);
-            for (int i = 0; i < params.bufferCount; ++i)
-            {
-                m_textures[i] = Texture{
-                    {
-                        .source = m_rtvResources[i].Get(),
-                        .pixelShader = params.pixelShader,
-                        .vertexShader = params.vertexShader,
-                    }
-                };
-            }
-        }
     }
 
     ScopedRenderTarget ScopedBind(int index)
@@ -236,8 +216,8 @@ namespace ZG
         return p_impl ? p_impl->ScopedBind(index) : ScopedRenderTarget{};
     }
 
-    Texture RenderTarget::texture(int index) const
+    ID3D12Resource* RenderTarget::getResource(int index) const
     {
-        return p_impl ? p_impl->m_textures[index] : Texture{};
+        return p_impl ? p_impl->m_rtvResources[index].Get() : nullptr;
     }
 }

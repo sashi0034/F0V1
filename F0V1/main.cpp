@@ -72,12 +72,21 @@ void Main()
     Graphics3D::SetViewMatrix(viewMat);
     Graphics3D::SetProjectionMatrix(projectionMat);
 
+    const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
+    const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
+
     RenderTarget renderTarget{
         {
             .size = Scene::Size(),
             .color = ColorF32{1, 1, 0.5, 1},
-            .pixelShader = texturePS,
-            .vertexShader = textureVS
+        }
+    };
+
+    Texture renderTargetTexture{
+        {
+            .source = renderTarget.getResource(),
+            .pixelShader = default2dPS,
+            .vertexShader = default2dVS
         }
     };
 
@@ -93,7 +102,8 @@ void Main()
             model.draw();
         }
 
-        renderTarget.texture().draw();
+        constexpr Point someMargin = Point{64, 64};
+        renderTargetTexture.draw(RectF{someMargin / 2, Scene::Size() - someMargin * 2});
 
         // count++;
         // if (count % 120 < 60)

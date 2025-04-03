@@ -164,8 +164,6 @@ namespace
                     .bufferCount = static_cast<int>(swapchainDesc.BufferCount),
                     .size = m_sceneSize,
                     .color = m_clearColor,
-                    .pixelShader = {},
-                    .vertexShader = {},
                 },
                 m_swapChain.Get()
             };

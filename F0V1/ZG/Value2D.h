@@ -62,6 +62,17 @@ namespace ZG
     struct Vector2D : Value2D<Type>
     {
         using Value2D<Type>::Value2D;
+
+        [[nodiscard]] constexpr Vector2D(const Value2D<Type>& v)
+            : Value2D<Type>(v)
+        {
+        }
+
+        template <class OtherType>
+        [[nodiscard]] constexpr Vector2D(const Value2D<OtherType>& v)
+            : Value2D<Type>(static_cast<Type>(v.x), static_cast<Type>(v.y))
+        {
+        }
     };
 
     using Vec2 = Vector2D<double>;
