@@ -15,6 +15,29 @@ namespace ZG
         {
         }
 
+        [[nodiscard]] Mat4x4 translated(const Float3& v) const
+        {
+            return DirectX::XMMatrixMultiply(mat, DirectX::XMMatrixTranslation(v.x, v.y, v.z));
+        }
+
+        [[nodiscard]] Mat4x4 translated(Arithmetic auto x, Arithmetic auto y, Arithmetic auto z) const
+        {
+            return DirectX::XMMatrixMultiply(
+                mat, DirectX::XMMatrixTranslation(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+        }
+
+        [[nodiscard]] Mat4x4 scaled(const Float3& v) const
+        {
+            return DirectX::XMMatrixMultiply(
+                mat, DirectX::XMMatrixScaling(v.x, v.y, v.z));
+        }
+
+        [[nodiscard]] Mat4x4 scaled(Arithmetic auto x, Arithmetic auto y, Arithmetic auto z) const
+        {
+            return DirectX::XMMatrixMultiply(
+                mat, DirectX::XMMatrixScaling(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)));
+        }
+
         [[nodiscard]] Mat4x4 rotatedX(Arithmetic auto angle) const
         {
             return Mat4x4{DirectX::XMMatrixRotationX(static_cast<float>(angle)) * mat};
@@ -63,6 +86,11 @@ namespace ZG
                     static_cast<float>(nearZ),
                     static_cast<float>(farZ))
             };
+        }
+
+        [[nodiscard]] static Mat4x4 Translate(const Float3 v) noexcept
+        {
+            return DirectX::XMMatrixTranslation(v.x, v.y, v.z);
         }
     };
 }

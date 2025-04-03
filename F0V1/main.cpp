@@ -77,7 +77,7 @@ void Main()
 
     RenderTarget renderTarget{
         {
-            .size = Scene::Size(),
+            .size = Scene::Size().withX(Scene::Size().x * 0.5),
             .color = ColorF32{1, 1, 0.5, 1},
         }
     };
@@ -89,6 +89,8 @@ void Main()
             .vertexShader = default2dVS
         }
     };
+
+    worldMat = worldMat.translated(-5.0, 0.0, 0.0);;
 
     int count{};
     while (System::Update())

@@ -50,6 +50,21 @@ namespace ZG
             return {x / s, y / s};
         }
 
+        [[nodiscard]] constexpr Value2D withX(value_type newX) const noexcept
+        {
+            return {newX, y};
+        }
+
+        [[nodiscard]] constexpr Value2D withY(value_type newY) const noexcept
+        {
+            return {x, newY};
+        }
+
+        [[nodiscard]] constexpr Value2D<int> asPoint() const noexcept
+        {
+            return {static_cast<int>(x), static_cast<int>(y)};
+        }
+
         template <typename T = std::conditional<std::is_floating_point_v<Type>, Type, double>::type>
         [[nodiscard]] constexpr T horizontalAspectRatio() const noexcept
         {
@@ -79,14 +94,14 @@ namespace ZG
 
     using Float2 = Vector2D<float>;
 
-    /// @brief Integral 2D vector
-    template <class Integer>
-    struct Integer2D : Value2D<Integer>
-    {
-        using Value2D<Integer>::Value2D;
-    };
+    // /// @brief Integral 2D vector
+    // template <class Integer>
+    // struct Integer2D : Value2D<Integer>
+    // {
+    //     using Value2D<Integer>::Value2D;
+    // };
 
-    using Point = Integer2D<int32_t>;
+    using Point = Value2D<int32_t>;
 
     using Size = Point;
 }
