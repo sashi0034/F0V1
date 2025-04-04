@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using CppAst;
-using Irony.Parsing;
 
 namespace AsbindGenerator;
 
@@ -17,17 +16,32 @@ static class Program
 
         string rootPath = args[0];
 
-        var headers = CppUtils.GetHeaderFiles(rootPath);
+        var vcxprojjPath = AsbindUtils.FindVcxprojFile(rootPath);
+        var additionalIncludeDirectories = AsbindUtils.GetAdditionalIncludeDirectories(vcxprojjPath);
+
+        var headers = AsbindUtils.GetHeaderFiles(rootPath);
+
+        const string pchFileName = "pch.h";
+        var pchPath = Path.Combine(rootPath, pchFileName);
+        var pchContent = File.ReadAllText(pchPath);
 
         Console.WriteLine(Directory.GetCurrentDirectory());
+
         foreach (var header in headers)
         {
+            if (header.EndsWith(pchFileName)) continue;
+
+            Console.WriteLine(header);
+
             var content = File.ReadAllText(header);
 
             // Parse a C++ files
             var option = new CppParserOptions().ConfigureForWindowsMsvc();
-            option.IncludeFolders.Add(Path.GetDirectoryName(header));
-            option.IncludeFolders.Add(rootPath);
+
+            // option.IncludeFolders.Add(Path.GetDirectoryName(header));
+            option.IncludeFolders.AddRange(additionalIncludeDirectories);
+            option.SystemIncludeFolders.Add(@"C:\Program Files\LLVM\lib\clang\17\include");
+
             option.AdditionalArguments.Add("-std=c++20");
 
             var compilation = CppParser.Parse(content, option);
@@ -55,6 +69,8 @@ static class Program
             {
                 Console.WriteLine(cppClass);
             }
+
+            Console.WriteLine("-----------------------------------------------");
         }
     }
 }
