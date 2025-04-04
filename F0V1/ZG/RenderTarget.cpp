@@ -10,17 +10,17 @@ using namespace ZG::detail;
 
 namespace
 {
-    struct ImplBase
-    {
-        D3D12_CPU_DESCRIPTOR_HANDLE m_lastRtvHandle{};
-        D3D12_CPU_DESCRIPTOR_HANDLE m_lastDsvHandle{};
-    };
-
-    Array<ImplBase*> s_renderTargetStack{};
+    Array<RenderTarget> s_renderTargetStack{};
 }
 
-struct RenderTarget::Impl : ImplBase
+struct RenderTarget::Impl
 {
+    Size m_size{};
+    ColorF32 m_clearColor{};
+
+    D3D12_CPU_DESCRIPTOR_HANDLE m_lastRtvHandle{};
+    D3D12_CPU_DESCRIPTOR_HANDLE m_lastDsvHandle{};
+
     ComPtr<ID3D12DescriptorHeap> m_rtvDescriptorHeap{};
     ComPtr<ID3D12DescriptorHeap> m_dsvDescriptorHeap{};
 
@@ -29,11 +29,10 @@ struct RenderTarget::Impl : ImplBase
 
     // RenderTargetParams m_params{};
 
-    ColorF32 m_clearColor{};
-
     Impl(const RenderTargetParams& params, IDXGISwapChain* swapChain = nullptr)
     {
-        m_clearColor = params.color;
+        m_size = params.size;
+        m_clearColor = params.clearColor;
 
         const auto device = EngineCore.GetDevice();
 
@@ -151,10 +150,31 @@ struct RenderTarget::Impl : ImplBase
         }
     }
 
+    void CommandSetViewPortAndScissorsRect() const
+    {
+        const auto commandList = EngineCore.GetCommandList();
+
+        // ビューポートの設定
+        D3D12_VIEWPORT viewport = {};
+        viewport.TopLeftX = 0.0f;
+        viewport.TopLeftY = 0.0f;
+        viewport.Width = static_cast<float>(m_size.x);
+        viewport.Height = static_cast<float>(m_size.y);
+        viewport.MinDepth = 0.0f;
+        viewport.MaxDepth = 1.0f;
+        commandList->RSSetViewports(1, &viewport);
+
+        // シザー矩形の設定
+        D3D12_RECT scissorRect = {};
+        scissorRect.left = 0;
+        scissorRect.top = 0;
+        scissorRect.right = scissorRect.left + m_size.x;
+        scissorRect.bottom = scissorRect.top + m_size.y;
+        commandList->RSSetScissorRects(1, &scissorRect);
+    }
+
     ScopedRenderTarget ScopedBind(int index)
     {
-        s_renderTargetStack.push_back(this);
-
         const auto commandList = EngineCore.GetCommandList();
 
         const auto resourceBarrierDesc = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -176,6 +196,8 @@ struct RenderTarget::Impl : ImplBase
         m_lastRtvHandle = rtvHandle;
         m_lastDsvHandle = dsvHandle;
 
+        CommandSetViewPortAndScissorsRect();
+
         return ScopedRenderTarget{
             [this, index, commandList]
             {
@@ -186,14 +208,15 @@ struct RenderTarget::Impl : ImplBase
                 commandList->ResourceBarrier(1, &resourceBarrierDesc);
 
                 AssertTrue{"RenderTarget::ScopedBind() is not balanced"sv}
-                    | s_renderTargetStack[s_renderTargetStack.size() - 1] == this;
+                    | s_renderTargetStack[s_renderTargetStack.size() - 1].p_impl.get() == this;
                 s_renderTargetStack.pop_back();
 
                 if (s_renderTargetStack.empty()) return;
                 // -----------------------------------------------
 
-                const auto prev = s_renderTargetStack[s_renderTargetStack.size() - 1];
+                const auto& prev = s_renderTargetStack[s_renderTargetStack.size() - 1].p_impl;
                 commandList->OMSetRenderTargets(1, &prev->m_lastRtvHandle, false, &prev->m_lastDsvHandle);
+                prev->CommandSetViewPortAndScissorsRect();
             }
         };
     }
@@ -211,13 +234,28 @@ namespace ZG
     {
     }
 
+    Size RenderTarget::size() const
+    {
+        return p_impl ? p_impl->m_size : Size{};
+    }
+
     ScopedRenderTarget RenderTarget::scopedBind(int index) const
     {
-        return p_impl ? p_impl->ScopedBind(index) : ScopedRenderTarget{};
+        if (not p_impl) return ScopedRenderTarget{};
+
+        s_renderTargetStack.push_back(*this);
+        return p_impl->ScopedBind(index);
     }
 
     ID3D12Resource* RenderTarget::getResource(int index) const
     {
         return p_impl ? p_impl->m_rtvResources[index].Get() : nullptr;
+    }
+
+    RenderTarget RenderTarget::Current()
+    {
+        return s_renderTargetStack.empty()
+                   ? RenderTarget{}
+                   : s_renderTargetStack[s_renderTargetStack.size() - 1];
     }
 }

@@ -163,7 +163,7 @@ namespace
                 {
                     .bufferCount = static_cast<int>(swapchainDesc.BufferCount),
                     .size = m_sceneSize,
-                    .color = m_clearColor,
+                    .clearColor = m_clearColor,
                 },
                 m_swapChain.Get()
             };
@@ -180,30 +180,9 @@ namespace
 
         void BeginFrame()
         {
-            const auto commandList = m_commandList.GetCommandList();
-
             // バックバッファを設定
             const auto backBufferIndex = m_swapChain->GetCurrentBackBufferIndex();
             m_scopedBackBuffer = m_backBuffer.scopedBind(backBufferIndex);
-
-            // ビューポートの設定
-            Point windowSize = EngineWindow.WindowSize();
-            D3D12_VIEWPORT viewport = {};
-            viewport.TopLeftX = 0.0f;
-            viewport.TopLeftY = 0.0f;
-            viewport.Width = static_cast<float>(windowSize.x);
-            viewport.Height = static_cast<float>(windowSize.y);
-            viewport.MinDepth = 0.0f;
-            viewport.MaxDepth = 1.0f;
-            commandList->RSSetViewports(1, &viewport);
-
-            // シザー矩形の設定
-            D3D12_RECT scissorRect = {};
-            scissorRect.left = 0;
-            scissorRect.top = 0;
-            scissorRect.right = scissorRect.left + windowSize.x;
-            scissorRect.bottom = scissorRect.top + windowSize.y;
-            commandList->RSSetScissorRects(1, &scissorRect);
 
             // タイマーの更新
             EngineTimer.Tick();

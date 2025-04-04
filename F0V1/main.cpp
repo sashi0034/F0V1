@@ -75,10 +75,11 @@ void Main()
     const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
     const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
 
+    constexpr Size renderTargetSize{640, 640};
     RenderTarget renderTarget{
         {
-            .size = Scene::Size().withX(Scene::Size().x * 0.5),
-            .color = ColorF32{1, 1, 0.5, 1},
+            .size = renderTargetSize,
+            .clearColor = ColorF32{1, 1, 0.5, 1},
         }
     };
 
@@ -90,7 +91,16 @@ void Main()
         }
     };
 
-    worldMat = worldMat.translated(-5.0, 0.0, 0.0);;
+    // const Mat4x4 renderTargetProjectionMat = Mat4x4::PerspectiveFov(
+    //     90.0_deg,
+    //     renderTargetSize.horizontalAspectRatio(),
+    //     1.0f,
+    //     10.0f
+    // );
+    //
+    // Graphics3D::SetProjectionMatrix(renderTargetProjectionMat);
+
+    // worldMat = worldMat.translated(-5.0, 0.0, 0.0);;
 
     int count{};
     while (System::Update())
@@ -105,7 +115,7 @@ void Main()
         }
 
         constexpr Point someMargin = Point{64, 64};
-        renderTargetTexture.draw(RectF{someMargin / 2, Scene::Size() - someMargin * 2});
+        renderTargetTexture.draw(RectF{someMargin, renderTarget.size()});
 
         // count++;
         // if (count % 120 < 60)

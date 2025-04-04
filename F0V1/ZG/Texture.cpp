@@ -7,6 +7,7 @@
 #include "IndexBuffer.h"
 #include "Mat3x2.h"
 #include "Rect.h"
+#include "RenderTarget.h"
 #include "Scene.h"
 #include "VertexBuffer.h"
 #include "detail/DescriptorHeap.h"
@@ -154,7 +155,7 @@ struct Texture::Impl
     // 2D
     void Draw(const RectF& region)
     {
-        const auto mat3x2 = Mat3x2::Screen(Scene::Size()); // TODO
+        const auto mat3x2 = Mat3x2::Screen(RenderTarget::Current().size());
         const auto transformedTL = mat3x2.transformPoint(region.tl());
         const auto transformedBR = mat3x2.transformPoint(region.br());
         m_textureVertexData.TransformPosition(transformedTL, transformedBR);
