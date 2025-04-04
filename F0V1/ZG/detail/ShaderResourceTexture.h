@@ -13,6 +13,8 @@ namespace ZG::detail
 
         bool isEmpty() const;
 
+        Size size() const;
+
         ID3D12Resource* getResource() const;
 
         DXGI_FORMAT getFormat() const;

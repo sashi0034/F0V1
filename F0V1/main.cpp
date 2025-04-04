@@ -120,11 +120,11 @@ void Main()
         // count++;
         // if (count % 120 < 60)
         // {
-        //     pngTexture.draw();
+        //     pngTexture.drawAt(Scene::Center());
         // }
         // else
         // {
-        //     noiseTexture.draw();
+        //     noiseTexture.drawAt(Scene::Center());
         // }
     }
 }

@@ -163,6 +163,13 @@ struct Texture::Impl
 
         DrawInternal();
     }
+
+    void DrawAt(const Vec2 position)
+    {
+        const auto size = m_sr.size();
+        const auto tl = position - size.toVec<double>() / 2.0;
+        Draw(RectF{tl, size.toVec<double>()});
+    }
 };
 
 namespace ZG
@@ -175,6 +182,11 @@ namespace ZG
     void Texture::draw(const RectF& region) const
     {
         if (p_impl) p_impl->Draw(region);
+    }
+
+    void Texture::drawAt(const Vec2& position) const
+    {
+        if (p_impl) p_impl->DrawAt(position);
     }
 
     void Texture::draw3D() const

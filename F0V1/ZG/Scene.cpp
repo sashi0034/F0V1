@@ -11,4 +11,9 @@ namespace ZG
     {
         return EngineCore.GetSceneSize();
     }
+
+    Point Scene::Center()
+    {
+        return Size() / 2;
+    }
 }

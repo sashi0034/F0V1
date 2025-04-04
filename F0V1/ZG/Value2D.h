@@ -60,9 +60,15 @@ namespace ZG
             return {x, newY};
         }
 
-        [[nodiscard]] constexpr Value2D<int> asPoint() const noexcept
+        [[nodiscard]] constexpr Value2D<int> toPoint() const noexcept
         {
             return {static_cast<int>(x), static_cast<int>(y)};
+        }
+
+        template <class OtherType>
+        [[nodiscard]] constexpr Value2D<OtherType> toVec() const noexcept
+        {
+            return {static_cast<OtherType>(x), static_cast<OtherType>(y)};
         }
 
         template <typename T = std::conditional<std::is_floating_point_v<Type>, Type, double>::type>

@@ -5,6 +5,8 @@ namespace ZG
 {
     namespace Scene
     {
-        [[nodiscard]] Size Size();
-    };
+        [[nodiscard]] ZG::Size Size();
+
+        [[nodiscard]] Point Center();
+    }
 }

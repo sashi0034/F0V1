@@ -22,6 +22,8 @@ namespace ZG
 
         void draw(const RectF& region) const;
 
+        void drawAt(const Vec2& position) const;
+
         void draw3D() const;
 
     private:

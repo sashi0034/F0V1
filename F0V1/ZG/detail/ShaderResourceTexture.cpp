@@ -15,6 +15,7 @@ struct ShaderResourceTexture::Impl
 {
     ComPtr<ID3D12Resource> m_textureBuffer{};
     DXGI_FORMAT m_format{};
+    Size m_size{};
 
     Impl(const std::wstring& filename)
     {
@@ -143,6 +144,8 @@ struct ShaderResourceTexture::Impl
         copyCommandList->ResourceBarrier(1, &barrier);
 
         m_format = metadata.format;
+
+        m_size = Size{static_cast<int>(metadata.width), static_cast<int>(metadata.height)};
     }
 
     Impl(const Image& image)
@@ -185,12 +188,15 @@ struct ShaderResourceTexture::Impl
                 image.size_in_bytes());
 
         m_format = resourceDesc.Format;
+
+        m_size = Size{static_cast<int>(resourceDesc.Width), static_cast<int>(resourceDesc.Height)};
     }
 
     Impl(ID3D12Resource* resource)
     {
         m_textureBuffer = ComPtr<ID3D12Resource>(resource);
         m_format = resource->GetDesc().Format;
+        m_size = Size{static_cast<int>(resource->GetDesc().Width), static_cast<int>(resource->GetDesc().Height)};
     }
 };
 
@@ -219,6 +225,11 @@ namespace ZG::detail
     bool ShaderResourceTexture::isEmpty() const
     {
         return p_impl == nullptr;
+    }
+
+    Size ShaderResourceTexture::size() const
+    {
+        return p_impl ? p_impl->m_size : Size{};
     }
 
     ID3D12Resource* ShaderResourceTexture::getResource() const
