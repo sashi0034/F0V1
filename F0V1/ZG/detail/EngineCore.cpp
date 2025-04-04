@@ -12,6 +12,7 @@
 
 #include "CommandList.h"
 #include "EngineHotReloader.h"
+#include "EngineKeyboard.h"
 #include "EnginePresetAsset.h"
 #include "EngineWindow.h"
 #include "ZG/Array.h"
@@ -198,6 +199,9 @@ namespace
 
             // ホットリローダの更新
             EngineHotReloader.Update();
+
+            // 入力情報の更新
+            EngineKeyboard.update();
         }
 
         void EndFrame()

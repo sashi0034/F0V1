@@ -146,11 +146,13 @@
     <ClCompile Include="ZG\detail\CommandList.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
     <ClCompile Include="ZG\detail\EngineHotReloader.cpp" />
+    <ClCompile Include="ZG\detail\EngineKeyboard.cpp" />
     <ClCompile Include="ZG\detail\EnginePresetAsset.cpp" />
     <ClCompile Include="ZG\detail\ShaderResourceTexture.cpp" />
     <ClCompile Include="ZG\EngineTimer.cpp" />
     <ClCompile Include="ZG\FileWatcher.cpp" />
     <ClCompile Include="ZG\IndexBuffer.cpp" />
+    <ClCompile Include="ZG\KeyboardInput.cpp" />
     <ClCompile Include="ZG\Mat3x2.cpp" />
     <ClCompile Include="ZG\Model.cpp" />
     <ClCompile Include="ZG\Rect.cpp" />
@@ -212,6 +214,7 @@
     <ClInclude Include="ZG\detail\EngineCore.h" />
     <ClInclude Include="ZG\detail\EngineEntryPoint.h" />
     <ClInclude Include="ZG\detail\EngineHotReloader.h" />
+    <ClInclude Include="ZG\detail\EngineKeyboard.h" />
     <ClInclude Include="ZG\detail\EnginePresetAsset.h" />
     <ClInclude Include="ZG\detail\EngineStackState.h" />
     <ClInclude Include="ZG\detail\EngineWindow.h" />
@@ -225,6 +228,7 @@
     <ClInclude Include="ZG\Image.h" />
     <ClInclude Include="ZG\IndexBuffer.h" />
     <ClInclude Include="ZG\ITimestamp.h" />
+    <ClInclude Include="ZG\KeyboardInput.h" />
     <ClInclude Include="ZG\Logger.h" />
     <ClInclude Include="ZG\Mat3x2.h" />
     <ClInclude Include="ZG\Mat4x4.h" />

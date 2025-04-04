@@ -3,6 +3,7 @@
 #include "ZG/Buffer3D.h"
 #include "ZG/Graphics3D.h"
 #include "ZG/Image.h"
+#include "ZG/KeyboardInput.h"
 #include "ZG/Mat4x4.h"
 
 #include "ZG/Shader.h"
@@ -23,8 +24,8 @@ namespace
 
 void Main()
 {
-    const PixelShader texturePS{ShaderParams{.filename = L"asset/shader/basic_pixel.hlsl", .entryPoint = "PS"}};
-    const VertexShader textureVS{ShaderParams{.filename = L"asset/shader/basic_vertex.hlsl", .entryPoint = "VS"}};
+    const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
+    const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
 
     Image image{Size{16, 16}};
     for (int x = 0; x < image.size().x; ++x)
@@ -40,11 +41,11 @@ void Main()
     }
 
     const Texture noiseTexture{
-        TextureParams{.source = image, .pixelShader = texturePS, .vertexShader = textureVS}
+        TextureParams{.source = image, .pixelShader = default2dPS, .vertexShader = default2dVS}
     };
 
     const Texture pngTexture{
-        TextureParams{.source = L"asset/image/mii.png", .pixelShader = texturePS, .vertexShader = textureVS}
+        TextureParams{.source = L"asset/image/mii.png", .pixelShader = default2dPS, .vertexShader = default2dVS}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
@@ -71,9 +72,6 @@ void Main()
 
     Graphics3D::SetViewMatrix(viewMat);
     Graphics3D::SetProjectionMatrix(projectionMat);
-
-    const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
-    const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
 
     constexpr Size renderTargetSize{640, 640};
     RenderTarget renderTarget{
@@ -105,6 +103,21 @@ void Main()
     int count{};
     while (System::Update())
     {
+        if (KeySpace.pressed())
+        {
+            count++;
+            if (count % 120 < 60)
+            {
+                pngTexture.drawAt(Scene::Center());
+            }
+            else
+            {
+                noiseTexture.drawAt(Scene::Center());
+            }
+
+            continue;
+        }
+
         {
             const auto rt = renderTarget.scopedBind();
 
@@ -116,15 +129,5 @@ void Main()
 
         constexpr Point someMargin = Point{64, 64};
         renderTargetTexture.draw(RectF{someMargin, renderTarget.size()});
-
-        // count++;
-        // if (count % 120 < 60)
-        // {
-        //     pngTexture.drawAt(Scene::Center());
-        // }
-        // else
-        // {
-        //     noiseTexture.drawAt(Scene::Center());
-        // }
     }
 }
