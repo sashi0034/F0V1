@@ -120,8 +120,10 @@ namespace
 
         KeyboardInput::RegisterScript(engine);
 
-        asbind20::global(engine)
-            .property("const KeyboardInput KeySpace", KeySpace);
+        for (auto handler : g_asapi_globalBindHandlers)
+        {
+            handler(asbind20::global(engine));
+        }
     }
 
     int includeCallback(const char* include, const char* from, CScriptBuilder* builder, void* userParam)
