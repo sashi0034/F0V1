@@ -236,6 +236,16 @@ class KeyboardInput{
 	bool pressed() const;
 	bool up() const;
 }
+class Point{
+	~Point();
+	Point();
+	Point(const Point&in);
+	Point& opAssign(const Point&in);
+	Point withX(int newX) const;
+	Point withY(int newY) const;
+	int x;
+	int y;
+}
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);
 string formatInt(int64 val, const string&in options = "", uint width = 0);

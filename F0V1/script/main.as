@@ -3,8 +3,12 @@ void main() {
 
     int c = 0;
 
+    Point p;
+
     while (System::Update()) {
-        c++;
+        p.x++;
+        c = p.x;
+
         if (KeySpace.down()) {
             println("Count: " + c);
         }

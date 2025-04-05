@@ -15,6 +15,7 @@
 #include "add_on/weakref/weakref.h"
 #include "ZG/KeyboardInput.h"
 #include "ZG/System.h"
+#include "ZG/Value2D.h"
 #include "ZG/Script/ScriptPredefinedGenerator.h"
 
 using namespace ZG;
@@ -41,22 +42,6 @@ namespace
         }
     };
 
-    class TestBindSan
-    {
-    public:
-        void isEmpty() const;
-
-        struct script_isEmpty
-        {
-            void operator()(asbind20::value_class<script_isEmpty>& bind) const
-            {
-                bind.method("bool isEmpty() const", &TestBindSan::isEmpty);
-            }
-        };
-
-        static inline script_isEmpty s_script_isEmpty{};
-    };
-
     void MessageCallback(const asSMessageInfo* msg, void* param)
     {
         auto type = "[error]";
@@ -74,6 +59,21 @@ namespace
         {
             std::cerr << message << std::endl;
         }
+    }
+
+    std::string preprocessDeclaration(std::string declarations, std::map<std::string, std::string> macros)
+    {
+        for (const auto& [key, value] : macros)
+        {
+            size_t pos = 0;
+            while ((pos = declarations.find(key, pos)) != std::string::npos)
+            {
+                declarations.replace(pos, key.length(), value);
+                pos += value.length(); // 次の位置へ進む
+            }
+        }
+
+        return declarations;
     }
 
     void registerEngine(const asbind20::script_engine& engine)
@@ -114,7 +114,25 @@ namespace
 
         KeyboardInput::RegisterScript(engine);
 
-        for (auto handler : g_asapi_globalBindHandlers)
+        // asbind20::value_class<Point>(engine, "Point", asOBJ_VALUE)
+        //     .behaviours_by_traits()
+        //     .constructor<Point>("int x, int y")
+        //     .opAdd()
+        //     .opSub()
+        //     .method("Point opMul(int scalar) const", &Point::operator*)
+        //     .method("Point opDiv(int scalar) const", &Point::operator/)
+        //     .property("int x", &Point::x)
+        //     .property("int y", &Point::y)
+        //     .method("Point withX(int newX) const", &Point::withX);
+
+        Point::asapi_preprocessor = [](const std::string& declarations)
+        {
+            std::map<std::string, std::string> macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
+            return preprocessDeclaration(declarations, macros);
+        };
+        Point::RegisterScript(engine);
+
+        for (auto handler : asapi_globalBindHandlers)
         {
             handler(asbind20::global(engine));
         }

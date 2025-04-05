@@ -9,8 +9,6 @@ namespace ZG
     // T get_class_type(R T::*);
 }
 
-inline std::vector<std::function<void(asbind20::global<false>)>> g_asapi_globalBindHandlers{};
-
 namespace ZG
 {
     class KeyboardInput

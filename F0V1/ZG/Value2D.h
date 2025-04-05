@@ -1,17 +1,26 @@
 ﻿#pragma once
 #include <type_traits>
 
+#include "Script/ScriptBindMacros.h"
+
 namespace ZG
 {
     template <class Type>
     struct Value2D
     {
+        static constexpr auto objectProperty =
+            asOBJ_POD |
+            (std::is_floating_point_v<Type> ? asOBJ_APP_CLASS_ALLFLOATS : asOBJ_APP_CLASS_ALLINTS);
+        ASAPI_VALUE_CLASS_AS("$Value2D", Value2D<Type>, objectProperty);
+
         using value_type = Type;
         // using value_type = double;
 
         value_type x;
+        ASAPI_CLASS_PROPERTY("$value_type x", x);
 
         value_type y;
+        ASAPI_CLASS_PROPERTY("$value_type y", y);
 
         [[nodiscard]] constexpr Value2D() = default;
 
@@ -35,30 +44,42 @@ namespace ZG
             return {x + v.x, y + v.y};
         }
 
+        // ASAPI_CLASS_METHOD("$Value2D opAdd(const $Value2D& in v) const", operator+);
+
         [[nodiscard]] constexpr Value2D operator -(const Value2D& v) const noexcept
         {
             return {x - v.x, y - v.y};
         }
+
+        // ASAPI_CLASS_METHOD("$Value2D opSub(const $Value2D& in v) const", operator-);
 
         [[nodiscard]] constexpr Value2D operator *(value_type s) const noexcept
         {
             return {x * s, y * s};
         }
 
+        // ASAPI_CLASS_METHOD("$Value2D opMul($value_type s) const", operator*);
+
         [[nodiscard]] constexpr Value2D operator /(value_type s) const noexcept
         {
             return {x / s, y / s};
         }
+
+        //ASAPI_CLASS_METHOD("$Value2D opDiv($value_type s) const", operator/);
 
         [[nodiscard]] constexpr Value2D withX(value_type newX) const noexcept
         {
             return {newX, y};
         }
 
+        ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
+
         [[nodiscard]] constexpr Value2D withY(value_type newY) const noexcept
         {
             return {x, newY};
         }
+
+        ASAPI_CLASS_METHOD("$Value2D withY($value_type newY) const", withX);
 
         [[nodiscard]] constexpr Value2D<int> toPoint() const noexcept
         {
