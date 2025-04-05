@@ -109,7 +109,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript_add_on</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -129,7 +129,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript_add_on</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -139,8 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="engine\stub.hlsl" />
     <Content Include="asset\shader\default2d.hlsl" />
+    <ClCompile Include="EntryPoint_AS.cpp" />
+    <ClCompile Include="EntryPoint_CPP.cpp" />
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
     <ClCompile Include="ZG\detail\CommandList.cpp" />
@@ -158,6 +161,7 @@
     <ClCompile Include="ZG\Rect.cpp" />
     <ClCompile Include="ZG\RenderTarget.cpp" />
     <ClCompile Include="ZG\ScopedDefer.cpp" />
+    <ClCompile Include="ZG\Script\ScriptPredefinedGenerator.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <ClCompile Include="ZG\VertexBuffer.cpp" />
     <ClCompile Include="main.cpp" />
@@ -197,10 +201,13 @@
     <Content Include="asset\shader\basic_vertex.hlsl" />
     <Content Include="asset\shader\model_pixel.hlsl" />
     <Content Include="asset\shader\model_vertex.hlsl" />
+    <Content Include="script\main.as" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asset\shader\basic.hlsli" />
     <ClInclude Include="asset\shader\model.hlsli" />
+    <ClInclude Include="EntryPoint_AS.h" />
+    <ClInclude Include="EntryPoint_CPP.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ZG\Array.h" />
     <ClInclude Include="ZG\AssertObject.h" />
@@ -238,6 +245,8 @@
     <ClInclude Include="ZG\RenderTarget.h" />
     <ClInclude Include="ZG\Scene.h" />
     <ClInclude Include="ZG\ScopedDefer.h" />
+    <ClInclude Include="ZG\Script\ScriptBindMacros.h" />
+    <ClInclude Include="ZG\Script\ScriptPredefinedGenerator.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
     <ClInclude Include="ZG\Texture.h" />
@@ -250,6 +259,12 @@
     <ClInclude Include="ZG\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\external\angelscript\projects\msvc2022\angelscript.vcxproj">
+      <Project>{39e6af97-6ba3-4a72-8c61-bcebf214ebfd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\external\angelscript_add_on\angelscript_add_on.vcxproj">
+      <Project>{4932417b-3e55-417c-8cef-b03456ea87f0}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj">
       <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
     </ProjectReference>

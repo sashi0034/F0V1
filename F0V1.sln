@@ -7,6 +7,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "F0V1", "F0V1\F0V1.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTex", "external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj", "{371B9FA9-4C90-4AC6-A123-ACED756D6C77}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "external\angelscript\projects\msvc2022\angelscript.vcxproj", "{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript_add_on", "external\angelscript_add_on\angelscript_add_on.vcxproj", "{4932417B-3E55-417C-8CEF-B03456EA87F0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,8 +35,27 @@ Global
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x64.Build.0 = Release|x64
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.ActiveCfg = Release|Win32
 		{371B9FA9-4C90-4AC6-A123-ACED756D6C77}.Release|x86.Build.0 = Release|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x64.ActiveCfg = Debug|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x64.Build.0 = Debug|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x86.ActiveCfg = Debug|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Debug|x86.Build.0 = Debug|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x64.ActiveCfg = Release|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x64.Build.0 = Release|x64
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x86.ActiveCfg = Release|Win32
+		{39E6AF97-6BA3-4A72-8C61-BCEBF214EBFD}.Release|x86.Build.0 = Release|Win32
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Debug|x64.ActiveCfg = Debug|x64
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Debug|x64.Build.0 = Debug|x64
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Debug|x86.ActiveCfg = Debug|Win32
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Debug|x86.Build.0 = Debug|Win32
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x64.ActiveCfg = Release|x64
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x64.Build.0 = Release|x64
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x86.ActiveCfg = Release|Win32
+		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4DF771EF-4238-4869-85C7-758BB1071362}
 	EndGlobalSection
 EndGlobal

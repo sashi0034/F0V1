@@ -62,6 +62,11 @@
 #include <variant>
 
 // external libraries
+#include "../external/angelscript/include/angelscript.h"
+
+#include "../external/asbind20/asbind.hpp"
+#include "../external/asbind20/operators.hpp"
+
 #include "DirectXTex.h"
 
 #include "../external/d3dx12.h"
