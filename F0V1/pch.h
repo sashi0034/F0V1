@@ -62,13 +62,15 @@
 #include <variant>
 
 // external libraries
+#include "../external/angelscript/include/angelscript.h"
+
+#include "../external/asbind20/asbind.hpp"
+
 #include "DirectXTex.h"
 
 #include "../external/d3dx12.h"
 
 #include "../external/tiny_obj_loader.h"
-
-#include "../external/angelscript/include/angelscript.h"
 
 using namespace std::string_view_literals;
 
