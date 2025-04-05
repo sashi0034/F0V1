@@ -5,7 +5,7 @@ void main() {
 
     while (System::Update()) {
         c++;
-        if (c % 100 == 0) {
+        if (KeySpace.down()) {
             println("Count: " + c);
         }
     }
