@@ -8,7 +8,7 @@ namespace ZG
 {
     struct TextureParams
     {
-        Variant<std::wstring, Image, ID3D12Resource*> source; // FIXME? 生から ComPtr はメモリリークするのだろうか
+        Variant<std::string, Image, ID3D12Resource*> source; // FIXME? 生から ComPtr はメモリリークするのだろうか
         PixelShader pixelShader;
         VertexShader vertexShader;
     };

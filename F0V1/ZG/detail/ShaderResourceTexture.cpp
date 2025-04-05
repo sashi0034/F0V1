@@ -202,11 +202,11 @@ struct ShaderResourceTexture::Impl
 
 namespace ZG::detail
 {
-    ShaderResourceTexture::ShaderResourceTexture(const Variant<std::wstring, Image, ID3D12Resource*>& source)
+    ShaderResourceTexture::ShaderResourceTexture(const Variant<std::string, Image, ID3D12Resource*>& source)
     {
-        if (const auto path = source.tryGet<std::wstring>())
+        if (const auto path = source.tryGet<std::string>())
         {
-            p_impl = std::make_shared<Impl>(*path);
+            p_impl = std::make_shared<Impl>(ToUtf16(*path));
         }
         else if (const auto image = source.tryGet<Image>())
         {

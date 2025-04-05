@@ -9,7 +9,7 @@ namespace ZG::detail
     public:
         ShaderResourceTexture() = default;
 
-        ShaderResourceTexture(const Variant<std::wstring, Image, ID3D12Resource*>& source);
+        ShaderResourceTexture(const Variant<std::string, Image, ID3D12Resource*>& source);
 
         bool isEmpty() const;
 

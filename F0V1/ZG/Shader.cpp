@@ -43,7 +43,7 @@ struct ZG::Shader_impl : IEngineHotReloadable
         m_timestamp = System::FrameCount();
 
         const auto compileResult = D3DCompileFromFile(
-            (m_params.filename).c_str(),
+            ToUtf16(m_params.filename).c_str(),
             nullptr,
             D3D_COMPILE_STANDARD_FILE_INCLUDE,
             m_params.entryPoint.c_str(),

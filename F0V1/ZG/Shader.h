@@ -2,13 +2,12 @@
 #include <d3dcommon.h>
 
 #include "ITimestamp.h"
-#include "Uncopyable.h"
 
 namespace ZG
 {
     struct ShaderParams
     {
-        std::wstring filename;
+        std::string filename;
         std::string entryPoint;
     };
 
