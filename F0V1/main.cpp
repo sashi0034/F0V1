@@ -16,6 +16,8 @@
 #include "ZG/Scene.h"
 #include "ZG/Transformer3D.h"
 
+#include "add_on/scriptstdstring/scriptstdstring.h"
+
 using namespace ZG;
 
 namespace
@@ -25,6 +27,7 @@ namespace
 void Main()
 {
     auto scriptEngine = asCreateScriptEngine();
+    RegisterStdString(scriptEngine);
 
     const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
     const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
