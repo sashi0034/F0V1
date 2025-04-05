@@ -112,30 +112,27 @@ namespace
                 .function("bool Update()", &System::Update);
         }
 
-        KeyboardInput::RegisterScript(engine);
+        // -----------------------------------------------
 
-        // asbind20::value_class<Point>(engine, "Point", asOBJ_VALUE)
-        //     .behaviours_by_traits()
-        //     .constructor<Point>("int x, int y")
-        //     .opAdd()
-        //     .opSub()
-        //     .method("Point opMul(int scalar) const", &Point::operator*)
-        //     .method("Point opDiv(int scalar) const", &Point::operator/)
-        //     .property("int x", &Point::x)
-        //     .property("int y", &Point::y)
-        //     .method("Point withX(int newX) const", &Point::withX);
+        using translator_t = std::map<std::string, std::string>;
 
         Point::asapi_preprocessor = [](const std::string& declarations)
         {
-            std::map<std::string, std::string> macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
+            const translator_t& macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
             return preprocessDeclaration(declarations, macros);
         };
 
         Point::RegisterScript(engine);
+        KeyboardInput::RegisterScript(engine);
 
-        for (auto handler : asapi_globalBindHandlers)
+        for (const auto& handler : asapi_globalBindHandlers)
         {
             handler(asbind20::global(engine));
+        }
+
+        for (const auto& handler : asapi_deferBindHandlers)
+        {
+            handler();
         }
     }
 

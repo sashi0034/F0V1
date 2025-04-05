@@ -1,6 +1,10 @@
 ﻿#pragma once
 
+// inline std::vector<std::function<void(asIScriptEngine*)>> asapi_typeBindHandlers{};
+
 inline std::vector<std::function<void(asbind20::global<false>)>> asapi_globalBindHandlers{};
+
+inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 
 #define ASAPI_IMPL_CONCATENATE_INNER(x, y) x##y
 
@@ -12,16 +16,38 @@ inline std::vector<std::function<void(asbind20::global<false>)>> asapi_globalBin
 #define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
     static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
-    static auto RegisterScript(asIScriptEngine* engine) { \
-        const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : decl; \
+    static void RegisterScript(asIScriptEngine* engine) { \
+        const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
         auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
             .behaviours_by_traits(); \
-        for (const auto& handler : asapi_bindHandlers) \
-        { \
-            handler(bind); \
-        } \
+        asapi_deferBindHandlers.push_back([bind]() { \
+            for (const auto& handler : asapi_bindHandlers) \
+            { \
+                handler(bind); \
+            } \
+        }); \
     } \
     using asapi_BindTarget = name;
+
+// #define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
+//     static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
+//     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
+//     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
+//         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
+//             asapi_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
+//                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
+//                 auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
+//                     .behaviours_by_traits(); \
+//                 asapi_deferBindHandlers.push_back([bind]() { \
+//                     for (const auto& handler : asapi_bindHandlers) \
+//                     { \
+//                         handler(bind); \
+//                     } \
+//                 }); \
+//             }); \
+//         } \
+//     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); \
+//     using asapi_BindTarget = name;
 
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)

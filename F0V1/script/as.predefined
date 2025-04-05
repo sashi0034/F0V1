@@ -227,15 +227,6 @@ class flag_t{
 	bool opImplConv() const;
 	bool flag;
 }
-class KeyboardInput{
-	~KeyboardInput();
-	KeyboardInput();
-	KeyboardInput(const KeyboardInput&in);
-	KeyboardInput& opAssign(const KeyboardInput&in);
-	bool down() const;
-	bool pressed() const;
-	bool up() const;
-}
 class Point{
 	~Point();
 	Point();
@@ -251,6 +242,15 @@ class Point{
 	Point withY(int newY) const;
 	int x;
 	int y;
+}
+class KeyboardInput{
+	~KeyboardInput();
+	KeyboardInput();
+	KeyboardInput(const KeyboardInput&in);
+	KeyboardInput& opAssign(const KeyboardInput&in);
+	bool down() const;
+	bool pressed() const;
+	bool up() const;
 }
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);
