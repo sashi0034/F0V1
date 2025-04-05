@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="engine\stub.hlsl" />
     <Content Include="asset\shader\default2d.hlsl" />
     <ClCompile Include="EntryPoint_AS.cpp" />

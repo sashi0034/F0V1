@@ -13,7 +13,10 @@
 #include "add_on/scriptmath/scriptmath.h"
 #include "add_on/scriptstdstring/scriptstdstring.h"
 #include "add_on/weakref/weakref.h"
+#include "ZG/System.h"
 #include "ZG/Script/ScriptPredefinedGenerator.h"
+
+using namespace ZG;
 
 namespace
 {
@@ -101,6 +104,12 @@ namespace
             .opConv<bool>()
             .opImplConv<bool>()
             .property("bool flag", &flag_t::flag);
+
+        {
+            const auto ns = asbind20::namespace_(engine, "System");;
+            asbind20::global(engine)
+                .function("bool Update()", &System::Update);
+        }
     }
 
     int includeCallback(const char* include, const char* from, CScriptBuilder* builder, void* userParam)
@@ -131,7 +140,7 @@ namespace
 
 void EntryPoint_AS()
 {
-    std::string moduleName{"script.as"};
+    std::string moduleName{"script/main.as"};
 
     // -----------------------------------------------
 

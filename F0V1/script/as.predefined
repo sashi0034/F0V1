@@ -263,3 +263,4 @@ void throw(const string&in);
 string getExceptionInfo();
 void print(const string&in message);
 void println(const string&in message);
+namespace System { bool Update(); }
