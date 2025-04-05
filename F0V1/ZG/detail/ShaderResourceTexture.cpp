@@ -6,6 +6,7 @@
 #include "ZG/Color.h"
 #include "ZG/Image.h"
 #include "ZG/System.h"
+#include "ZG/TextureSource.h"
 #include "ZG/Utils.h"
 #include "ZG/Variant.h"
 
@@ -202,7 +203,7 @@ struct ShaderResourceTexture::Impl
 
 namespace ZG::detail
 {
-    ShaderResourceTexture::ShaderResourceTexture(const Variant<std::string, Image, ID3D12Resource*>& source)
+    ShaderResourceTexture::ShaderResourceTexture(const TextureSource& source)
     {
         if (const auto path = source.tryGet<std::string>())
         {

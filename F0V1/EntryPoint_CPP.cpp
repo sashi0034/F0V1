@@ -38,11 +38,11 @@ void EntryPoint_CPP()
     }
 
     const Texture noiseTexture{
-        TextureParams{.source = image, .pixelShader = default2dPS, .vertexShader = default2dVS}
+        TextureParams{.source = image, .ps = default2dPS, .vs = default2dVS}
     };
 
     const Texture pngTexture{
-        TextureParams{.source = "asset/image/mii.png", .pixelShader = default2dPS, .vertexShader = default2dVS}
+        TextureParams{.source = "asset/image/mii.png", .ps = default2dPS, .vs = default2dVS}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
@@ -81,8 +81,8 @@ void EntryPoint_CPP()
     Texture renderTargetTexture{
         {
             .source = renderTarget.getResource(),
-            .pixelShader = default2dPS,
-            .vertexShader = default2dVS
+            .ps = default2dPS,
+            .vs = default2dVS
         }
     };
 

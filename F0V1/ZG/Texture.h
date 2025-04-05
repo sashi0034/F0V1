@@ -1,16 +1,15 @@
 ﻿#pragma once
-#include "Image.h"
 #include "Rect.h"
 #include "Shader.h"
-#include "Variant.h"
+#include "TextureSource.h"
 
 namespace ZG
 {
     struct TextureParams
     {
-        Variant<std::string, Image, ID3D12Resource*> source; // FIXME? 生から ComPtr はメモリリークするのだろうか
-        PixelShader pixelShader;
-        VertexShader vertexShader;
+        TextureSource source; // FIXME? 生から ComPtr はメモリリークするのだろうか
+        PixelShader ps;
+        VertexShader vs;
     };
 
     class Texture

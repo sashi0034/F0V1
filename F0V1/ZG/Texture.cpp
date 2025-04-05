@@ -79,8 +79,8 @@ namespace
         // TODO: キャッシュする?
         return PipelineState{
             PipelineStateParams{
-                .pixelShader = options.pixelShader,
-                .vertexShader = options.vertexShader,
+                .pixelShader = options.ps,
+                .vertexShader = options.vs,
                 .vertexInput = {
                     {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT},
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}

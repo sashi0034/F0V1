@@ -253,7 +253,7 @@ struct Model::Impl
             {
                 const auto texture = texturePath.empty()
                                          ? EnginePresetAsset.GetWhiteTexture()
-                                         : ShaderResourceTexture{texturePath};
+                                         : ShaderResourceTexture{{texturePath}};
                 textureMap[texturePath] = texture;
                 diffuseTextureList.push_back(texture);
             }

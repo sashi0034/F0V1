@@ -250,6 +250,7 @@
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
     <ClInclude Include="ZG\Texture.h" />
+    <ClInclude Include="ZG\TextureSource.h" />
     <ClInclude Include="ZG\Transformer3D.h" />
     <ClInclude Include="ZG\Utils.h" />
     <ClInclude Include="ZG\Value2D.h" />

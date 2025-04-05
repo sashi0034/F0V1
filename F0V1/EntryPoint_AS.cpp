@@ -32,16 +32,6 @@ namespace
         printf("%s\n", message.c_str());
     }
 
-    struct flag_t
-    {
-        bool flag;
-
-        operator bool() const
-        {
-            return flag;
-        }
-    };
-
     void MessageCallback(const asSMessageInfo* msg, void* param)
     {
         auto type = "[error]";
@@ -98,13 +88,15 @@ namespace
             .function("void print(const string& in message)", &script_print)
             .function("void println(const string& in message)", &println);
 
-        asbind20::value_class<flag_t>(engine, "flag_t", asOBJ_VALUE)
-            .behaviours_by_traits()
-            .constructor<bool>("bool flag")
-            .opEquals()
-            .opConv<bool>()
-            .opImplConv<bool>()
-            .property("bool flag", &flag_t::flag);
+        // asbind20::value_class<flag_t>(engine, "flag_t", asOBJ_VALUE)
+        //     .behaviours_by_traits()
+        //     .constructor<bool>("bool flag")
+        //     .opEquals()
+        //     .opConv<bool>()
+        //     .opImplConv<bool>()
+        //     .property("bool flag", &flag_t::flag);
+
+        asbind20::ref_class<ID3D12Resource>(engine, "ID3D12Resource", asOBJ_NOCOUNT);
 
         {
             const auto ns = asbind20::namespace_(engine, "System");;
