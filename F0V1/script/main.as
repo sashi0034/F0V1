@@ -3,7 +3,7 @@ void main() {
 
     int c = 0;
 
-    Point p;
+    Point p(100, 50);
 
     while (System::Update()) {
         p.x++;
@@ -11,6 +11,7 @@ void main() {
 
         if (KeySpace.down()) {
             println("Count: " + c);
+            p = p / 2;
         }
     }
 }

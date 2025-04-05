@@ -26,6 +26,20 @@ inline std::vector<std::function<void(asbind20::global<false>)>> asapi_globalBin
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
+#define ASAPI_CLASS_CONSTRUCTOR(...) \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+        { \
+            asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
+            { \
+                using namespace asbind20; \
+                const auto t = [](std::string str) { return asapi_preprocessor ? asapi_preprocessor(str) : str; }; \
+                bind.template constructor __VA_ARGS__; \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+
 #define ASAPI_CLASS_METHOD(decl, method_name) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
@@ -48,6 +62,19 @@ inline std::vector<std::function<void(asbind20::global<false>)>> asapi_globalBin
             { \
                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : decl; \
                 bind.property(declaration.data(), &asapi_BindTarget::method_name); \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+
+#define ASAPI_CLASS_OPERATOR(operator) \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+        { \
+            asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
+            { \
+                using namespace asbind20; \
+                bind.use(operator); \
             }); \
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);

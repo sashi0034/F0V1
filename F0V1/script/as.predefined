@@ -240,7 +240,13 @@ class Point{
 	~Point();
 	Point();
 	Point(const Point&in);
+	Point(int x, int y);
 	Point& opAssign(const Point&in);
+	Point opNeg();
+	Point opAdd(const Point&in);
+	Point opSub(const Point&in);
+	Point opMul(int);
+	Point opDiv(int);
 	Point withX(int newX) const;
 	Point withY(int newY) const;
 	int x;

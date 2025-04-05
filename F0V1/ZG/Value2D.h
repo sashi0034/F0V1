@@ -10,7 +10,8 @@ namespace ZG
     {
         static constexpr auto objectProperty =
             asOBJ_POD |
-            (std::is_floating_point_v<Type> ? asOBJ_APP_CLASS_ALLFLOATS : asOBJ_APP_CLASS_ALLINTS);
+            (std::is_floating_point_v<Type> ? asOBJ_APP_CLASS_ALLFLOATS : asOBJ_APP_CLASS_ALLINTS) |
+            asOBJ_APP_CLASS_MORE_CONSTRUCTORS;
         ASAPI_VALUE_CLASS_AS("$Value2D", Value2D<Type>, objectProperty);
 
         using value_type = Type;
@@ -29,6 +30,10 @@ namespace ZG
         {
         }
 
+        ASAPI_CLASS_CONSTRUCTOR(
+            <value_type, value_type>
+            (t("$value_type x, $value_type y")));
+
         [[nodiscard]] constexpr Value2D operator +() const noexcept
         {
             return *this;
@@ -39,33 +44,35 @@ namespace ZG
             return {-x, -y};
         }
 
+        ASAPI_CLASS_OPERATOR(-_this);
+
         [[nodiscard]] constexpr Value2D operator +(const Value2D& v) const noexcept
         {
             return {x + v.x, y + v.y};
         }
 
-        // ASAPI_CLASS_METHOD("$Value2D opAdd(const $Value2D& in v) const", operator+);
+        ASAPI_CLASS_OPERATOR(_this + const_this);
 
-        [[nodiscard]] constexpr Value2D operator -(const Value2D& v) const noexcept
+        [[nodiscard]] constexpr Value2D operator -(Value2D v) const noexcept
         {
             return {x - v.x, y - v.y};
         }
 
-        // ASAPI_CLASS_METHOD("$Value2D opSub(const $Value2D& in v) const", operator-);
+        ASAPI_CLASS_OPERATOR(_this - const_this);
 
         [[nodiscard]] constexpr Value2D operator *(value_type s) const noexcept
         {
             return {x * s, y * s};
         }
 
-        // ASAPI_CLASS_METHOD("$Value2D opMul($value_type s) const", operator*);
+        ASAPI_CLASS_OPERATOR(_this * param<value_type>);
 
         [[nodiscard]] constexpr Value2D operator /(value_type s) const noexcept
         {
             return {x / s, y / s};
         }
 
-        //ASAPI_CLASS_METHOD("$Value2D opDiv($value_type s) const", operator/);
+        ASAPI_CLASS_OPERATOR(_this / param<value_type>);
 
         [[nodiscard]] constexpr Value2D withX(value_type newX) const noexcept
         {
@@ -121,7 +128,7 @@ namespace ZG
 
     using Float2 = Vector2D<float>;
 
-    // /// @brief Integral 2D vector
+    /// @brief Integral 2D vector
     // template <class Integer>
     // struct Integer2D : Value2D<Integer>
     // {

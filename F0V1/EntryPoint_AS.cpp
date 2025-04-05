@@ -130,6 +130,7 @@ namespace
             std::map<std::string, std::string> macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
             return preprocessDeclaration(declarations, macros);
         };
+
         Point::RegisterScript(engine);
 
         for (auto handler : asapi_globalBindHandlers)
