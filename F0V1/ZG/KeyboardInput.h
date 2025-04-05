@@ -2,19 +2,56 @@
 
 namespace ZG
 {
+    /// @brief メンバ関数ポインタからTを取得
+    // template <typename T, typename R>
+    // T get_class_type(R T::*);
+}
+
+#define ASAPI_VALUE_CLASS(name, flags) \
+    static inline std::vector<std::function<void(asbind20::value_class<name>)>> s_aspi_bindHandlers{}; \
+    static auto RegisterScript(asIScriptEngine* engine) { \
+        auto bind = asbind20::value_class<name>(engine, #name, flags) \
+            .behaviours_by_traits(); \
+        for (const auto& handler : s_aspi_bindHandlers) \
+        { \
+            handler(bind); \
+        } \
+    } \
+    using aspi_BindTarget = name;
+
+#define ASAPI_CLASS_METHOD(decl, method_name) \
+    struct asapi_##method_name \
+    { \
+        asapi_##method_name() \
+        { \
+            s_aspi_bindHandlers.push_back([](asbind20::value_class<aspi_BindTarget> bind) \
+            { \
+                bind.method(decl, &aspi_BindTarget::method_name); \
+            }); \
+        } \
+    }; \
+    static inline asapi_##method_name s_aspi_scriptBind_##method_name{};
+
+namespace ZG
+{
     class KeyboardInput
     {
     public:
+        ASAPI_VALUE_CLASS(KeyboardInput, asOBJ_POD | asOBJ_APP_CLASS_ALLINTS);
+
         KeyboardInput() = default;
 
         constexpr KeyboardInput(uint8_t code) : m_code(code)
         {
         }
 
+        ASAPI_CLASS_METHOD("bool down() const", down);
         bool down() const;
 
+        ASAPI_CLASS_METHOD("bool pressed() const", pressed);
         bool pressed() const;
 
+        ASAPI_CLASS_METHOD("bool up() const", up);
         bool up() const;
 
     private:

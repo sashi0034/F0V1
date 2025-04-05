@@ -112,11 +112,13 @@ namespace
                 .function("bool Update()", &System::Update);
         }
 
-        asbind20::value_class<KeyboardInput>(engine, "KeyboardInput", asOBJ_POD | asOBJ_APP_CLASS_ALLINTS)
-            .behaviours_by_traits()
-            .method("bool down() const", &KeyboardInput::down)
-            .method("bool pressed() const", &KeyboardInput::pressed)
-            .method("bool up() const", &KeyboardInput::up);
+        // asbind20::value_class<KeyboardInput>(engine, "KeyboardInput", asOBJ_POD | asOBJ_APP_CLASS_ALLINTS)
+        //     .behaviours_by_traits()
+        //     .method("bool down() const", &KeyboardInput::down)
+        //     .method("bool pressed() const", &KeyboardInput::pressed)
+        //     .method("bool up() const", &KeyboardInput::up);
+
+        KeyboardInput::RegisterScript(engine);
 
         asbind20::global(engine)
             .property("const KeyboardInput KeySpace", KeySpace);
