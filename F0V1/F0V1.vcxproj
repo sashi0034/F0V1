@@ -245,6 +245,7 @@
     <ClInclude Include="ZG\RenderTarget.h" />
     <ClInclude Include="ZG\Scene.h" />
     <ClInclude Include="ZG\ScopedDefer.h" />
+    <ClInclude Include="ZG\Script\ScriptBindMacros.h" />
     <ClInclude Include="ZG\Script\ScriptPredefinedGenerator.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
