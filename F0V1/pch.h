@@ -68,6 +68,8 @@
 
 #include "../external/tiny_obj_loader.h"
 
+#include "../external/angelscript/include/angelscript.h"
+
 using namespace std::string_view_literals;
 
 using Microsoft::WRL::ComPtr;

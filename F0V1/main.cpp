@@ -24,6 +24,8 @@ namespace
 
 void Main()
 {
+    auto scriptEngine = asCreateScriptEngine();
+
     const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
     const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
 
