@@ -62,8 +62,8 @@ void EntryPoint_CPP()
     const Model model{
         ModelParams{
             .filename = "asset/model/robot_head.obj", // "asset/model/cinnamon.obj"
-            .pixelShader = modelPS,
-            .vertexShader = modelVS,
+            .ps = modelPS,
+            .vs = modelVS,
         }
     };
 

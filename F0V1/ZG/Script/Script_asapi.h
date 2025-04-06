@@ -57,10 +57,38 @@ namespace ZG::asapi_detail
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
+// The asbind20 will handle common flags for you. However, due to limitation of C++,
+// the following flags still need user to provide them manually.
+/// - asOBJ_APP_CLASS_MORE_CONSTRUCTORS
+/// - asOBJ_APP_CLASS_ALLINTS
+/// - asOBJ_APP_CLASS_ALLFLOATS,
+/// - asOBJ_APP_CLASS_ALIGN8
+/// - asOBJ_APP_CLASS_UNION
+
 /// Usage: @code
 /// ASAPI_VALUE_CLASS(KeyboardInput, asOBJ_POD | asOBJ_APP_CLASS_ALLINTS);
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
+
+#define ASAPI_REF_CLASS_AS(name, flags) \
+    private: \
+    using asapi_BindTarget = name; \
+    static inline std::vector<std::function<void(asbind20::ref_class<name>)>> asapi_bindHandlers{}; \
+    static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
+            ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
+                const std::string declaration = asapi_preprocessor ? asapi_preprocessor(#name) : (#name); \
+                auto bind = asbind20::ref_class<name>(engine, declaration.data(), flags); \
+                ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
+                    for (const auto& handler : asapi_bindHandlers) \
+                    { \
+                        handler(bind); \
+                    } \
+                }); \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 #define ASAPI_MACRO_PREPROCESSOR(...) \
     private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
@@ -129,8 +157,8 @@ namespace ZG::asapi_detail
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
-/// ASAPI_CLASS_OPERATOR(_this + const_this);
-#define ASAPI_CLASS_OPERATOR(operator) \
+/// ASAPI_CLASS_BIND(opEquals());
+#define ASAPI_CLASS_BIND(...) \
     private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
@@ -138,10 +166,28 @@ namespace ZG::asapi_detail
             asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
             { \
                 using namespace asbind20; \
-                bind.use(operator); \
+                bind.__VA_ARGS__; \
             }); \
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
+
+/// Usage: @code
+/// ASAPI_CLASS_OPERATOR(_this + const_this);
+#define ASAPI_CLASS_OPERATOR(operator) \
+    ASAPI_CLASS_BIND(use(operator));
+
+// #define ASAPI_CLASS_OPERATOR(operator) \
+//     private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+//     { \
+//         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+//         { \
+//             asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
+//             { \
+//                 using namespace asbind20; \
+//                 bind.use(operator); \
+//             }); \
+//         } \
+//     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_GLOBAL_PROPERTY("const KeyboardInput KeyEnter", KeyEnter);
