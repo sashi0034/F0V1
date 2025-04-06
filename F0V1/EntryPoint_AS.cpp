@@ -140,12 +140,12 @@ namespace
         TextureSource::RegisterScript(engine);
         Texture::RegisterScript(engine);
 
-        for (const auto& handler : asapi_globalBindHandlers)
+        for (const auto& handler : asapi_detail::g_globalBindHandlers)
         {
             handler(asbind20::global(engine));
         }
 
-        for (const auto& handler : asapi_deferBindHandlers)
+        for (const auto& handler : asapi_detail::g_deferBindHandlers)
         {
             handler();
         }

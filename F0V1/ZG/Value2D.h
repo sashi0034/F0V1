@@ -46,20 +46,20 @@ namespace ZG
         {
         }
 
-        ASAPI_CLASS_CONSTRUCTOR_WHEN(
-            !isPoint,
+        ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<int>&>
-            (t("const Point& in other")));
+            (t("const Point& in other")))
+            .when(not isPoint);
 
-        ASAPI_CLASS_CONSTRUCTOR_WHEN(
-            !isFloat2,
+        ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<float>&>
-            (t("const Float2& in other")));
+            (t("const Float2& in other")))
+            .when(not isFloat2);
 
-        ASAPI_CLASS_CONSTRUCTOR_WHEN(
-            !isVec2,
+        ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<double>&>
-            (t("const Vec2& in other")));
+            (t("const Vec2& in other")))
+            .when(not isVec2);
 
         [[nodiscard]] constexpr Value2D operator +() const noexcept
         {

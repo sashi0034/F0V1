@@ -1,10 +1,24 @@
 ﻿#pragma once
 
-// inline std::vector<std::function<void(asIScriptEngine*)>> asapi_typeBindHandlers{};
+namespace ZG::asapi_detail
+{
+    // inline std::vector<std::function<void(asIScriptEngine*)>> g_typeBindHandlers{};
 
-inline std::vector<std::function<void(asbind20::global<false>)>> asapi_globalBindHandlers{};
+    inline std::vector<std::function<void(asbind20::global<false>)>> g_globalBindHandlers{};
 
-inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
+    inline std::vector<std::function<void()>> g_deferBindHandlers{};
+
+    struct Option
+    {
+        bool m_when{true};
+
+        Option& when(bool when)
+        {
+            m_when = when;
+            return *this;
+        }
+    };
+}
 
 #define ASAPI_IMPL_CONCATENATE_INNER(x, y) x##y
 
@@ -20,7 +34,7 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
         const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
         auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
             .behaviours_by_traits(); \
-        asapi_deferBindHandlers.push_back([bind]() { \
+        ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
             for (const auto& handler : asapi_bindHandlers) \
             { \
                 handler(bind); \
@@ -34,11 +48,11 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 //     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
 //     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
 //         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
-//             asapi_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
+//             ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
 //                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
 //                 auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
 //                     .behaviours_by_traits(); \
-//                 asapi_deferBindHandlers.push_back([bind]() { \
+//                 ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
 //                     for (const auto& handler : asapi_bindHandlers) \
 //                     { \
 //                         handler(bind); \
@@ -54,21 +68,6 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
-#define ASAPI_CLASS_CONSTRUCTOR_WHEN(condition, ...) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
-    { \
-        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
-        { \
-            if (!condition) return; \
-            asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
-            { \
-                using namespace asbind20; \
-                const auto t = [](std::string str) { return asapi_preprocessor ? asapi_preprocessor(str) : str; }; \
-                bind.template constructor __VA_ARGS__; \
-            }); \
-        } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
-
 /// Usage: @code
 /// ASAPI_CLASS_CONSTRUCTOR(
 ///      <value_type, value_type>
@@ -76,8 +75,9 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 #define ASAPI_CLASS_CONSTRUCTOR(...) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
-        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)(::ZG::asapi_detail::Option option) \
         { \
+            if (not option.m_when) return; \
             asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
             { \
                 using namespace asbind20; \
@@ -85,7 +85,7 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
                 bind.template constructor __VA_ARGS__; \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_) = ::ZG::asapi_detail::Option{}
 
 /// Usage: @code
 /// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
@@ -139,7 +139,7 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
     { \
         asapi_##name() \
         { \
-            asapi_globalBindHandlers.push_back([](asbind20::global<false> bind) \
+            ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asbind20::global<false> bind) \
             { \
                 bind.property(decl, name); \
             }); \
