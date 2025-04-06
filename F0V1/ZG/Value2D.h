@@ -55,17 +55,20 @@ namespace ZG
         {
         }
 
-        ASAPI_CLASS_CONSTRUCTOR(
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            not isPoint,
             <const Value2D<int>&>
-            (t("const Point& in other"))).define_if(not isPoint);
+            (t("const Point& in other")));
 
-        ASAPI_CLASS_CONSTRUCTOR(
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            not isFloat2,
             <const Value2D<float>&>
-            (t("const Float2& in other"))).define_if(not isFloat2);
+            (t("const Float2& in other")));
 
-        ASAPI_CLASS_CONSTRUCTOR(
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            not isVec2,
             <const Value2D<double>&>
-            (t("const Vec2& in other"))).define_if(not isVec2);
+            (t("const Vec2& in other")));
 
         [[nodiscard]] constexpr Value2D operator +() const noexcept
         {

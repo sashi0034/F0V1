@@ -9,17 +9,6 @@ namespace ZG::asapi_detail
     inline std::vector<std::function<void()>> g_deferBindHandlers{};
 
     std::function<std::string(std::string)> MacroPreprocessor(const std::map<std::string, std::string>& macros);
-
-    struct DefineOption
-    {
-        bool m_define_if{true};
-
-        DefineOption& define_if(bool when)
-        {
-            m_define_if = when;
-            return *this;
-        }
-    };
 }
 
 #define ASAPI_IMPL_CONCATENATE_INNER(x, y) x##y
@@ -84,12 +73,12 @@ namespace ZG::asapi_detail
 /// ASAPI_CLASS_CONSTRUCTOR(
 ///      <value_type, value_type>
 ///      (t("$value_type x, $value_type y")));
-#define ASAPI_CLASS_CONSTRUCTOR(...) \
+#define ASAPI_CLASS_CONSTRUCTOR_WHEN(condition, ...) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
-        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)(::ZG::asapi_detail::DefineOption option) \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
-            if (not option.m_define_if) return; \
+            if (!condition) return; \
             asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
             { \
                 using namespace asbind20; \
@@ -97,7 +86,14 @@ namespace ZG::asapi_detail
                 bind.template constructor __VA_ARGS__; \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_) = ::ZG::asapi_detail::DefineOption{}
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
+
+/// Usage: @code
+/// ASAPI_CLASS_CONSTRUCTOR(
+///      <value_type, value_type>
+///      (t("$value_type x, $value_type y")));
+#define ASAPI_CLASS_CONSTRUCTOR(...) \
+    ASAPI_CLASS_CONSTRUCTOR_WHEN(true, __VA_ARGS__ )
 
 /// Usage: @code
 /// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
