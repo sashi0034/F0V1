@@ -35,6 +35,7 @@ namespace ZG::asapi_detail
 //     using asapi_BindTarget = name;
 
 #define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
+    private: \
     using asapi_BindTarget = name; \
     static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
@@ -52,7 +53,7 @@ namespace ZG::asapi_detail
                 }); \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_VALUE_CLASS(KeyboardInput, asOBJ_POD | asOBJ_APP_CLASS_ALLINTS);
@@ -60,21 +61,21 @@ namespace ZG::asapi_detail
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
 #define ASAPI_MACRO_PREPROCESSOR(...) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
+    private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
             const auto macro = [](std::map<std::string, std::string> macros){ \
                 asapi_preprocessor = ::ZG::asapi_detail::MacroPreprocessor(macros); \
             }; \
             __VA_ARGS__ \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_CLASS_CONSTRUCTOR(
 ///      <value_type, value_type>
 ///      (t("$value_type x, $value_type y")));
 #define ASAPI_CLASS_CONSTRUCTOR_WHEN(condition, ...) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
@@ -86,7 +87,7 @@ namespace ZG::asapi_detail
                 bind.template constructor __VA_ARGS__; \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_CLASS_CONSTRUCTOR(
@@ -98,7 +99,7 @@ namespace ZG::asapi_detail
 /// Usage: @code
 /// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
 #define ASAPI_CLASS_METHOD(decl, method_name) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
@@ -108,12 +109,12 @@ namespace ZG::asapi_detail
                 bind.method(declaration.data(), &asapi_BindTarget::method_name); \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_CLASS_PROPERTY("$value_type x", x);
 #define ASAPI_CLASS_PROPERTY(decl, method_name) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
@@ -123,12 +124,12 @@ namespace ZG::asapi_detail
                 bind.property(declaration.data(), &asapi_BindTarget::method_name); \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_CLASS_OPERATOR(_this + const_this);
 #define ASAPI_CLASS_OPERATOR(operator) \
-    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    private: static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
@@ -138,12 +139,12 @@ namespace ZG::asapi_detail
                 bind.use(operator); \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); public:
 
 /// Usage: @code
 /// ASAPI_GLOBAL_PROPERTY("const KeyboardInput KeyEnter", KeyEnter);
 #define ASAPI_GLOBAL_PROPERTY(decl, name) \
-    struct asapi_##name \
+    namespace asapi_detail { struct asapi_##name \
     { \
         asapi_##name() \
         { \
@@ -153,4 +154,4 @@ namespace ZG::asapi_detail
             }); \
         } \
     }; \
-    inline asapi_##name asapi_scriptBind_##name{};
+    inline asapi_##name asapi_scriptBind_##name{}; }
