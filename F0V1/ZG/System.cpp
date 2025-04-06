@@ -49,4 +49,9 @@ namespace ZG
     {
         MessageBox(nullptr, message.c_str(), L"assertion failed", MB_OK | MB_ICONERROR);
     }
+
+    void System::ModalError(const std::string& message)
+    {
+        MessageBoxA(nullptr, message.c_str(), "assertion failed", MB_OK | MB_ICONERROR);
+    }
 }

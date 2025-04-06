@@ -146,9 +146,9 @@ namespace ZG::asapi_detail
 /// Usage: @code
 /// ASAPI_GLOBAL_PROPERTY("const KeyboardInput KeyEnter", KeyEnter);
 #define ASAPI_GLOBAL_PROPERTY(decl, name) \
-    namespace asapi_detail { struct asapi_##name \
+    namespace asapi_detail { inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
-        asapi_##name() \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
             ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asIScriptEngine* engine) \
             { \
@@ -156,22 +156,35 @@ namespace ZG::asapi_detail
                 asbind20::global(engine).property(decl, name); \
             }); \
         } \
-    }; \
-    inline asapi_##name asapi_scriptBind_##name{}; }
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); }
 
 #define ASAPI_GLOBAL_FUNCTION(decl, name) \
-    namespace asapi_detail { struct asapi_##name \
+    namespace asapi_detail { inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
-        asapi_##name() \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
             ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asIScriptEngine* engine) \
             { \
+                using namespace asbind20; \
                 const auto ns = asbind20::namespace_(engine, k_namespace); \
                 asbind20::global(engine).function(decl, name); \
             }); \
         } \
-    }; \
-    inline asapi_##name asapi_scriptBind_##name{}; }
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); }
+
+#define ASAPI_GLOBAL_FUNCTION_BY(decl, ...) \
+    namespace asapi_detail { inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+        { \
+            ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asIScriptEngine* engine) \
+            { \
+                using namespace asbind20; \
+                const auto ns = asbind20::namespace_(engine, k_namespace); \
+                asbind20::global(engine).function(decl, overload_cast __VA_ARGS__); \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); }
 
 #define ASAPI_NAMESPACE(decl) \
     namespace asapi_detail { \

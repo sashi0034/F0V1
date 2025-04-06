@@ -17,6 +17,10 @@ namespace ZG
         ASAPI_GLOBAL_FUNCTION("uint64 FrameCount()", FrameCount);
 
         void ModalError(const std::wstring& message);
-        ASAPI_GLOBAL_FUNCTION("void ModalError(const string& in message)", ModalError);
+
+        void ModalError(const std::string& message);
+        ASAPI_GLOBAL_FUNCTION_BY(
+            "void ModalError(const string& in message)",
+            <const std::string&>(System::ModalError));
     }
 }
