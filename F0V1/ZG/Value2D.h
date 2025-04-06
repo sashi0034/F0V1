@@ -2,7 +2,7 @@
 #include <type_traits>
 
 #include "TemplateHelper.h"
-#include "Script/ScriptBindMacros.h"
+#include "Script/Script_asapi.h"
 
 namespace ZG
 {

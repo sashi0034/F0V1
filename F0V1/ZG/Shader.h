@@ -2,7 +2,7 @@
 #include <d3dcommon.h>
 
 #include "ITimestamp.h"
-#include "Script/ScriptBindMacros.h"
+#include "Script/Script_asapi.h"
 
 namespace ZG
 {

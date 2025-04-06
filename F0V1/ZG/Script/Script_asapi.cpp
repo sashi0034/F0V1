@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-#include "ScriptBindMacros.h"
+#include "Script_asapi.h"
 
 namespace
 {

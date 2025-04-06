@@ -161,7 +161,7 @@
     <ClCompile Include="ZG\Rect.cpp" />
     <ClCompile Include="ZG\RenderTarget.cpp" />
     <ClCompile Include="ZG\ScopedDefer.cpp" />
-    <ClCompile Include="ZG\Script\ScriptBindMacros.cpp" />
+    <ClCompile Include="ZG\Script\Script_asapi.cpp" />
     <ClCompile Include="ZG\Script\ScriptPredefinedGenerator.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <ClCompile Include="ZG\VertexBuffer.cpp" />
@@ -246,7 +246,7 @@
     <ClInclude Include="ZG\RenderTarget.h" />
     <ClInclude Include="ZG\Scene.h" />
     <ClInclude Include="ZG\ScopedDefer.h" />
-    <ClInclude Include="ZG\Script\ScriptBindMacros.h" />
+    <ClInclude Include="ZG\Script\Script_asapi.h" />
     <ClInclude Include="ZG\Script\ScriptPredefinedGenerator.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
