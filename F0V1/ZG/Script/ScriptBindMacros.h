@@ -49,9 +49,15 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 //     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); \
 //     using asapi_BindTarget = name;
 
+/// Usage: @code
+/// ASAPI_VALUE_CLASS(KeyboardInput, asOBJ_POD | asOBJ_APP_CLASS_ALLINTS);
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
+/// Usage: @code
+/// ASAPI_CLASS_CONSTRUCTOR(
+///      <value_type, value_type>
+///      (t("$value_type x, $value_type y")));
 #define ASAPI_CLASS_CONSTRUCTOR(...) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
@@ -66,6 +72,8 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
 
+/// Usage: @code
+/// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
 #define ASAPI_CLASS_METHOD(decl, method_name) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
@@ -79,6 +87,8 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
 
+/// Usage: @code
+/// ASAPI_CLASS_PROPERTY("$value_type x", x);
 #define ASAPI_CLASS_PROPERTY(decl, method_name) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
@@ -92,6 +102,8 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
 
+/// Usage: @code
+/// ASAPI_CLASS_OPERATOR(_this + const_this);
 #define ASAPI_CLASS_OPERATOR(operator) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
@@ -105,6 +117,8 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
         } \
     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
 
+/// Usage: @code
+/// ASAPI_GLOBAL_PROPERTY("const KeyboardInput KeyEnter", KeyEnter);
 #define ASAPI_GLOBAL_PROPERTY(decl, name) \
     struct asapi_##name \
     { \

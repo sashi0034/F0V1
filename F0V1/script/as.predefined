@@ -234,6 +234,52 @@ class Point{
 	int x;
 	int y;
 }
+class Float2{
+	~Float2();
+	Float2();
+	Float2(const Float2&in);
+	Float2(float x, float y);
+	Float2& opAssign(const Float2&in);
+	Float2 opNeg();
+	Float2 opAdd(const Float2&in);
+	Float2 opSub(const Float2&in);
+	Float2 opMul(float);
+	Float2 opDiv(float);
+	Float2 withX(float newX) const;
+	Float2 withY(float newY) const;
+	float x;
+	float y;
+}
+class Vec2{
+	~Vec2();
+	Vec2();
+	Vec2(const Vec2&in);
+	Vec2(double x, double y);
+	Vec2& opAssign(const Vec2&in);
+	Vec2 opNeg();
+	Vec2 opAdd(const Vec2&in);
+	Vec2 opSub(const Vec2&in);
+	Vec2 opMul(double);
+	Vec2 opDiv(double);
+	Vec2 withX(double newX) const;
+	Vec2 withY(double newY) const;
+	double x;
+	double y;
+}
+class RectF{
+	~RectF();
+	RectF();
+	RectF(const RectF&in);
+	RectF(const Vec2&in pos, const Vec2&in size);
+	RectF(const Vec2&in size);
+	RectF(double x, double y, const Vec2&in size);
+	RectF(const Vec2&in pos, double width, double height);
+	RectF(double x, double y, double width, double height);
+	RectF& opAssign(const RectF&in);
+	Vec2 tl() const;
+	Vec2 br() const;
+	Vec2 center() const;
+}
 class KeyboardInput{
 	~KeyboardInput();
 	KeyboardInput();
@@ -242,6 +288,39 @@ class KeyboardInput{
 	bool down() const;
 	bool pressed() const;
 	bool up() const;
+}
+class PixelShader{
+	~PixelShader();
+	PixelShader();
+	PixelShader(const PixelShader&in);
+	PixelShader(const string&in filename, const string&in entryPoint);
+	PixelShader& opAssign(const PixelShader&in);
+	bool isEmpty() const;
+}
+class VertexShader{
+	~VertexShader();
+	VertexShader();
+	VertexShader(const VertexShader&in);
+	VertexShader(const string&in filename, const string&in entryPoint);
+	VertexShader& opAssign(const VertexShader&in);
+	bool isEmpty() const;
+}
+class TextureSource{
+	~TextureSource();
+	TextureSource();
+	TextureSource(const TextureSource&in);
+	TextureSource(const string&in filename);
+	TextureSource& opAssign(const TextureSource&in);
+}
+class Texture{
+	~Texture();
+	Texture();
+	Texture(const Texture&in);
+	Texture(const TextureSource&in source, const PixelShader&in ps, const VertexShader&in vs);
+	Texture& opAssign(const Texture&in);
+	void draw(const RectF&in region) const;
+	void drawAt(const Vec2&in position) const;
+	void draw3D() const;
 }
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);

@@ -14,7 +14,10 @@
 #include "add_on/scriptstdstring/scriptstdstring.h"
 #include "add_on/weakref/weakref.h"
 #include "ZG/KeyboardInput.h"
+#include "ZG/Rect.h"
 #include "ZG/System.h"
+#include "ZG/Texture.h"
+#include "ZG/TextureSource.h"
 #include "ZG/Value2D.h"
 #include "ZG/Script/ScriptPredefinedGenerator.h"
 
@@ -66,6 +69,14 @@ namespace
         return declarations;
     }
 
+    std::function<std::string(const std::string&)> makePreprocessFunction(std::map<std::string, std::string> macros)
+    {
+        return [macros](const std::string& declarations)
+        {
+            return preprocessDeclaration(declarations, macros);
+        };
+    }
+
     void registerEngine(const asbind20::script_engine& engine)
     {
         // script extenstion: https://www.angelcode.com/angelscript/sdk/docs/manual/doc_addon_script.html
@@ -106,16 +117,28 @@ namespace
 
         // -----------------------------------------------
 
-        using translator_t = std::map<std::string, std::string>;
+        Point::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Point"}, {"$value_type", "int"},});
+        Float2::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Float2"}, {"$value_type", "float"},});
+        Vec2::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Vec2"}, {"$value_type", "double"},});
 
-        Point::asapi_preprocessor = [](const std::string& declarations)
-        {
-            const translator_t& macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
-            return preprocessDeclaration(declarations, macros);
-        };
+        RectF::asapi_preprocessor =
+            makePreprocessFunction({{"$Rectangle", "RectF"}, {"$value_type", "double"}, {"$position_type", "Vec2"},});
+
+        // -----------------------------------------------
 
         Point::RegisterScript(engine);
+        Float2::RegisterScript(engine);
+        Vec2::RegisterScript(engine);
+
+        RectF::RegisterScript(engine);
+
         KeyboardInput::RegisterScript(engine);
+
+        PixelShader::RegisterScript(engine);
+        VertexShader::RegisterScript(engine);
+
+        TextureSource::RegisterScript(engine);
+        Texture::RegisterScript(engine);
 
         for (const auto& handler : asapi_globalBindHandlers)
         {

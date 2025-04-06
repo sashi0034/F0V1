@@ -23,7 +23,7 @@ namespace
         Impl()
         {
             const Image whiteImage{Size{16, 16}, ColorU8{255}};
-            m_whiteTexture = ShaderResourceTexture({whiteImage});
+            m_whiteTexture = ShaderResourceTexture(whiteImage);
 
             m_stubVS = VertexShader{ShaderParams{.filename = "engine/stub.hlsl", .entryPoint = "VS"}};
 

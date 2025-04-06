@@ -2,6 +2,7 @@
 #include <d3dcommon.h>
 
 #include "ITimestamp.h"
+#include "Script/ScriptBindMacros.h"
 
 namespace ZG
 {
@@ -18,11 +19,23 @@ namespace ZG
     class PixelShader
     {
     public:
+        ASAPI_VALUE_CLASS(PixelShader, asOBJ_APP_CLASS_MORE_CONSTRUCTORS);
+
         PixelShader() = default;
 
         explicit PixelShader(const ShaderParams& params);
 
+        explicit PixelShader(const std::string& filename, const std::string& entryPoint)
+            : PixelShader{ShaderParams{.filename = filename, .entryPoint = entryPoint}}
+        {
+        }
+
+        ASAPI_CLASS_CONSTRUCTOR(
+            <const std::string&, const std::string&>
+            ( t("const string& in filename, const string& in entryPoint")));
+
         [[nodiscard]] bool isEmpty() const;
+        ASAPI_CLASS_METHOD("bool isEmpty() const", isEmpty);
 
         [[nodiscard]] std::shared_ptr<ITimestamp> timestamp() const;
 
@@ -35,11 +48,23 @@ namespace ZG
     class VertexShader
     {
     public:
+        ASAPI_VALUE_CLASS(VertexShader, asOBJ_APP_CLASS_MORE_CONSTRUCTORS);
+
         VertexShader() = default;
 
         explicit VertexShader(const ShaderParams& params);
 
+        explicit VertexShader(const std::string& filename, const std::string& entryPoint)
+            : VertexShader{ShaderParams{.filename = filename, .entryPoint = entryPoint}}
+        {
+        }
+
+        ASAPI_CLASS_CONSTRUCTOR(
+            <const std::string&, const std::string&>
+            ( t("const string& in filename, const string& in entryPoint")));
+
         [[nodiscard]] bool isEmpty() const;
+        ASAPI_CLASS_METHOD("bool isEmpty() const", isEmpty);
 
         [[nodiscard]] std::shared_ptr<ITimestamp> timestamp() const;
 

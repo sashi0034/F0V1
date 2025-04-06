@@ -99,6 +99,12 @@ namespace ZG
             return {static_cast<OtherType>(x), static_cast<OtherType>(y)};
         }
 
+        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, int>  = 0>
+        operator Value2D<T>() const noexcept
+        {
+            return {static_cast<T>(x), static_cast<T>(y)};
+        }
+
         template <typename T = std::conditional<std::is_floating_point_v<Type>, Type, double>::type>
         [[nodiscard]] constexpr T horizontalAspectRatio() const noexcept
         {
@@ -107,26 +113,26 @@ namespace ZG
     };
 
     /// @brief Floating point 2D vector
-    template <class Type>
-    struct Vector2D : Value2D<Type>
-    {
-        using Value2D<Type>::Value2D;
+    // template <class Type>
+    // struct Vector2D : Value2D<Type>
+    // {
+    //     using Value2D<Type>::Value2D;
+    //
+    //     [[nodiscard]] constexpr Vector2D(const Value2D<Type>& v)
+    //         : Value2D<Type>(v)
+    //     {
+    //     }
+    //
+    //     template <class OtherType>
+    //     [[nodiscard]] constexpr Vector2D(const Value2D<OtherType>& v)
+    //         : Value2D<Type>(static_cast<Type>(v.x), static_cast<Type>(v.y))
+    //     {
+    //     }
+    // };
 
-        [[nodiscard]] constexpr Vector2D(const Value2D<Type>& v)
-            : Value2D<Type>(v)
-        {
-        }
+    using Vec2 = Value2D<double>;
 
-        template <class OtherType>
-        [[nodiscard]] constexpr Vector2D(const Value2D<OtherType>& v)
-            : Value2D<Type>(static_cast<Type>(v.x), static_cast<Type>(v.y))
-        {
-        }
-    };
-
-    using Vec2 = Vector2D<double>;
-
-    using Float2 = Vector2D<float>;
+    using Float2 = Value2D<float>;
 
     /// @brief Integral 2D vector
     // template <class Integer>
