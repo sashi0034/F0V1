@@ -14,6 +14,12 @@ namespace ZG
         position_type pos;
         position_type size;
 
+        ASAPI_MACRO_PREPROCESSOR(
+            if constexpr (std::is_same_v<Type, double>)
+            { macro({{"$Rectangle", "RectF"}, {"$value_type", "double"}, {"$position_type", "Vec2"}}); }
+            else static_assert(always_false<Type>);
+        );
+
         [[nodiscard]]
         Rectangle() = default;
 

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <type_traits>
 
+#include "TemplateHelper.h"
 #include "Script/ScriptBindMacros.h"
 
 namespace ZG
@@ -12,7 +13,8 @@ namespace ZG
             asOBJ_POD |
             (std::is_floating_point_v<Type> ? asOBJ_APP_CLASS_ALLFLOATS : asOBJ_APP_CLASS_ALLINTS) |
             asOBJ_APP_CLASS_MORE_CONSTRUCTORS;
-        ASAPI_VALUE_CLASS_AS("$Value2D", Value2D<Type>, objectProperty);
+
+        ASAPI_VALUE_CLASS_AS("$Value2D", Value2D, objectProperty);
 
         using value_type = Type;
         // using value_type = double;
@@ -28,6 +30,13 @@ namespace ZG
         static constexpr bool isFloat2 = std::is_same_v<value_type, float>;
 
         static constexpr bool isVec2 = std::is_same_v<value_type, double>;
+
+        ASAPI_MACRO_PREPROCESSOR(
+            if constexpr (isPoint) macro({{"$Value2D", "Point"}, {"$value_type", "int"}});
+            else if constexpr (isFloat2) macro({{"$Value2D", "Float2"}, {"$value_type", "float"}});
+            else if constexpr (isVec2) macro({{"$Value2D", "Vec2"}, {"$value_type", "double"}});
+            else static_assert(always_false<Type>);
+        );
 
         [[nodiscard]] constexpr Value2D() = default;
 
@@ -48,18 +57,15 @@ namespace ZG
 
         ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<int>&>
-            (t("const Point& in other")))
-            .when(not isPoint);
+            (t("const Point& in other"))).define_if(not isPoint);
 
         ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<float>&>
-            (t("const Float2& in other")))
-            .when(not isFloat2);
+            (t("const Float2& in other"))).define_if(not isFloat2);
 
         ASAPI_CLASS_CONSTRUCTOR(
             <const Value2D<double>&>
-            (t("const Vec2& in other")))
-            .when(not isVec2);
+            (t("const Vec2& in other"))).define_if(not isVec2);
 
         [[nodiscard]] constexpr Value2D operator +() const noexcept
         {

@@ -117,28 +117,10 @@ namespace
 
         // -----------------------------------------------
 
-        Point::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Point"}, {"$value_type", "int"},});
-        Float2::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Float2"}, {"$value_type", "float"},});
-        Vec2::asapi_preprocessor = makePreprocessFunction({{"$Value2D", "Vec2"}, {"$value_type", "double"},});
-
-        RectF::asapi_preprocessor =
-            makePreprocessFunction({{"$Rectangle", "RectF"}, {"$value_type", "double"}, {"$position_type", "Vec2"},});
-
-        // -----------------------------------------------
-
-        Point::RegisterScript(engine);
-        Float2::RegisterScript(engine);
-        Vec2::RegisterScript(engine);
-
-        RectF::RegisterScript(engine);
-
-        KeyboardInput::RegisterScript(engine);
-
-        PixelShader::RegisterScript(engine);
-        VertexShader::RegisterScript(engine);
-
-        TextureSource::RegisterScript(engine);
-        Texture::RegisterScript(engine);
+        for (const auto& handler : asapi_detail::g_typeBindHandlers)
+        {
+            handler(engine);
+        }
 
         for (const auto& handler : asapi_detail::g_globalBindHandlers)
         {

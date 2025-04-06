@@ -218,74 +218,6 @@ class filesystem{
 }
 class ID3D12Resource{
 }
-class Point{
-	~Point();
-	Point();
-	Point(const Point&in);
-	Point(int x, int y);
-	Point(const Float2&in other);
-	Point(const Vec2&in other);
-	Point& opAssign(const Point&in);
-	Point opNeg();
-	Point opAdd(const Point&in);
-	Point opSub(const Point&in);
-	Point opMul(int);
-	Point opDiv(int);
-	Point withX(int newX) const;
-	Point withY(int newY) const;
-	int x;
-	int y;
-}
-class Float2{
-	~Float2();
-	Float2();
-	Float2(const Float2&in);
-	Float2(float x, float y);
-	Float2(const Point&in other);
-	Float2(const Vec2&in other);
-	Float2& opAssign(const Float2&in);
-	Float2 opNeg();
-	Float2 opAdd(const Float2&in);
-	Float2 opSub(const Float2&in);
-	Float2 opMul(float);
-	Float2 opDiv(float);
-	Float2 withX(float newX) const;
-	Float2 withY(float newY) const;
-	float x;
-	float y;
-}
-class Vec2{
-	~Vec2();
-	Vec2();
-	Vec2(const Vec2&in);
-	Vec2(double x, double y);
-	Vec2(const Point&in other);
-	Vec2(const Float2&in other);
-	Vec2& opAssign(const Vec2&in);
-	Vec2 opNeg();
-	Vec2 opAdd(const Vec2&in);
-	Vec2 opSub(const Vec2&in);
-	Vec2 opMul(double);
-	Vec2 opDiv(double);
-	Vec2 withX(double newX) const;
-	Vec2 withY(double newY) const;
-	double x;
-	double y;
-}
-class RectF{
-	~RectF();
-	RectF();
-	RectF(const RectF&in);
-	RectF(const Vec2&in pos, const Vec2&in size);
-	RectF(const Vec2&in size);
-	RectF(double x, double y, const Vec2&in size);
-	RectF(const Vec2&in pos, double width, double height);
-	RectF(double x, double y, double width, double height);
-	RectF& opAssign(const RectF&in);
-	Vec2 tl() const;
-	Vec2 br() const;
-	Vec2 center() const;
-}
 class KeyboardInput{
 	~KeyboardInput();
 	KeyboardInput();
@@ -311,6 +243,24 @@ class VertexShader{
 	VertexShader& opAssign(const VertexShader&in);
 	bool isEmpty() const;
 }
+class Point{
+	~Point();
+	Point();
+	Point(const Point&in);
+	Point(int x, int y);
+	Point(const Float2&in other);
+	Point(const Vec2&in other);
+	Point& opAssign(const Point&in);
+	Point opNeg();
+	Point opAdd(const Point&in);
+	Point opSub(const Point&in);
+	Point opMul(int);
+	Point opDiv(int);
+	Point withX(int newX) const;
+	Point withY(int newY) const;
+	int x;
+	int y;
+}
 class TextureSource{
 	~TextureSource();
 	TextureSource();
@@ -327,6 +277,56 @@ class Texture{
 	void draw(const RectF&in region) const;
 	void drawAt(const Vec2&in position) const;
 	void draw3D() const;
+}
+class Vec2{
+	~Vec2();
+	Vec2();
+	Vec2(const Vec2&in);
+	Vec2(double x, double y);
+	Vec2(const Point&in other);
+	Vec2(const Float2&in other);
+	Vec2& opAssign(const Vec2&in);
+	Vec2 opNeg();
+	Vec2 opAdd(const Vec2&in);
+	Vec2 opSub(const Vec2&in);
+	Vec2 opMul(double);
+	Vec2 opDiv(double);
+	Vec2 withX(double newX) const;
+	Vec2 withY(double newY) const;
+	double x;
+	double y;
+}
+class Float2{
+	~Float2();
+	Float2();
+	Float2(const Float2&in);
+	Float2(float x, float y);
+	Float2(const Point&in other);
+	Float2(const Vec2&in other);
+	Float2& opAssign(const Float2&in);
+	Float2 opNeg();
+	Float2 opAdd(const Float2&in);
+	Float2 opSub(const Float2&in);
+	Float2 opMul(float);
+	Float2 opDiv(float);
+	Float2 withX(float newX) const;
+	Float2 withY(float newY) const;
+	float x;
+	float y;
+}
+class RectF{
+	~RectF();
+	RectF();
+	RectF(const RectF&in);
+	RectF(const Vec2&in pos, const Vec2&in size);
+	RectF(const Vec2&in size);
+	RectF(double x, double y, const Vec2&in size);
+	RectF(const Vec2&in pos, double width, double height);
+	RectF(double x, double y, double width, double height);
+	RectF& opAssign(const RectF&in);
+	Vec2 tl() const;
+	Vec2 br() const;
+	Vec2 center() const;
 }
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);

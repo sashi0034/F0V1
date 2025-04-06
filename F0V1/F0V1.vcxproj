@@ -161,6 +161,7 @@
     <ClCompile Include="ZG\Rect.cpp" />
     <ClCompile Include="ZG\RenderTarget.cpp" />
     <ClCompile Include="ZG\ScopedDefer.cpp" />
+    <ClCompile Include="ZG\Script\ScriptBindMacros.cpp" />
     <ClCompile Include="ZG\Script\ScriptPredefinedGenerator.cpp" />
     <ClCompile Include="ZG\Value3D.cpp" />
     <ClCompile Include="ZG\VertexBuffer.cpp" />
@@ -249,6 +250,7 @@
     <ClInclude Include="ZG\Script\ScriptPredefinedGenerator.h" />
     <ClInclude Include="ZG\Shader.h" />
     <ClInclude Include="ZG\System.h" />
+    <ClInclude Include="ZG\TemplateHelper.h" />
     <ClInclude Include="ZG\Texture.h" />
     <ClInclude Include="ZG\TextureSource.h" />
     <ClInclude Include="ZG\Transformer3D.h" />

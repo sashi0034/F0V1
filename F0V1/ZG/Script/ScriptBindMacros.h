@@ -2,19 +2,21 @@
 
 namespace ZG::asapi_detail
 {
-    // inline std::vector<std::function<void(asIScriptEngine*)>> g_typeBindHandlers{};
+    inline std::vector<std::function<void(asIScriptEngine*)>> g_typeBindHandlers{};
 
     inline std::vector<std::function<void(asbind20::global<false>)>> g_globalBindHandlers{};
 
     inline std::vector<std::function<void()>> g_deferBindHandlers{};
 
-    struct Option
-    {
-        bool m_when{true};
+    std::function<std::string(std::string)> MacroPreprocessor(const std::map<std::string, std::string>& macros);
 
-        Option& when(bool when)
+    struct DefineOption
+    {
+        bool m_define_if{true};
+
+        DefineOption& define_if(bool when)
         {
-            m_when = when;
+            m_define_if = when;
             return *this;
         }
     };
@@ -27,46 +29,56 @@ namespace ZG::asapi_detail
 #define ASAPI_IMPL_UNIQUE_NAME(name) \
     ASAPI_IMPL_CONCATENATE(name, __LINE__)
 
-#define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
-    static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
-    static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
-    static void RegisterScript(asIScriptEngine* engine) { \
-        const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
-        auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
-            .behaviours_by_traits(); \
-        ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
-            for (const auto& handler : asapi_bindHandlers) \
-            { \
-                handler(bind); \
-            } \
-        }); \
-    } \
-    using asapi_BindTarget = name;
-
 // #define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
 //     static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
 //     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
-//     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
-//         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
-//             ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
-//                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
-//                 auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
-//                     .behaviours_by_traits(); \
-//                 ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
-//                     for (const auto& handler : asapi_bindHandlers) \
-//                     { \
-//                         handler(bind); \
-//                     } \
-//                 }); \
-//             }); \
-//         } \
-//     } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_); \
+//     static void RegisterScript(asIScriptEngine* engine) { \
+//         const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
+//         auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
+//             .behaviours_by_traits(); \
+//         ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
+//             for (const auto& handler : asapi_bindHandlers) \
+//             { \
+//                 handler(bind); \
+//             } \
+//         }); \
+//     } \
 //     using asapi_BindTarget = name;
+
+#define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
+    using asapi_BindTarget = name; \
+    static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
+    static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
+            ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
+                const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
+                auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
+                    .behaviours_by_traits(); \
+                ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
+                    for (const auto& handler : asapi_bindHandlers) \
+                    { \
+                        handler(bind); \
+                    } \
+                }); \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
 
 /// Usage: @code
 /// ASAPI_VALUE_CLASS(KeyboardInput, asOBJ_POD | asOBJ_APP_CLASS_ALLINTS);
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
+
+#define ASAPI_MACRO_PREPROCESSOR(...) \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
+            const auto macro = [](std::map<std::string, std::string> macros){ \
+                asapi_preprocessor = ::ZG::asapi_detail::MacroPreprocessor(macros); \
+            }; \
+            __VA_ARGS__ \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_)
 
 /// Usage: @code
 /// ASAPI_CLASS_CONSTRUCTOR(
@@ -75,9 +87,9 @@ namespace ZG::asapi_detail
 #define ASAPI_CLASS_CONSTRUCTOR(...) \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
     { \
-        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)(::ZG::asapi_detail::Option option) \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)(::ZG::asapi_detail::DefineOption option) \
         { \
-            if (not option.m_when) return; \
+            if (not option.m_define_if) return; \
             asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
             { \
                 using namespace asbind20; \
@@ -85,7 +97,7 @@ namespace ZG::asapi_detail
                 bind.template constructor __VA_ARGS__; \
             }); \
         } \
-    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_) = ::ZG::asapi_detail::Option{}
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_) = ::ZG::asapi_detail::DefineOption{}
 
 /// Usage: @code
 /// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
