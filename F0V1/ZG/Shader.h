@@ -32,7 +32,7 @@ namespace ZG
 
         ASAPI_CLASS_CONSTRUCTOR(
             <const std::string&, const std::string&>
-            ( t("const string& in filename, const string& in entryPoint")));
+            ( t("const string& in filename, const string& in entryPoint = 'PS'")));
 
         [[nodiscard]] bool isEmpty() const;
         ASAPI_CLASS_METHOD("bool isEmpty() const", isEmpty);
@@ -61,7 +61,7 @@ namespace ZG
 
         ASAPI_CLASS_CONSTRUCTOR(
             <const std::string&, const std::string&>
-            ( t("const string& in filename, const string& in entryPoint")));
+            ( t("const string& in filename, const string& in entryPoint = 'VS'")));
 
         [[nodiscard]] bool isEmpty() const;
         ASAPI_CLASS_METHOD("bool isEmpty() const", isEmpty);

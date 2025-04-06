@@ -293,7 +293,7 @@ class PixelShader{
 	~PixelShader();
 	PixelShader();
 	PixelShader(const PixelShader&in);
-	PixelShader(const string&in filename, const string&in entryPoint);
+	PixelShader(const string&in filename, const string&in entryPoint = 'PS');
 	PixelShader& opAssign(const PixelShader&in);
 	bool isEmpty() const;
 }
@@ -301,7 +301,7 @@ class VertexShader{
 	~VertexShader();
 	VertexShader();
 	VertexShader(const VertexShader&in);
-	VertexShader(const string&in filename, const string&in entryPoint);
+	VertexShader(const string&in filename, const string&in entryPoint = 'VS');
 	VertexShader& opAssign(const VertexShader&in);
 	bool isEmpty() const;
 }

@@ -5,10 +5,9 @@ void main() {
 
     Point p(100, 50);
 
-    PixelShader ps("./asset/shader/default2d.hlsl", "PS");
-    VertexShader vs("./asset/shader/default2d.hlsl", "VS");
-    TextureSource source("./asset/image/mii.png");
-    Texture texture(source, ps, vs);
+    PixelShader ps("./asset/shader/default2d.hlsl");
+    VertexShader vs("./asset/shader/default2d.hlsl");
+    Texture texture("./asset/image/mii.png", ps, vs);
 
     while (System::Update()) {
         // println("x: " + p.x + ", y: " + p.y);
