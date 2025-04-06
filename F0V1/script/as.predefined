@@ -365,6 +365,9 @@ string getExceptionInfo();
 void print(const string&in message);
 void println(const string&in message);
 namespace System { bool Update(); }
+namespace System { double DeltaTime(); }
+namespace System { uint64 FrameCount(); }
+namespace System { void ModalError(const string&in message); }
 KeyboardInput KeyCancel;
 KeyboardInput KeyBackspace;
 KeyboardInput KeyTab;

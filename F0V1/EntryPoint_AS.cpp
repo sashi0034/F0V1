@@ -109,12 +109,6 @@ namespace
 
         asbind20::ref_class<ID3D12Resource>(engine, "ID3D12Resource", asOBJ_NOCOUNT);
 
-        {
-            const auto ns = asbind20::namespace_(engine, "System");;
-            asbind20::global(engine)
-                .function("bool Update()", &System::Update);
-        }
-
         // -----------------------------------------------
 
         for (const auto& handler : asapi_detail::g_typeBindHandlers)
@@ -124,7 +118,7 @@ namespace
 
         for (const auto& handler : asapi_detail::g_globalBindHandlers)
         {
-            handler(asbind20::global(engine));
+            handler(engine);
         }
 
         for (const auto& handler : asapi_detail::g_deferBindHandlers)

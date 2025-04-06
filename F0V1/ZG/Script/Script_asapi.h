@@ -2,9 +2,11 @@
 
 namespace ZG::asapi_detail
 {
+    constexpr std::string_view k_namespace{};
+
     inline std::vector<std::function<void(asIScriptEngine*)>> g_typeBindHandlers{};
 
-    inline std::vector<std::function<void(asbind20::global<false>)>> g_globalBindHandlers{};
+    inline std::vector<std::function<void(asIScriptEngine*)>> g_globalBindHandlers{};
 
     inline std::vector<std::function<void()>> g_deferBindHandlers{};
 
@@ -148,10 +150,30 @@ namespace ZG::asapi_detail
     { \
         asapi_##name() \
         { \
-            ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asbind20::global<false> bind) \
+            ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asIScriptEngine* engine) \
             { \
-                bind.property(decl, name); \
+                const auto ns = asbind20::namespace_(engine, k_namespace); \
+                asbind20::global(engine).property(decl, name); \
             }); \
         } \
     }; \
     inline asapi_##name asapi_scriptBind_##name{}; }
+
+#define ASAPI_GLOBAL_FUNCTION(decl, name) \
+    namespace asapi_detail { struct asapi_##name \
+    { \
+        asapi_##name() \
+        { \
+            ::ZG::asapi_detail::g_globalBindHandlers.push_back([](asIScriptEngine* engine) \
+            { \
+                const auto ns = asbind20::namespace_(engine, k_namespace); \
+                asbind20::global(engine).function(decl, name); \
+            }); \
+        } \
+    }; \
+    inline asapi_##name asapi_scriptBind_##name{}; }
+
+#define ASAPI_NAMESPACE(decl) \
+    namespace asapi_detail { \
+        constexpr std::string_view k_namespace = decl; \
+    };
