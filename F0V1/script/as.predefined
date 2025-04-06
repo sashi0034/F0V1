@@ -223,6 +223,8 @@ class Point{
 	Point();
 	Point(const Point&in);
 	Point(int x, int y);
+	Point(const Float2&in other);
+	Point(const Vec2&in other);
 	Point& opAssign(const Point&in);
 	Point opNeg();
 	Point opAdd(const Point&in);
@@ -239,6 +241,8 @@ class Float2{
 	Float2();
 	Float2(const Float2&in);
 	Float2(float x, float y);
+	Float2(const Point&in other);
+	Float2(const Vec2&in other);
 	Float2& opAssign(const Float2&in);
 	Float2 opNeg();
 	Float2 opAdd(const Float2&in);
@@ -255,6 +259,8 @@ class Vec2{
 	Vec2();
 	Vec2(const Vec2&in);
 	Vec2(double x, double y);
+	Vec2(const Point&in other);
+	Vec2(const Float2&in other);
 	Vec2& opAssign(const Vec2&in);
 	Vec2 opNeg();
 	Vec2 opAdd(const Vec2&in);

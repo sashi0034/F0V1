@@ -23,6 +23,12 @@ namespace ZG
         value_type y;
         ASAPI_CLASS_PROPERTY("$value_type y", y);
 
+        static constexpr bool isPoint = std::is_same_v<value_type, int>;
+
+        static constexpr bool isFloat2 = std::is_same_v<value_type, float>;
+
+        static constexpr bool isVec2 = std::is_same_v<value_type, double>;
+
         [[nodiscard]] constexpr Value2D() = default;
 
         [[nodiscard]] constexpr Value2D(value_type _x, value_type _y) noexcept
@@ -33,6 +39,27 @@ namespace ZG
         ASAPI_CLASS_CONSTRUCTOR(
             <value_type, value_type>
             (t("$value_type x, $value_type y")));
+
+        template <typename OtherType>
+        [[nodiscard]] constexpr Value2D(const Value2D<OtherType>& other) noexcept
+            : x(other.x), y(other.y)
+        {
+        }
+
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            !isPoint,
+            <const Value2D<int>&>
+            (t("const Point& in other")));
+
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            !isFloat2,
+            <const Value2D<float>&>
+            (t("const Float2& in other")));
+
+        ASAPI_CLASS_CONSTRUCTOR_WHEN(
+            !isVec2,
+            <const Value2D<double>&>
+            (t("const Vec2& in other")));
 
         [[nodiscard]] constexpr Value2D operator +() const noexcept
         {
@@ -94,15 +121,9 @@ namespace ZG
         }
 
         template <class OtherType>
-        [[nodiscard]] constexpr Value2D<OtherType> toVec() const noexcept
+        [[nodiscard]] constexpr Value2D<OtherType> cast() const noexcept
         {
             return {static_cast<OtherType>(x), static_cast<OtherType>(y)};
-        }
-
-        template <typename T, std::enable_if_t<std::is_arithmetic_v<T>, int>  = 0>
-        operator Value2D<T>() const noexcept
-        {
-            return {static_cast<T>(x), static_cast<T>(y)};
         }
 
         template <typename T = std::conditional<std::is_floating_point_v<Type>, Type, double>::type>

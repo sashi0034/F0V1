@@ -11,7 +11,7 @@ void main() {
 
     while (System::Update()) {
         // println("x: " + p.x + ", y: " + p.y);
-        texture.drawAt(Vec2(p.x, p.y));
+        texture.drawAt(p);
 
         p.x++;
         c = p.x;

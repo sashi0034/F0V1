@@ -167,8 +167,8 @@ struct Texture::Impl
     void DrawAt(const Vec2 position)
     {
         const auto size = m_sr.size();
-        const auto tl = position - size.toVec<double>() / 2.0;
-        Draw(RectF{tl, size.toVec<double>()});
+        const auto tl = position - size.cast<double>() / 2.0;
+        Draw(RectF{tl, size.cast<double>()});
     }
 };
 

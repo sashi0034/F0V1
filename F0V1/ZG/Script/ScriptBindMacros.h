@@ -54,6 +54,21 @@ inline std::vector<std::function<void()>> asapi_deferBindHandlers{};
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
+#define ASAPI_CLASS_CONSTRUCTOR_WHEN(condition, ...) \
+    static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) \
+    { \
+        ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
+        { \
+            if (!condition) return; \
+            asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
+            { \
+                using namespace asbind20; \
+                const auto t = [](std::string str) { return asapi_preprocessor ? asapi_preprocessor(str) : str; }; \
+                bind.template constructor __VA_ARGS__; \
+            }); \
+        } \
+    } ASAPI_IMPL_UNIQUE_NAME(asapi_scriptBind_);
+
 /// Usage: @code
 /// ASAPI_CLASS_CONSTRUCTOR(
 ///      <value_type, value_type>
