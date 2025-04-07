@@ -19,4 +19,9 @@ namespace ZG
             EngineStackState.PopWorldMatrix();
         }
     }
+
+    void Transformer3D::unsafe_delete()
+    {
+        delete this;
+    }
 }

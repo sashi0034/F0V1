@@ -231,15 +231,6 @@ class filesystem{
 }
 class ID3D12Resource{
 }
-class KeyboardInput{
-	~KeyboardInput();
-	KeyboardInput();
-	KeyboardInput(const KeyboardInput&in);
-	KeyboardInput& opAssign(const KeyboardInput&in);
-	bool down() const;
-	bool pressed() const;
-	bool up() const;
-}
 class Mat4x4{
 }
 class Float3{
@@ -277,22 +268,6 @@ class Mat4x4Ref{
 	Mat4x4& get() const;
 	Mat4x4& opImplConv() const;
 }
-class PixelShader{
-	~PixelShader();
-	PixelShader();
-	PixelShader(const PixelShader&in);
-	PixelShader(const string&in filename, const string&in entryPoint = 'PS');
-	PixelShader& opAssign(const PixelShader&in);
-	bool isEmpty() const;
-}
-class VertexShader{
-	~VertexShader();
-	VertexShader();
-	VertexShader(const VertexShader&in);
-	VertexShader(const string&in filename, const string&in entryPoint = 'VS');
-	VertexShader& opAssign(const VertexShader&in);
-	bool isEmpty() const;
-}
 class Point{
 	~Point();
 	Point();
@@ -309,8 +284,34 @@ class Point{
 	Point opDiv(int);
 	Point withX(int newX) const;
 	Point withY(int newY) const;
+	double horizontalAspectRatio() const;
 	int x;
 	int y;
+}
+class KeyboardInput{
+	~KeyboardInput();
+	KeyboardInput();
+	KeyboardInput(const KeyboardInput&in);
+	KeyboardInput& opAssign(const KeyboardInput&in);
+	bool down() const;
+	bool pressed() const;
+	bool up() const;
+}
+class PixelShader{
+	~PixelShader();
+	PixelShader();
+	PixelShader(const PixelShader&in);
+	PixelShader(const string&in filename, const string&in entryPoint = 'PS');
+	PixelShader& opAssign(const PixelShader&in);
+	bool isEmpty() const;
+}
+class VertexShader{
+	~VertexShader();
+	VertexShader();
+	VertexShader(const VertexShader&in);
+	VertexShader(const string&in filename, const string&in entryPoint = 'VS');
+	VertexShader& opAssign(const VertexShader&in);
+	bool isEmpty() const;
 }
 class TextureSource{
 	~TextureSource();
@@ -329,43 +330,16 @@ class Texture{
 	void drawAt(const Vec2&in position) const;
 	void draw3D() const;
 }
-class Vec2{
-	~Vec2();
-	Vec2();
-	Vec2(const Vec2&in);
-	Vec2(double x, double y);
-	Vec2(const Point&in other);
-	Vec2(const Float2&in other);
-	Vec2(const Vec2&in other);
-	Vec2& opAssign(const Vec2&in);
-	Vec2 opNeg();
-	Vec2 opAdd(const Vec2&in);
-	Vec2 opSub(const Vec2&in);
-	Vec2 opMul(double);
-	Vec2 opDiv(double);
-	Vec2 withX(double newX) const;
-	Vec2 withY(double newY) const;
-	double x;
-	double y;
+class Model{
+	~Model();
+	Model();
+	Model(const Model&in);
+	Model(const string&in filename, const PixelShader&in ps, const VertexShader&in vs);
+	Model& opAssign(const Model&in);
+	void draw() const;
 }
-class Float2{
-	~Float2();
-	Float2();
-	Float2(const Float2&in);
-	Float2(float x, float y);
-	Float2(const Point&in other);
-	Float2(const Float2&in other);
-	Float2(const Vec2&in other);
-	Float2& opAssign(const Float2&in);
-	Float2 opNeg();
-	Float2 opAdd(const Float2&in);
-	Float2 opSub(const Float2&in);
-	Float2 opMul(float);
-	Float2 opDiv(float);
-	Float2 withX(float newX) const;
-	Float2 withY(float newY) const;
-	float x;
-	float y;
+class Transformer3D{
+	Transformer3D@ Transformer3D(const Mat4x4&in localWorldMat);
 }
 class Vec3{
 	~Vec3();
@@ -383,6 +357,26 @@ class Vec3{
 	double y;
 	double z;
 }
+class Vec2{
+	~Vec2();
+	Vec2();
+	Vec2(const Vec2&in);
+	Vec2(double x, double y);
+	Vec2(const Point&in other);
+	Vec2(const Float2&in other);
+	Vec2(const Vec2&in other);
+	Vec2& opAssign(const Vec2&in);
+	Vec2 opNeg();
+	Vec2 opAdd(const Vec2&in);
+	Vec2 opSub(const Vec2&in);
+	Vec2 opMul(double);
+	Vec2 opDiv(double);
+	Vec2 withX(double newX) const;
+	Vec2 withY(double newY) const;
+	double horizontalAspectRatio() const;
+	double x;
+	double y;
+}
 class RectF{
 	~RectF();
 	RectF();
@@ -397,13 +391,25 @@ class RectF{
 	Vec2 br() const;
 	Vec2 center() const;
 }
-class Model{
-	~Model();
-	Model();
-	Model(const Model&in);
-	Model(const string&in filename, const PixelShader&in ps, const VertexShader&in vs);
-	Model& opAssign(const Model&in);
-	void draw() const;
+class Float2{
+	~Float2();
+	Float2();
+	Float2(const Float2&in);
+	Float2(float x, float y);
+	Float2(const Point&in other);
+	Float2(const Float2&in other);
+	Float2(const Vec2&in other);
+	Float2& opAssign(const Float2&in);
+	Float2 opNeg();
+	Float2 opAdd(const Float2&in);
+	Float2 opSub(const Float2&in);
+	Float2 opMul(float);
+	Float2 opDiv(float);
+	Float2 withX(float newX) const;
+	Float2 withY(float newY) const;
+	double horizontalAspectRatio() const;
+	float x;
+	float y;
 }
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);
@@ -441,14 +447,18 @@ void throw(const string&in);
 string getExceptionInfo();
 void print(const string&in message);
 void println(const string&in message);
-namespace Mat4x4Ref { Mat4x4Ref Identity(); }
-namespace Mat4x4Ref { Mat4x4Ref LookAt(const Float3&in eye, const Float3&in target, const Float3&in up); }
-namespace Mat4x4Ref { Mat4x4Ref PerspectiveFov(float fov, float aspect, float nearZ, float farZ); }
-namespace Mat4x4Ref { Mat4x4Ref Translate(const Float3&in v); }
 namespace System { bool Update(); }
 namespace System { double DeltaTime(); }
 namespace System { uint64 FrameCount(); }
 namespace System { void ModalError(const string&in message); }
+namespace Mat4x4Ref { Mat4x4Ref Identity(); }
+namespace Mat4x4Ref { Mat4x4Ref LookAt(const Float3&in eye, const Float3&in target, const Float3&in up); }
+namespace Mat4x4Ref { Mat4x4Ref PerspectiveFov(float fov, float aspect, float nearZ, float farZ); }
+namespace Mat4x4Ref { Mat4x4Ref Translate(const Float3&in v); }
+namespace Graphics3D { void SetViewMatrix(const Mat4x4&in viewMatrix); }
+namespace Graphics3D { void SetProjectionMatrix(const Mat4x4&in projectionMatrix); }
+namespace Scene { Point Size(); }
+namespace Scene { Point Center(); }
 KeyboardInput KeyCancel;
 KeyboardInput KeyBackspace;
 KeyboardInput KeyTab;

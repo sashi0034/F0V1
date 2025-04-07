@@ -140,6 +140,8 @@ namespace ZG
         {
             return static_cast<T>(x) / static_cast<T>(y);
         }
+
+        ASAPI_CLASS_BIND(method("double horizontalAspectRatio() const", &horizontalAspectRatio<double>));
     };
 
     /// @brief Floating point 2D vector
