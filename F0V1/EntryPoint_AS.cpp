@@ -13,12 +13,7 @@
 #include "add_on/scriptmath/scriptmath.h"
 #include "add_on/scriptstdstring/scriptstdstring.h"
 #include "add_on/weakref/weakref.h"
-#include "ZG/KeyboardInput.h"
-#include "ZG/Rect.h"
 #include "ZG/System.h"
-#include "ZG/Texture.h"
-#include "ZG/TextureSource.h"
-#include "ZG/Value2D.h"
 #include "ZG/Script/ScriptPredefinedGenerator.h"
 
 using namespace ZG;

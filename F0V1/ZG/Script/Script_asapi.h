@@ -39,13 +39,14 @@ namespace ZG::asapi_detail
 #define ASAPI_VALUE_CLASS_AS(decl, name, flags) \
     private: \
     using asapi_BindTarget = name; \
-    static inline std::vector<std::function<void(asbind20::value_class<name>)>> asapi_bindHandlers{}; \
+    using asapi_class_type = asbind20::value_class<name>; \
+    static inline std::vector<std::function<void(asapi_class_type)>> asapi_bindHandlers{}; \
     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
             ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(decl) : (decl); \
-                auto bind = asbind20::value_class<name>(engine, declaration.data(), flags) \
+                auto bind = asapi_class_type(engine, declaration.data(), flags) \
                     .behaviours_by_traits(); \
                 ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
                     for (const auto& handler : asapi_bindHandlers) \
@@ -70,16 +71,16 @@ namespace ZG::asapi_detail
 #define ASAPI_VALUE_CLASS(name, flags) \
     ASAPI_VALUE_CLASS_AS(#name, name, flags)
 
-#define ASAPI_REF_CLASS_AS(name, flags) \
+#define ASAPI_REF_CLASS(name, flags) \
     private: \
-    using asapi_BindTarget = name; \
-    static inline std::vector<std::function<void(asbind20::ref_class<name>)>> asapi_bindHandlers{}; \
+    using asapi_class_type = asbind20::ref_class<name>; \
+    static inline std::vector<std::function<void(asapi_class_type)>> asapi_bindHandlers{}; \
     static inline std::function<std::string(std::string)> asapi_preprocessor{}; \
     static inline struct ASAPI_IMPL_UNIQUE_NAME(asapi_struct_) { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() { \
             ::ZG::asapi_detail::g_typeBindHandlers.push_back([](asIScriptEngine* engine) { \
                 const std::string declaration = asapi_preprocessor ? asapi_preprocessor(#name) : (#name); \
-                auto bind = asbind20::ref_class<name>(engine, declaration.data(), flags); \
+                auto bind = asapi_class_type(engine, declaration.data(), flags); \
                 ::ZG::asapi_detail::g_deferBindHandlers.push_back([bind]() { \
                     for (const auto& handler : asapi_bindHandlers) \
                     { \
@@ -107,7 +108,7 @@ namespace ZG::asapi_detail
     { \
         ASAPI_IMPL_UNIQUE_NAME(asapi_struct_)() \
         { \
-            asapi_bindHandlers.push_back([](asbind20::value_class<asapi_BindTarget> bind) \
+            asapi_bindHandlers.push_back([](asapi_class_type bind) \
             { \
                 using namespace asbind20; \
                 const auto t = [](std::string str) { return asapi_preprocessor ? asapi_preprocessor(str) : str; }; \
@@ -134,6 +135,9 @@ namespace ZG::asapi_detail
 /// ASAPI_CLASS_METHOD("$Value2D withX($value_type newX) const", withX);
 #define ASAPI_CLASS_METHOD(decl, method_name) \
     ASAPI_CLASS_BIND(method(t(decl).data(), &asapi_BindTarget::method_name))
+
+#define ASAPI_CLASS_METHOD_BY(decl, ...) \
+    ASAPI_CLASS_BIND(method(t(decl).data(), overload_cast __VA_ARGS__))
 
 /// Usage: @code
 /// ASAPI_CLASS_PROPERTY("$value_type x", x);
