@@ -26,7 +26,9 @@ namespace
             for (int j = 0; j < e->GetEnumValueCount(); ++j)
             {
                 stream << std::format("\t{}", e->GetEnumValueByIndex(j, nullptr));
+
                 if (j < e->GetEnumValueCount() - 1) stream << ",";
+
                 stream << "\n";
             }
 
@@ -45,6 +47,7 @@ namespace
             if (not t) continue;
 
             const std::string_view ns = t->GetNamespace();
+
             if (not ns.empty()) stream << std::format("namespace {} {{\n", ns);
 
             stream << std::format("class {}", t->GetName());
@@ -52,9 +55,11 @@ namespace
             if (t->GetSubTypeCount() > 0)
             {
                 stream << "<";
+
                 for (int sub = 0; sub < t->GetSubTypeCount(); ++sub)
                 {
                     if (sub < t->GetSubTypeCount() - 1) stream << ", ";
+
                     const auto st = t->GetSubType(sub);
                     stream << st->GetName();
                 }
@@ -68,10 +73,17 @@ namespace
             {
                 asEBehaviours behaviours;
                 const auto f = t->GetBehaviourByIndex(j, &behaviours);
-                if (behaviours == asBEHAVE_CONSTRUCT || behaviours == asBEHAVE_DESTRUCT)
+                if (behaviours == asBEHAVE_CONSTRUCT ||
+                    behaviours == asBEHAVE_DESTRUCT)
                 {
                     stream << std::format("\t{};\n", f->GetDeclaration(false, true, true));
                 }
+            }
+
+            for (int j = 0; j < t->GetFactoryCount(); ++j)
+            {
+                const auto f = t->GetFactoryByIndex(j);
+                stream << std::format("\t{};\n", f->GetDeclaration(false, true, true));
             }
 
             for (int j = 0; j < t->GetMethodCount(); ++j)
@@ -130,7 +142,7 @@ namespace
             const std::string t = engine->GetTypeDeclaration(type, true);
             if (t.empty()) continue;
 
-            std::string_view ns = ns0;
+            const std::string_view ns = ns0;
 
             if (not ns.empty()) stream << std::format("namespace {} {{ ", ns);
 
