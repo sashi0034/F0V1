@@ -109,7 +109,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript_add_on;../external/cppdap/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript/include;../external/angelscript_add_on;../external/cppdap/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -129,7 +129,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript_add_on;../external/cppdap/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;../external/DirectXTex/DirectXTex;../external/angelscript/include;../external/angelscript_add_on;../external/cppdap/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -142,6 +142,14 @@
     <Content Include=".gitignore" />
     <Content Include="engine\stub.hlsl" />
     <Content Include="asset\shader\default2d.hlsl" />
+    <ClCompile Include="as_debugger.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
+    <ClCompile Include="as_debugger_dap.cpp">
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Release|x64'">pch.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+    </ClCompile>
     <ClCompile Include="EntryPoint_AS.cpp" />
     <ClCompile Include="EntryPoint_CPP.cpp" />
     <ClCompile Include="pch_helper.cpp" />
@@ -207,6 +215,8 @@
   <ItemGroup>
     <ClInclude Include="asset\shader\basic.hlsli" />
     <ClInclude Include="asset\shader\model.hlsli" />
+    <ClInclude Include="as_debugger.h" />
+    <ClInclude Include="as_debugger_dap.h" />
     <ClInclude Include="EntryPoint_AS.h" />
     <ClInclude Include="EntryPoint_CPP.h" />
     <ClInclude Include="pch.h" />
