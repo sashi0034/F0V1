@@ -7316,11 +7316,11 @@ asUINT asCCompiler::ImplicitConvPrimitiveToPrimitive(asCExprContext *ctx, const 
 			if( builder->GetEnumValueFromType(CastToEnumType(to.GetTypeInfo()), ctx->enumValue.AddressOf(), out, value) )
 			{
 				if(out.GetSizeInMemoryBytes() == 1)
-					ctx->type.SetConstantB(out, value);
+					ctx->type.SetConstantB(out, (asBYTE)value);
 				else if(out.GetSizeInMemoryBytes() == 2)
-					ctx->type.SetConstantW(out, value);
+					ctx->type.SetConstantW(out, (asWORD)value);
 				else if(out.GetSizeInMemoryBytes() == 4)
-					ctx->type.SetConstantDW(out, value);
+					ctx->type.SetConstantDW(out, (asDWORD)value);
 				else
 					ctx->type.SetConstantQW(out, value);
 				ctx->type.dataType.MakeReadOnly(to.IsReadOnly());
@@ -9152,11 +9152,11 @@ void asCCompiler::ImplicitConversionConstant(asCExprContext *from, const asCData
 				}
 
 				if (to.GetSizeInMemoryBytes() == 1)
-					from->type.SetConstantB(to, ic);
+					from->type.SetConstantB(to, (asBYTE)ic);
 				else if (to.GetSizeInMemoryBytes() == 2)
-					from->type.SetConstantW(to, ic);
+					from->type.SetConstantW(to, (asWORD)ic);
 				else if (to.GetSizeInMemoryBytes() == 4)
-					from->type.SetConstantDW(to, ic);
+					from->type.SetConstantDW(to, (asDWORD)ic);
 				else
 					from->type.SetConstantQW(to, ic);
 			}
@@ -9172,11 +9172,11 @@ void asCCompiler::ImplicitConversionConstant(asCExprContext *from, const asCData
 				}
 
 				if (to.GetSizeInMemoryBytes() == 1)
-					from->type.SetConstantB(to, ic);
+					from->type.SetConstantB(to, (asBYTE)ic);
 				else if (to.GetSizeInMemoryBytes() == 2)
-					from->type.SetConstantW(to, ic);
+					from->type.SetConstantW(to, (asWORD)ic);
 				else if (to.GetSizeInMemoryBytes() == 4)
-					from->type.SetConstantDW(to, ic);
+					from->type.SetConstantDW(to, (asDWORD)ic);
 				else
 					from->type.SetConstantQW(to, ic);
 			}
@@ -9252,11 +9252,11 @@ void asCCompiler::ImplicitConversionConstant(asCExprContext *from, const asCData
 				}
 
 				if (targetDt.GetSizeInMemoryBytes() == 1)
-					from->type.SetConstantB(targetDt, ic);
+					from->type.SetConstantB(targetDt, (asBYTE)ic);
 				else if (targetDt.GetSizeInMemoryBytes() == 2)
-					from->type.SetConstantW(targetDt, ic);
+					from->type.SetConstantW(targetDt, (asWORD)ic);
 				else if (targetDt.GetSizeInMemoryBytes() == 4)
-					from->type.SetConstantDW(targetDt, ic);
+					from->type.SetConstantDW(targetDt, (asDWORD)ic);
 				else
 					from->type.SetConstantQW(targetDt, ic);
 			}
@@ -9272,11 +9272,11 @@ void asCCompiler::ImplicitConversionConstant(asCExprContext *from, const asCData
 				}
 				
 				if (targetDt.GetSizeInMemoryBytes() == 1)
-					from->type.SetConstantB(targetDt, ic);
+					from->type.SetConstantB(targetDt, (asBYTE)ic);
 				else if (targetDt.GetSizeInMemoryBytes() == 2)
-					from->type.SetConstantW(targetDt, ic);
+					from->type.SetConstantW(targetDt, (asWORD)ic);
 				else if (targetDt.GetSizeInMemoryBytes() == 4)
-					from->type.SetConstantDW(targetDt, ic);
+					from->type.SetConstantDW(targetDt, (asDWORD)ic);
 				else
 					from->type.SetConstantQW(targetDt, ic);
 			}
@@ -11103,11 +11103,11 @@ asCCompiler::SYMBOLTYPE asCCompiler::SymbolLookup(const asCString &name, const a
 
 							// an enum value was resolved
 							if (dt.GetSizeInMemoryBytes() == 1)
-								outResult->type.SetConstantB(dt, value);
+								outResult->type.SetConstantB(dt, (asBYTE)value);
 							else if (dt.GetSizeInMemoryBytes() == 2)
-								outResult->type.SetConstantW(dt, value);
+								outResult->type.SetConstantW(dt, (asWORD)value);
 							else if (dt.GetSizeInMemoryBytes() == 4)
-								outResult->type.SetConstantDW(dt, value);
+								outResult->type.SetConstantDW(dt, (asDWORD)value);
 							else
 								outResult->type.SetConstantQW(dt, value);
 							outResult->symbolNamespace = ns;
@@ -11281,11 +11281,11 @@ asCCompiler::SYMBOLTYPE asCCompiler::SymbolLookup(const asCString &name, const a
 					{
 						// an enum value was resolved
 						if (dt.GetSizeInMemoryBytes() == 1)
-							outResult->type.SetConstantB(dt, value);
+							outResult->type.SetConstantB(dt, (asBYTE)value);
 						else if (dt.GetSizeInMemoryBytes() == 2)
-							outResult->type.SetConstantW(dt, value);
+							outResult->type.SetConstantW(dt, (asWORD)value);
 						else if (dt.GetSizeInMemoryBytes() == 4)
-							outResult->type.SetConstantDW(dt, value);
+							outResult->type.SetConstantDW(dt, (asDWORD)value);
 						else
 							outResult->type.SetConstantQW(dt, value);
 						outResult->symbolNamespace = ns;
@@ -11815,11 +11815,11 @@ int asCCompiler::CompileVariableAccess(const asCString &name, const asCString &s
 
 			// an enum value was resolved
 			if (dt.GetSizeInMemoryBytes() == 1)
-				ctx->type.SetConstantB(dt, value);
+				ctx->type.SetConstantB(dt, (asBYTE)value);
 			else if (dt.GetSizeInMemoryBytes() == 2)
-				ctx->type.SetConstantW(dt, value);
+				ctx->type.SetConstantW(dt, (asWORD)value);
 			else if (dt.GetSizeInMemoryBytes() == 4)
-				ctx->type.SetConstantDW(dt, value);
+				ctx->type.SetConstantDW(dt, (asDWORD)value);
 			else
 				ctx->type.SetConstantQW(dt, value);
 			return 0;

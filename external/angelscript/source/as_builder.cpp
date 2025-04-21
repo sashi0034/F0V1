@@ -4804,8 +4804,8 @@ int asCBuilder::RegisterEnum(asCScriptNode *node, asCScriptCode *file, asSNameSp
 		decl->typeInfo         = st;
 		namedTypeDeclarations.PushLast(decl);
 
-		asCDataType type = CreateDataTypeFromNode(tmp, file, ns);
-		asASSERT(!type.IsReference());
+		asCDataType type1 = CreateDataTypeFromNode(tmp, file, ns);
+		asASSERT(!type1.IsReference());
 
 		// External shared enums must not redeclare the enum values
 		if (isExternal && (tmp->next == 0 || tmp->next->tokenType != ttEndStatement) )

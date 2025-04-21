@@ -258,7 +258,7 @@ struct asSFailedMatch
     {
     }
     asSFailedMatch(int func, asEFailedMatchReason reason, const char *argName) :
-        func(func), reason(reason), arg(-1), argName(argName)
+        func(func), reason(reason), arg(asUINT(-1)), argName(argName)
     {
     }
 };
