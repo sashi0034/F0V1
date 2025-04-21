@@ -6,16 +6,30 @@ namespace ZG
     struct ModelParams
     {
         std::string filename;
-        PixelShader pixelShader;
-        VertexShader vertexShader;
+        PixelShader ps;
+        VertexShader vs;
     };
 
     class Model
     {
     public:
+        ASAPI_VALUE_CLASS(Model, asOBJ_APP_CLASS_MORE_CONSTRUCTORS);
+
+        Model() = default;
+
         Model(const ModelParams& params);
 
+        Model(const std::string& filename, const PixelShader& ps, const VertexShader& vs)
+            : Model{ModelParams{filename, ps, vs}}
+        {
+        }
+
+        ASAPI_CLASS_CONSTRUCTOR(
+            <const std::string&, const PixelShader&, const VertexShader&>
+            (t("const string& in filename, const PixelShader& in ps, const VertexShader& in vs")));
+
         void draw() const;
+        ASAPI_CLASS_METHOD("void draw() const", draw);
 
     private:
         struct Impl;

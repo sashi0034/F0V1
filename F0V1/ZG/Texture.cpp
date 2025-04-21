@@ -79,8 +79,8 @@ namespace
         // TODO: キャッシュする?
         return PipelineState{
             PipelineStateParams{
-                .pixelShader = options.pixelShader,
-                .vertexShader = options.vertexShader,
+                .pixelShader = options.ps,
+                .vertexShader = options.vs,
                 .vertexInput = {
                     {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT},
                     {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT}
@@ -167,8 +167,8 @@ struct Texture::Impl
     void DrawAt(const Vec2 position)
     {
         const auto size = m_sr.size();
-        const auto tl = position - size.toVec<double>() / 2.0;
-        Draw(RectF{tl, size.toVec<double>()});
+        const auto tl = position - size.cast<double>() / 2.0;
+        Draw(RectF{tl, size.cast<double>()});
     }
 };
 

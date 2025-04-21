@@ -13,9 +13,7 @@
 #include "add_on/scriptmath/scriptmath.h"
 #include "add_on/scriptstdstring/scriptstdstring.h"
 #include "add_on/weakref/weakref.h"
-#include "ZG/KeyboardInput.h"
 #include "ZG/System.h"
-#include "ZG/Value2D.h"
 #include "ZG/Script/ScriptPredefinedGenerator.h"
 
 using namespace ZG;
@@ -31,16 +29,6 @@ namespace
     {
         printf("%s\n", message.c_str());
     }
-
-    struct flag_t
-    {
-        bool flag;
-
-        operator bool() const
-        {
-            return flag;
-        }
-    };
 
     void MessageCallback(const asSMessageInfo* msg, void* param)
     {
@@ -76,6 +64,14 @@ namespace
         return declarations;
     }
 
+    std::function<std::string(const std::string&)> makePreprocessFunction(std::map<std::string, std::string> macros)
+    {
+        return [macros](const std::string& declarations)
+        {
+            return preprocessDeclaration(declarations, macros);
+        };
+    }
+
     void registerEngine(const asbind20::script_engine& engine)
     {
         // script extenstion: https://www.angelcode.com/angelscript/sdk/docs/manual/doc_addon_script.html
@@ -98,39 +94,29 @@ namespace
             .function("void print(const string& in message)", &script_print)
             .function("void println(const string& in message)", &println);
 
-        asbind20::value_class<flag_t>(engine, "flag_t", asOBJ_VALUE)
-            .behaviours_by_traits()
-            .constructor<bool>("bool flag")
-            .opEquals()
-            .opConv<bool>()
-            .opImplConv<bool>()
-            .property("bool flag", &flag_t::flag);
+        // asbind20::value_class<flag_t>(engine, "flag_t", asOBJ_VALUE)
+        //     .behaviours_by_traits()
+        //     .constructor<bool>("bool flag")
+        //     .opEquals()
+        //     .opConv<bool>()
+        //     .opImplConv<bool>()
+        //     .property("bool flag", &flag_t::flag);
 
-        {
-            const auto ns = asbind20::namespace_(engine, "System");;
-            asbind20::global(engine)
-                .function("bool Update()", &System::Update);
-        }
+        asbind20::ref_class<ID3D12Resource>(engine, "ID3D12Resource", asOBJ_NOCOUNT);
 
         // -----------------------------------------------
 
-        using translator_t = std::map<std::string, std::string>;
-
-        Point::asapi_preprocessor = [](const std::string& declarations)
+        for (const auto& handler : asapi_detail::g_typeBindHandlers)
         {
-            const translator_t& macros = {{"$Value2D", "Point"}, {"$value_type", "int"},};
-            return preprocessDeclaration(declarations, macros);
-        };
-
-        Point::RegisterScript(engine);
-        KeyboardInput::RegisterScript(engine);
-
-        for (const auto& handler : asapi_globalBindHandlers)
-        {
-            handler(asbind20::global(engine));
+            handler(engine);
         }
 
-        for (const auto& handler : asapi_deferBindHandlers)
+        for (const auto& handler : asapi_detail::g_globalBindHandlers)
+        {
+            handler(engine);
+        }
+
+        for (const auto& handler : asapi_detail::g_deferBindHandlers)
         {
             handler();
         }

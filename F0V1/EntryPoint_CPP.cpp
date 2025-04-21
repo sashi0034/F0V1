@@ -21,8 +21,8 @@ using namespace ZG;
 
 void EntryPoint_CPP()
 {
-    const PixelShader default2dPS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "PS"}};
-    const VertexShader default2dVS{ShaderParams{.filename = L"asset/shader/default2d.hlsl", .entryPoint = "VS"}};
+    const PixelShader default2dPS{ShaderParams{.filename = "asset/shader/default2d.hlsl", .entryPoint = "PS"}};
+    const VertexShader default2dVS{ShaderParams{.filename = "asset/shader/default2d.hlsl", .entryPoint = "VS"}};
 
     Image image{Size{16, 16}};
     for (int x = 0; x < image.size().x; ++x)
@@ -38,11 +38,11 @@ void EntryPoint_CPP()
     }
 
     const Texture noiseTexture{
-        TextureParams{.source = image, .pixelShader = default2dPS, .vertexShader = default2dVS}
+        TextureParams{.source = image, .ps = default2dPS, .vs = default2dVS}
     };
 
     const Texture pngTexture{
-        TextureParams{.source = L"asset/image/mii.png", .pixelShader = default2dPS, .vertexShader = default2dVS}
+        TextureParams{.source = "asset/image/mii.png", .ps = default2dPS, .vs = default2dVS}
     };
 
     Mat4x4 worldMat = Mat4x4::Identity().rotatedY(45.0_deg);
@@ -56,14 +56,14 @@ void EntryPoint_CPP()
         10.0f
     );
 
-    const PixelShader modelPS{ShaderParams{.filename = L"asset/shader/model_pixel.hlsl", .entryPoint = "PS"}};
-    const VertexShader modelVS{ShaderParams{.filename = L"asset/shader/model_vertex.hlsl", .entryPoint = "VS"}};
+    const PixelShader modelPS{ShaderParams{.filename = "asset/shader/model_pixel.hlsl", .entryPoint = "PS"}};
+    const VertexShader modelVS{ShaderParams{.filename = "asset/shader/model_vertex.hlsl", .entryPoint = "VS"}};
 
     const Model model{
         ModelParams{
             .filename = "asset/model/robot_head.obj", // "asset/model/cinnamon.obj"
-            .pixelShader = modelPS,
-            .vertexShader = modelVS,
+            .ps = modelPS,
+            .vs = modelVS,
         }
     };
 
@@ -81,8 +81,8 @@ void EntryPoint_CPP()
     Texture renderTargetTexture{
         {
             .source = renderTarget.getResource(),
-            .pixelShader = default2dPS,
-            .vertexShader = default2dVS
+            .ps = default2dPS,
+            .vs = default2dVS
         }
     };
 

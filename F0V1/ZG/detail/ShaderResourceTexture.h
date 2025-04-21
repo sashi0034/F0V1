@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "ZG/Image.h"
-#include "ZG/Variant.h"
+#include "ZG/TextureSource.h"
 
 namespace ZG::detail
 {
@@ -9,7 +9,7 @@ namespace ZG::detail
     public:
         ShaderResourceTexture() = default;
 
-        ShaderResourceTexture(const Variant<std::wstring, Image, ID3D12Resource*>& source);
+        ShaderResourceTexture(const TextureSource& source);
 
         bool isEmpty() const;
 

@@ -44,6 +44,9 @@ class string{
 	int regexFind(const string&in regex, uint start = 0, uint&out lengthOfMatch = void) const;
 }
 class array<T>{
+	T[]@ array(int&in);
+	T[]@ array(int&in, uint length);
+	T[]@ array(int&in, uint length, const T&in value);
 	T& opIndex(uint index);
 	const T& opIndex(uint index) const;
 	uint opForBegin() const;
@@ -76,6 +79,10 @@ class array<T>{
 	funcdef bool less(const T&in, const T&in);
 }
 class any{
+	any@ any();
+	any@ any(?&in);
+	any@ any(const int64&in);
+	any@ any(const double&in);
 	any& opAssign(any&in);
 	void store(?&in);
 	void store(const int64&in);
@@ -125,6 +132,7 @@ class dictionaryValue{
 	double opConv();
 }
 class dictionary{
+	dictionary@ dictionary();
 	dictionary& opAssign(const dictionary&in);
 	void set(const string&in, const ?&in);
 	bool get(const string&in, ?&out) const;
@@ -149,6 +157,7 @@ class dictionary{
 class dictionaryIter{
 }
 class file{
+	file@ file();
 	int open(const string&in, const string&in);
 	int close();
 	int getSize() const;
@@ -170,6 +179,9 @@ class file{
 	bool mostSignificantByteFirst;
 }
 class grid<T>{
+	grid<T>@ grid(int&in);
+	grid<T>@ grid(int&in, uint, uint);
+	grid<T>@ grid(int&in, uint, uint, const T&in);
 	T& opIndex(uint, uint);
 	const T& opIndex(uint, uint) const;
 	void resize(uint width, uint height);
@@ -201,6 +213,7 @@ class datetime{
 	int opCmp(const datetime&in) const;
 }
 class filesystem{
+	filesystem@ filesystem();
 	bool changeCurrentPath(const string&in);
 	string getCurrentPath() const;
 	string[]@ getDirs() const;
@@ -216,22 +229,53 @@ class filesystem{
 	datetime getCreateDateTime(const string&in) const;
 	datetime getModifyDateTime(const string&in) const;
 }
-class flag_t{
-	~flag_t();
-	flag_t();
-	flag_t(const flag_t&in);
-	flag_t(bool flag);
-	flag_t& opAssign(const flag_t&in);
-	bool opEquals(const flag_t&in) const;
-	bool opConv() const;
-	bool opImplConv() const;
-	bool flag;
+class ID3D12Resource{
+}
+class Mat4x4{
+}
+class Float3{
+	~Float3();
+	Float3();
+	Float3(const Float3&in);
+	Float3(float x, float y, float z);
+	Float3(const Float3&in other);
+	Float3(const Vec3&in other);
+	Float3& opAssign(const Float3&in);
+	Float3 opSub(const Float3&in);
+	Float3 opMul(float);
+	Float3 opDiv(float);
+	bool opEquals(const Float3&in) const;
+	float x;
+	float y;
+	float z;
+}
+class Mat4x4Ref{
+	~Mat4x4Ref();
+	Mat4x4Ref();
+	Mat4x4Ref(const Mat4x4Ref&in);
+	Mat4x4Ref& opAssign(const Mat4x4Ref&in);
+	Mat4x4Ref clone() const;
+	Mat4x4Ref translate(const Float3&in v);
+	Mat4x4Ref translate(float x, float y, float z);
+	Mat4x4Ref scale(const Float3&in v);
+	Mat4x4Ref scale(float x, float y, float z);
+	Mat4x4Ref rotateX(float angle);
+	Mat4x4Ref rotateY(float angle);
+	Mat4x4Ref rotateZ(float angle);
+	Mat4x4Ref opMul(const Mat4x4Ref&in);
+	const Mat4x4& get();
+	const Mat4x4& opImplConv();
+	Mat4x4& get() const;
+	Mat4x4& opImplConv() const;
 }
 class Point{
 	~Point();
 	Point();
 	Point(const Point&in);
 	Point(int x, int y);
+	Point(const Point&in other);
+	Point(const Float2&in other);
+	Point(const Vec2&in other);
 	Point& opAssign(const Point&in);
 	Point opNeg();
 	Point opAdd(const Point&in);
@@ -240,6 +284,7 @@ class Point{
 	Point opDiv(int);
 	Point withX(int newX) const;
 	Point withY(int newY) const;
+	double horizontalAspectRatio() const;
 	int x;
 	int y;
 }
@@ -251,6 +296,120 @@ class KeyboardInput{
 	bool down() const;
 	bool pressed() const;
 	bool up() const;
+}
+class PixelShader{
+	~PixelShader();
+	PixelShader();
+	PixelShader(const PixelShader&in);
+	PixelShader(const string&in filename, const string&in entryPoint = 'PS');
+	PixelShader& opAssign(const PixelShader&in);
+	bool isEmpty() const;
+}
+class VertexShader{
+	~VertexShader();
+	VertexShader();
+	VertexShader(const VertexShader&in);
+	VertexShader(const string&in filename, const string&in entryPoint = 'VS');
+	VertexShader& opAssign(const VertexShader&in);
+	bool isEmpty() const;
+}
+class TextureSource{
+	~TextureSource();
+	TextureSource();
+	TextureSource(const TextureSource&in);
+	TextureSource(const string&in filename);
+	TextureSource& opAssign(const TextureSource&in);
+}
+class Texture{
+	~Texture();
+	Texture();
+	Texture(const Texture&in);
+	Texture(const TextureSource&in source, const PixelShader&in ps, const VertexShader&in vs);
+	Texture& opAssign(const Texture&in);
+	void draw(const RectF&in region) const;
+	void drawAt(const Vec2&in position) const;
+	void draw3D() const;
+}
+class Model{
+	~Model();
+	Model();
+	Model(const Model&in);
+	Model(const string&in filename, const PixelShader&in ps, const VertexShader&in vs);
+	Model& opAssign(const Model&in);
+	void draw() const;
+}
+class Transformer3D{
+	Transformer3D@ Transformer3D(const Mat4x4&in localWorldMat);
+}
+class Vec3{
+	~Vec3();
+	Vec3();
+	Vec3(const Vec3&in);
+	Vec3(double x, double y, double z);
+	Vec3(const Float3&in other);
+	Vec3(const Vec3&in other);
+	Vec3& opAssign(const Vec3&in);
+	Vec3 opSub(const Vec3&in);
+	Vec3 opMul(double);
+	Vec3 opDiv(double);
+	bool opEquals(const Vec3&in) const;
+	double x;
+	double y;
+	double z;
+}
+class Vec2{
+	~Vec2();
+	Vec2();
+	Vec2(const Vec2&in);
+	Vec2(double x, double y);
+	Vec2(const Point&in other);
+	Vec2(const Float2&in other);
+	Vec2(const Vec2&in other);
+	Vec2& opAssign(const Vec2&in);
+	Vec2 opNeg();
+	Vec2 opAdd(const Vec2&in);
+	Vec2 opSub(const Vec2&in);
+	Vec2 opMul(double);
+	Vec2 opDiv(double);
+	Vec2 withX(double newX) const;
+	Vec2 withY(double newY) const;
+	double horizontalAspectRatio() const;
+	double x;
+	double y;
+}
+class RectF{
+	~RectF();
+	RectF();
+	RectF(const RectF&in);
+	RectF(const Vec2&in pos, const Vec2&in size);
+	RectF(const Vec2&in size);
+	RectF(double x, double y, const Vec2&in size);
+	RectF(const Vec2&in pos, double width, double height);
+	RectF(double x, double y, double width, double height);
+	RectF& opAssign(const RectF&in);
+	Vec2 tl() const;
+	Vec2 br() const;
+	Vec2 center() const;
+}
+class Float2{
+	~Float2();
+	Float2();
+	Float2(const Float2&in);
+	Float2(float x, float y);
+	Float2(const Point&in other);
+	Float2(const Float2&in other);
+	Float2(const Vec2&in other);
+	Float2& opAssign(const Float2&in);
+	Float2 opNeg();
+	Float2 opAdd(const Float2&in);
+	Float2 opSub(const Float2&in);
+	Float2 opMul(float);
+	Float2 opDiv(float);
+	Float2 withX(float newX) const;
+	Float2 withY(float newY) const;
+	double horizontalAspectRatio() const;
+	float x;
+	float y;
 }
 uint scan(const string&in str, ?&out...);
 string format(const string&in fmt, const ?&in...);
@@ -289,6 +448,17 @@ string getExceptionInfo();
 void print(const string&in message);
 void println(const string&in message);
 namespace System { bool Update(); }
+namespace System { double DeltaTime(); }
+namespace System { uint64 FrameCount(); }
+namespace System { void ModalError(const string&in message); }
+namespace Mat4x4Ref { Mat4x4Ref Identity(); }
+namespace Mat4x4Ref { Mat4x4Ref LookAt(const Float3&in eye, const Float3&in target, const Float3&in up); }
+namespace Mat4x4Ref { Mat4x4Ref PerspectiveFov(float fov, float aspect, float nearZ, float farZ); }
+namespace Mat4x4Ref { Mat4x4Ref Translate(const Float3&in v); }
+namespace Graphics3D { void SetViewMatrix(const Mat4x4&in viewMatrix); }
+namespace Graphics3D { void SetProjectionMatrix(const Mat4x4&in projectionMatrix); }
+namespace Scene { Point Size(); }
+namespace Scene { Point Center(); }
 KeyboardInput KeyCancel;
 KeyboardInput KeyBackspace;
 KeyboardInput KeyTab;

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Script/ScriptBindMacros.h"
+#include "Script/Script_asapi.h"
 
 namespace ZG
 {

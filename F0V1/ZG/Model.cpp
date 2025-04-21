@@ -190,8 +190,8 @@ namespace
         // TODO: キャッシュする?
         return PipelineState{
             PipelineStateParams{
-                .pixelShader = params.pixelShader,
-                .vertexShader = params.vertexShader,
+                .pixelShader = params.ps,
+                .vertexShader = params.vs,
                 .vertexInput = {
                     {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT},
                     {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT},
@@ -253,7 +253,7 @@ struct Model::Impl
             {
                 const auto texture = texturePath.empty()
                                          ? EnginePresetAsset.GetWhiteTexture()
-                                         : ShaderResourceTexture{ToUtf16(texturePath)};
+                                         : ShaderResourceTexture{texturePath};
                 textureMap[texturePath] = texture;
                 diffuseTextureList.push_back(texture);
             }
@@ -312,6 +312,6 @@ namespace ZG
 
     void Model::draw() const
     {
-        p_impl->Draw();
+        if (p_impl) p_impl->Draw();
     }
 }

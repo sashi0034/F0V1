@@ -25,9 +25,9 @@ namespace
             const Image whiteImage{Size{16, 16}, ColorU8{255}};
             m_whiteTexture = ShaderResourceTexture(whiteImage);
 
-            m_stubVS = VertexShader{ShaderParams{.filename = L"engine/stub.hlsl", .entryPoint = "VS"}};
+            m_stubVS = VertexShader{ShaderParams{.filename = "engine/stub.hlsl", .entryPoint = "VS"}};
 
-            m_stubPS = PixelShader{ShaderParams{.filename = L"engine/stub.hlsl", .entryPoint = "PS"}};
+            m_stubPS = PixelShader{ShaderParams{.filename = "engine/stub.hlsl", .entryPoint = "PS"}};
         }
     };
 
