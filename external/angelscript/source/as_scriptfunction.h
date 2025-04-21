@@ -1,6 +1,6 @@
 /*
    AngelCode Scripting Library
-   Copyright (c) 2003-2024 Andreas Jonsson
+   Copyright (c) 2003-2025 Andreas Jonsson
 
    This software is provided 'as-is', without any express or implied
    warranty. In no event will the authors be held liable for any
@@ -113,7 +113,8 @@ enum asEFuncTrait
 	asTRAIT_EXPLICIT    = 1<<9,  // method
 	asTRAIT_PROPERTY    = 1<<10, // method/function
 	asTRAIT_DELETED     = 1<<11, // method
-	asTRAIT_VARIADIC    = 1<<12  // method/function
+	asTRAIT_VARIADIC    = 1<<12, // method/function
+	asTRAIT_NODISCARD   = 1<<13, // method/function
 };
 
 struct asSFunctionTraits
@@ -136,6 +137,7 @@ struct asSTryCatchInfo
 {
 	asUINT tryPos;
 	asUINT catchPos;
+	asUINT stackSize;
 };
 
 struct asSSystemFunctionInterface;
@@ -181,6 +183,7 @@ public:
 	bool                 IsExplicit() const;
 	bool                 IsProperty() const;
 	bool                 IsVariadic() const;
+	bool                 IsNoDiscard() const;
 	asUINT               GetParamCount() const;
 	int                  GetParam(asUINT index, int *typeId, asDWORD *flags = 0, const char **name = 0, const char **defaultArg = 0) const;
 	int                  GetReturnTypeId(asDWORD *flags = 0) const;
@@ -205,6 +208,8 @@ public:
 	const char *         GetVarDecl(asUINT index, bool includeNamespace = false) const;
 	int                  FindNextLineWithCode(int line) const;
 	int                  GetDeclaredAt(const char** scriptSection, int* row, int* col) const;
+	asUINT               GetLineNumberCount() const;
+	int                  GetLineNumber(asUINT index, const char** scriptSection, int* row, int* col) const;
 
 	// For JIT compilation
 	asDWORD *            GetByteCode(asUINT *length = 0);
@@ -228,6 +233,7 @@ public:
 	void SetPrivate(bool set) { traits.SetTrait(asTRAIT_PRIVATE, set); }
 	void SetProperty(bool set) { traits.SetTrait(asTRAIT_PROPERTY, set); }
 	void SetVariadic(bool set) { traits.SetTrait(asTRAIT_VARIADIC, set); }
+	void SetNoDiscard(bool set) { traits.SetTrait(asTRAIT_NODISCARD, set); }
 	bool IsFactory() const;
 
 	asCScriptFunction(asCScriptEngine *engine, asCModule *mod, asEFuncType funcType);

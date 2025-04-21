@@ -463,7 +463,7 @@ int asCContext::GetStateRegisters(asUINT stackLevel, asIScriptFunction **_callin
 
 		// Only return state registers for a nested call, see PushState()
 		if( tmp[0] != 0 )
-			return asERROR;
+			return asNO_FUNCTION;
 
 		// Restore the previous initial function and the associated values
 		callingSystemFunction = reinterpret_cast<asCScriptFunction*>(tmp[1]);
@@ -479,11 +479,15 @@ int asCContext::GetStateRegisters(asUINT stackLevel, asIScriptFunction **_callin
 
 	if(_callingSystemFunction) *_callingSystemFunction = callingSystemFunction;
 	if(_initialFunction)       *_initialFunction       = initialFunction;
-	if(_originalStackPointer)  *_originalStackPointer  = SerializeStackPointer(originalStackPointer);
+	asDWORD sp = SerializeStackPointer(originalStackPointer);
+	if (_originalStackPointer)  *_originalStackPointer = sp;
 	if(_argumentSize)          *_argumentSize          = argumentsSize;
 	if(_valueRegister)         *_valueRegister         = valueRegister;
 	if(_objectRegister)        *_objectRegister        = objectRegister;
 	if(_objectRegisterType)    *_objectRegisterType    = objectType;
+
+	if (int(sp) < 0)
+		return asERROR;
 
 	return asSUCCESS;
 }
@@ -520,13 +524,18 @@ int asCContext::GetCallStateRegisters(asUINT stackLevel, asDWORD *_stackFramePoi
 	}
 
 	if( stackFramePointer == 0 )
-		return asERROR; // TODO: This is not really an error. It just means that the stackLevel represent a pushed state
+		return asNO_FUNCTION; // It just means that the stackLevel represent a pushed state
 
-	if(_stackFramePointer) *_stackFramePointer = SerializeStackPointer(stackFramePointer); // TODO: Calculate stack frame pointer as delta from previous stack frame pointer (Or perhaps it will always be the same as the stack pointer in previous function?)
+	asDWORD sfp = SerializeStackPointer(stackFramePointer);
+	if(_stackFramePointer) *_stackFramePointer = sfp; // TODO: Calculate stack frame pointer as delta from previous stack frame pointer (Or perhaps it will always be the same as the stack pointer in previous function?)
 	if(_currentFunction)   *_currentFunction   = currentFunction;
 	if(_programPointer)    *_programPointer    = programPointer != 0? asUINT(programPointer - currentFunction->scriptData->byteCode.AddressOf()) : -1;
-	if(_stackPointer)      *_stackPointer      = SerializeStackPointer(stackPointer); // TODO: Calculate the stack pointer as offset from the stack frame pointer
+	asDWORD sp = SerializeStackPointer(stackPointer);
+	if(_stackPointer)      *_stackPointer      = sp; // TODO: Calculate the stack pointer as offset from the stack frame pointer
 	if(_stackIndex)        *_stackIndex        = stackIndex; // TODO: This shouldn't be returned, as it should be calculated during deserialization
+
+	if (int(sfp) < 0 || int(sp) < 0)
+		return asERROR;
 
 	return asSUCCESS;
 }
@@ -2128,6 +2137,9 @@ void asCContext::PrepareScriptFunction()
 		if( m_doSuspend )
 			m_status = asEXECUTION_SUSPENDED;
 	}
+
+    if (m_functionCallback)
+        CallFunctionCallback(m_currentFunction, false);
 }
 
 void asCContext::CallInterfaceMethod(asCScriptFunction *func)
@@ -2415,6 +2427,9 @@ static const void *const dispatch_table[256] = {
 	// Return to the caller, and remove the arguments from the stack
 	INSTRUCTION(asBC_RET):
 		{
+            if (m_functionCallback)
+                CallFunctionCallback(m_currentFunction, true);
+
 			// Return if this was the first function, or a nested execution
 			if( m_callStack.GetLength() == 0 ||
 				m_callStack[m_callStack.GetLength() - CALLSTACK_FRAME_SIZE] == 0 )
@@ -4820,6 +4835,10 @@ static const void *const dispatch_table[256] = {
 
 				// Call the method
 				m_callingSystemFunction = m_engine->scriptFunctions[i];
+
+                if (m_functionCallback)
+                    CallFunctionCallback(m_callingSystemFunction, false);
+
 				void *ptr = 0;
 #ifdef AS_NO_EXCEPTIONS
 				ptr = m_engine->CallObjectMethodRetPtr(obj, arg, m_callingSystemFunction);
@@ -4837,6 +4856,10 @@ static const void *const dispatch_table[256] = {
 					HandleAppException();
 				}
 #endif
+
+                if (m_functionCallback)
+                    CallFunctionCallback(m_callingSystemFunction, true);
+
 				m_callingSystemFunction = 0;
 				*(asPWORD*)&m_regs.valueRegister = (asPWORD)ptr;
 			}
@@ -5257,8 +5280,8 @@ void asCContext::DetermineLiveObjects(asCArray<int> &liveObjects, asUINT stackLe
 								var = v;
 								break;
 							}
-						asASSERT(var != asUINT(-1));
-						liveObjects[var] += 1;
+						if( var != asUINT(-1) )
+							liveObjects[var] += 1;
 					}
 					break;
 				case asBLOCK_BEGIN: // Start block
@@ -5586,9 +5609,10 @@ bool asCContext::CleanStackFrame(bool catchException)
 	else
 		m_isStackMemoryNotAllocated = false;
 
-	// If the exception was caught then move the program position to the catch block then stop the unwinding
+	// If the exception was caught then move the program position and stack pointer to the catch block then stop the unwinding
 	if (exceptionCaught)
 	{
+		m_regs.stackPointer = m_regs.stackFramePointer - tryCatchInfo->stackSize - m_currentFunction->scriptData->variableSpace;
 		m_regs.programPointer = m_currentFunction->scriptData->byteCode.AddressOf() + tryCatchInfo->catchPos;
 		return exceptionCaught;
 	}
@@ -5756,6 +5780,46 @@ void asCContext::CallExceptionCallback()
 		m_engine->CallGlobalFunction(this, m_exceptionCallbackObj, &m_exceptionCallbackFunc, 0);
 	else
 		m_engine->CallObjectMethod(m_exceptionCallbackObj, this, &m_exceptionCallbackFunc, 0);
+}
+
+// interface
+int asCContext::SetFunctionCallback(const asSFuncPtr &callback, void *obj, int callConv)
+{
+	m_functionCallback = true;
+	m_functionCallbackObj = obj;
+	bool isObj = false;
+	if( (unsigned)callConv == asCALL_GENERIC || (unsigned)callConv == asCALL_THISCALL_OBJFIRST || (unsigned)callConv == asCALL_THISCALL_OBJLAST )
+		return asNOT_SUPPORTED;
+	if( (unsigned)callConv >= asCALL_THISCALL )
+	{
+		isObj = true;
+		if( obj == 0 )
+		{
+			m_functionCallback = false;
+			return asINVALID_ARG;
+		}
+	}
+	int r = DetectCallingConvention(isObj, callback, callConv, 0, &m_functionCallbackFunc);
+	if( r < 0 ) m_functionCallback = false;
+	return r;
+}
+
+void asCContext::ClearFunctionCallback()
+{
+	m_functionCallback = false;
+}
+
+void asCContext::CallFunctionCallback(asCScriptFunction *func, bool pop)
+{
+	asSFunctionInfo msg;
+	msg.context = this;
+    msg.function = func;
+    msg.popped = pop;
+
+	if( m_functionCallbackFunc.callConv < ICC_THISCALL )
+		m_engine->CallGlobalFunction(&msg, m_functionCallbackObj, &m_functionCallbackFunc, 0);
+	else
+		m_engine->CallObjectMethod(m_functionCallbackObj, &msg, &m_functionCallbackFunc, 0);
 }
 
 #ifndef AS_NO_EXCEPTIONS
@@ -6256,6 +6320,9 @@ asDWORD asCContext::SerializeStackPointer(asDWORD *v) const
 
 	// Find the stack block that is used, and the offset into that block
 	asUINT stackIndex = DetermineStackIndex(v);
+	asASSERT(int(stackIndex) >= 0);
+	if (stackIndex >= m_stackBlocks.GetLength()) 
+		return asUINT(asERROR);
 	asQWORD offset    = asQWORD(v - m_stackBlocks[stackIndex]);
 
 	asASSERT(offset < 0x03FFFFFF && (asUINT)stackIndex < 0x3F);
