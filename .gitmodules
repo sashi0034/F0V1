@@ -1,3 +1,6 @@
 [submodule "external/DirectXTex"]
 	path = external/DirectXTex
 	url = https://github.com/microsoft/DirectXTex.git
+[submodule "external/cppdap"]
+	path = external/cppdap
+	url = https://github.com/google/cppdap.git
