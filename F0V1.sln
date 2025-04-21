@@ -11,7 +11,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript", "external\ang
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "angelscript_add_on", "external\angelscript_add_on\angelscript_add_on.vcxproj", "{4932417B-3E55-417C-8CEF-B03456EA87F0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppdap", "external\cppdap\build\cppdap.vcxproj", "{3D62624A-B080-37DE-808C-953170F3C502}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppdap-standalone", "external\cppdap-standalone\cppdap-standalone.vcxproj", "{264678B6-C442-4DB8-A99F-7343BC979033}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,14 +53,14 @@ Global
 		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x64.Build.0 = Release|x64
 		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x86.ActiveCfg = Release|Win32
 		{4932417B-3E55-417C-8CEF-B03456EA87F0}.Release|x86.Build.0 = Release|Win32
-		{3D62624A-B080-37DE-808C-953170F3C502}.Debug|x64.ActiveCfg = Debug|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Debug|x64.Build.0 = Debug|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Debug|x86.ActiveCfg = Debug|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Debug|x86.Build.0 = Debug|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Release|x64.ActiveCfg = Release|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Release|x64.Build.0 = Release|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Release|x86.ActiveCfg = Release|x64
-		{3D62624A-B080-37DE-808C-953170F3C502}.Release|x86.Build.0 = Release|x64
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Debug|x64.ActiveCfg = Debug|x64
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Debug|x64.Build.0 = Debug|x64
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Debug|x86.ActiveCfg = Debug|Win32
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Debug|x86.Build.0 = Debug|Win32
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Release|x64.ActiveCfg = Release|x64
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Release|x64.Build.0 = Release|x64
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Release|x86.ActiveCfg = Release|Win32
+		{264678B6-C442-4DB8-A99F-7343BC979033}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

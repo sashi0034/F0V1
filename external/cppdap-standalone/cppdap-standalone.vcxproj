@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{264678b6-c442-4db8-a99f-7343bc979033}</ProjectGuid>
+    <RootNamespace>cppdapstandalone</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;CPPDAP_JSON_NLOHMANN</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>include;src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;CPPDAP_JSON_NLOHMANN</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>include;src;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>
+      </SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\dap\any.h" />
+    <ClInclude Include="include\dap\dap.h" />
+    <ClInclude Include="include\dap\future.h" />
+    <ClInclude Include="include\dap\io.h" />
+    <ClInclude Include="include\dap\network.h" />
+    <ClInclude Include="include\dap\optional.h" />
+    <ClInclude Include="include\dap\protocol.h" />
+    <ClInclude Include="include\dap\serialization.h" />
+    <ClInclude Include="include\dap\session.h" />
+    <ClInclude Include="include\dap\traits.h" />
+    <ClInclude Include="include\dap\typeinfo.h" />
+    <ClInclude Include="include\dap\typeof.h" />
+    <ClInclude Include="include\dap\types.h" />
+    <ClInclude Include="include\dap\variant.h" />
+    <ClInclude Include="include\gmock\gmock-actions.h" />
+    <ClInclude Include="include\gmock\gmock-cardinalities.h" />
+    <ClInclude Include="include\gmock\gmock-function-mocker.h" />
+    <ClInclude Include="include\gmock\gmock-matchers.h" />
+    <ClInclude Include="include\gmock\gmock-more-actions.h" />
+    <ClInclude Include="include\gmock\gmock-more-matchers.h" />
+    <ClInclude Include="include\gmock\gmock-nice-strict.h" />
+    <ClInclude Include="include\gmock\gmock-spec-builders.h" />
+    <ClInclude Include="include\gmock\gmock.h" />
+    <ClInclude Include="include\gmock\internal\custom\gmock-generated-actions.h" />
+    <ClInclude Include="include\gmock\internal\custom\gmock-matchers.h" />
+    <ClInclude Include="include\gmock\internal\custom\gmock-port.h" />
+    <ClInclude Include="include\gmock\internal\gmock-internal-utils.h" />
+    <ClInclude Include="include\gmock\internal\gmock-port.h" />
+    <ClInclude Include="include\gmock\internal\gmock-pp.h" />
+    <ClInclude Include="include\gtest\gtest-assertion-result.h" />
+    <ClInclude Include="include\gtest\gtest-death-test.h" />
+    <ClInclude Include="include\gtest\gtest-matchers.h" />
+    <ClInclude Include="include\gtest\gtest-message.h" />
+    <ClInclude Include="include\gtest\gtest-param-test.h" />
+    <ClInclude Include="include\gtest\gtest-printers.h" />
+    <ClInclude Include="include\gtest\gtest-spi.h" />
+    <ClInclude Include="include\gtest\gtest-test-part.h" />
+    <ClInclude Include="include\gtest\gtest-typed-test.h" />
+    <ClInclude Include="include\gtest\gtest.h" />
+    <ClInclude Include="include\gtest\gtest_pred_impl.h" />
+    <ClInclude Include="include\gtest\gtest_prod.h" />
+    <ClInclude Include="include\gtest\internal\custom\gtest-port.h" />
+    <ClInclude Include="include\gtest\internal\custom\gtest-printers.h" />
+    <ClInclude Include="include\gtest\internal\custom\gtest.h" />
+    <ClInclude Include="include\gtest\internal\gtest-death-test-internal.h" />
+    <ClInclude Include="include\gtest\internal\gtest-filepath.h" />
+    <ClInclude Include="include\gtest\internal\gtest-internal.h" />
+    <ClInclude Include="include\gtest\internal\gtest-param-util.h" />
+    <ClInclude Include="include\gtest\internal\gtest-port-arch.h" />
+    <ClInclude Include="include\gtest\internal\gtest-port.h" />
+    <ClInclude Include="include\gtest\internal\gtest-string.h" />
+    <ClInclude Include="include\gtest\internal\gtest-type-util.h" />
+    <ClInclude Include="include\nlohmann\adl_serializer.hpp" />
+    <ClInclude Include="include\nlohmann\detail\conversions\from_json.hpp" />
+    <ClInclude Include="include\nlohmann\detail\conversions\to_chars.hpp" />
+    <ClInclude Include="include\nlohmann\detail\conversions\to_json.hpp" />
+    <ClInclude Include="include\nlohmann\detail\exceptions.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\binary_reader.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\input_adapters.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\json_sax.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\lexer.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\parser.hpp" />
+    <ClInclude Include="include\nlohmann\detail\input\position_t.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\internal_iterator.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\iteration_proxy.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\iterator_traits.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\iter_impl.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\json_reverse_iterator.hpp" />
+    <ClInclude Include="include\nlohmann\detail\iterators\primitive_iterator.hpp" />
+    <ClInclude Include="include\nlohmann\detail\json_pointer.hpp" />
+    <ClInclude Include="include\nlohmann\detail\json_ref.hpp" />
+    <ClInclude Include="include\nlohmann\detail\macro_scope.hpp" />
+    <ClInclude Include="include\nlohmann\detail\macro_unscope.hpp" />
+    <ClInclude Include="include\nlohmann\detail\meta\cpp_future.hpp" />
+    <ClInclude Include="include\nlohmann\detail\meta\detected.hpp" />
+    <ClInclude Include="include\nlohmann\detail\meta\is_sax.hpp" />
+    <ClInclude Include="include\nlohmann\detail\meta\type_traits.hpp" />
+    <ClInclude Include="include\nlohmann\detail\meta\void_t.hpp" />
+    <ClInclude Include="include\nlohmann\detail\output\binary_writer.hpp" />
+    <ClInclude Include="include\nlohmann\detail\output\output_adapters.hpp" />
+    <ClInclude Include="include\nlohmann\detail\output\serializer.hpp" />
+    <ClInclude Include="include\nlohmann\detail\value_t.hpp" />
+    <ClInclude Include="include\nlohmann\json.hpp" />
+    <ClInclude Include="include\nlohmann\json_fwd.hpp" />
+    <ClInclude Include="include\nlohmann\thirdparty\hedley\hedley.hpp" />
+    <ClInclude Include="include\nlohmann\thirdparty\hedley\hedley_undef.hpp" />
+    <ClInclude Include="src\chan.h" />
+    <ClInclude Include="src\content_stream.h" />
+    <ClInclude Include="src\gtest-internal-inl.h" />
+    <ClInclude Include="src\json_serializer.h" />
+    <ClInclude Include="src\nlohmann_json_serializer.h" />
+    <ClInclude Include="src\null_json_serializer.h" />
+    <ClInclude Include="src\rwmutex.h" />
+    <ClInclude Include="src\socket.h" />
+    <ClInclude Include="src\string_buffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\any_test.cpp" />
+    <ClCompile Include="src\chan_test.cpp" />
+    <ClCompile Include="src\content_stream.cpp" />
+    <ClCompile Include="src\content_stream_test.cpp" />
+    <ClCompile Include="src\dap_test.cpp" />
+    <ClCompile Include="src\gmock-all.cc" />
+    <ClCompile Include="src\gmock-cardinalities.cc" />
+    <ClCompile Include="src\gmock-internal-utils.cc" />
+    <ClCompile Include="src\gmock-matchers.cc" />
+    <ClCompile Include="src\gmock-spec-builders.cc" />
+    <ClCompile Include="src\gmock.cc" />
+    <ClCompile Include="src\gmock_main.cc" />
+    <ClCompile Include="src\gtest-all.cc" />
+    <ClCompile Include="src\gtest-assertion-result.cc" />
+    <ClCompile Include="src\gtest-death-test.cc" />
+    <ClCompile Include="src\gtest-filepath.cc" />
+    <ClCompile Include="src\gtest-matchers.cc" />
+    <ClCompile Include="src\gtest-port.cc" />
+    <ClCompile Include="src\gtest-printers.cc" />
+    <ClCompile Include="src\gtest-test-part.cc" />
+    <ClCompile Include="src\gtest-typed-test.cc" />
+    <ClCompile Include="src\gtest.cc" />
+    <ClCompile Include="src\gtest_main.cc" />
+    <ClCompile Include="src\io.cpp" />
+    <ClCompile Include="src\json_serializer_test.cpp" />
+    <ClCompile Include="src\network.cpp" />
+    <ClCompile Include="src\network_test.cpp" />
+    <ClCompile Include="src\nlohmann_json_serializer.cpp" />
+    <ClCompile Include="src\null_json_serializer.cpp" />
+    <ClCompile Include="src\optional_test.cpp" />
+    <ClCompile Include="src\protocol_events.cpp" />
+    <ClCompile Include="src\protocol_requests.cpp" />
+    <ClCompile Include="src\protocol_response.cpp" />
+    <ClCompile Include="src\protocol_types.cpp" />
+    <ClCompile Include="src\rwmutex_test.cpp" />
+    <ClCompile Include="src\session.cpp" />
+    <ClCompile Include="src\session_test.cpp" />
+    <ClCompile Include="src\socket.cpp" />
+    <ClCompile Include="src\socket_test.cpp" />
+    <ClCompile Include="src\traits_test.cpp" />
+    <ClCompile Include="src\typeinfo.cpp" />
+    <ClCompile Include="src\typeinfo_test.cpp" />
+    <ClCompile Include="src\typeof.cpp" />
+    <ClCompile Include="src\variant_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="include\gmock\internal\custom\README.md" />
+    <Content Include="include\gtest\internal\custom\README.md" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

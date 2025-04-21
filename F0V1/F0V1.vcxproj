@@ -278,8 +278,8 @@
     <ProjectReference Include="..\external\angelscript_add_on\angelscript_add_on.vcxproj">
       <Project>{4932417b-3e55-417c-8cef-b03456ea87f0}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\external\cppdap\build\cppdap.vcxproj">
-      <Project>{3d62624a-b080-37de-808c-953170f3c502}</Project>
+    <ProjectReference Include="..\external\cppdap-standalone\cppdap-standalone.vcxproj">
+      <Project>{264678b6-c442-4db8-a99f-7343bc979033}</Project>
     </ProjectReference>
     <ProjectReference Include="..\external\DirectXTex\DirectXTex\DirectXTex_Desktop_2022.vcxproj">
       <Project>{371b9fa9-4c90-4ac6-a123-aced756d6c77}</Project>
