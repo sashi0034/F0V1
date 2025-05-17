@@ -13,7 +13,7 @@ namespace
     {
         int count{};
 
-        AssertWin32{"descriptor table size mismatch"sv}
+        AssertTrue{"descriptor table size mismatch"sv}
             | params.table.size() == params.materialCounts.size()
             | params.table.size() == params.descriptors.size();
 

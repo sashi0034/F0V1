@@ -5,7 +5,7 @@
 
 void Main()
 {
-#if 0
+#if 1
     EntryPoint_CPP();
 #else
     EntryPoint_AS();

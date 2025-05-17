@@ -124,7 +124,7 @@ struct Texture::Impl
         m_descriptorHeap = DescriptorHeap({
             .table = descriptorTable,
             .materialCounts = {1},
-            .descriptors = {CbSrUaSet{{m_cb0}, {{m_sr}}}, {}}
+            .descriptors = {CbSrUaSet{{m_cb0}, {{m_sr}}}}
         });
     }
 
