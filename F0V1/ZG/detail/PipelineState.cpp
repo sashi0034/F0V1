@@ -265,6 +265,11 @@ namespace ZG
             p_impl, {p_impl->m_params.pixelShader.timestamp(), p_impl->m_params.vertexShader.timestamp()});
     }
 
+    DescriptorTable PipelineState::descriptorTable() const
+    {
+        return p_impl->m_params.descriptorTable;
+    }
+
     void PipelineState::CommandSet() const
     {
         p_impl->CommandSet();

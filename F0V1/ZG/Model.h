@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include "Array.h"
+#include "ConstantBuffer.h"
 #include "Shader.h"
 
 namespace ZG
@@ -8,6 +10,7 @@ namespace ZG
         std::string filename;
         PixelShader ps;
         VertexShader vs;
+        std::optional<ConstantBuffer_impl> cb2{};
     };
 
     class Model

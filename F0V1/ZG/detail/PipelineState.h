@@ -37,6 +37,8 @@ namespace ZG::detail
     public:
         PipelineState(const PipelineStateParams& params);
 
+        DescriptorTable descriptorTable() const;
+
         void CommandSet() const;
 
     private:

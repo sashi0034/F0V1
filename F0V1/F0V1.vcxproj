@@ -142,6 +142,7 @@
     <Content Include=".gitignore" />
     <Content Include="engine\stub.hlsl" />
     <Content Include="asset\shader\default2d.hlsl" />
+    <Content Include="asset\shader\phong.hlsl" />
     <ClCompile Include="EntryPoint_AS.cpp" />
     <ClCompile Include="pch_helper.cpp" />
     <ClCompile Include="Title\Title_Rendering.cpp" />

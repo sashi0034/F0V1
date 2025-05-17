@@ -183,10 +183,16 @@ namespace
     using namespace ZG;
     using namespace ZG::detail;
 
-    const DescriptorTable descriptorTable = {{1, 0, 0}, {1, 1, 0}};
+    const DescriptorTable baseDescriptorTable = {{1, 0, 0}, {1, 1, 0}};
 
     PipelineState makePipelineState(const ModelParams& params)
     {
+        auto descriptorTable = baseDescriptorTable;
+        if (params.cb2.has_value())
+        {
+            descriptorTable.push_back({1, 0, 0});;
+        }
+
         // TODO: キャッシュする?
         return PipelineState{
             PipelineStateParams{
@@ -229,9 +235,12 @@ struct Model::Impl
 
     ConstantBuffer<ModelMaterial_b> m_cb1{};
 
+    std::optional<ConstantBuffer_impl> m_cb2{};
+
     Impl(const ModelParams& params) :
         m_modelData(loadObj(params.filename)),
-        m_pipelineState(makePipelineState(params))
+        m_pipelineState(makePipelineState(params)),
+        m_cb2(params.cb2)
     {
         m_shapes.resize(m_modelData.materials.size());
         for (auto& shape : m_modelData.shapes)
@@ -269,11 +278,21 @@ struct Model::Impl
 
         m_cb1 = ConstantBuffer<ModelMaterial_b>{m_modelData.materials};
 
-        m_descriptorHeap = DescriptorHeap(DescriptorHeapParams{
-            .table = descriptorTable,
+        // -----------------------------------------------
+
+        auto descriptorHeapParam = DescriptorHeapParams{
+            .table = m_pipelineState.descriptorTable(),
             .materialCounts = {1, m_modelData.materials.size()},
             .descriptors = {CbSrUaSet{{m_cb0}, {}, {}}, CbSrUaSet{{m_cb1}, {diffuseTextureList}, {}}},
-        });
+        };
+
+        if (params.cb2.has_value())
+        {
+            descriptorHeapParam.materialCounts.push_back(1);
+            descriptorHeapParam.descriptors.push_back(CbSrUaSet{{params.cb2.value()}, {}, {}});
+        }
+
+        m_descriptorHeap = DescriptorHeap(descriptorHeapParam);
     }
 
     void Draw() const
@@ -289,6 +308,8 @@ struct Model::Impl
         // カメラ行列設定
         m_descriptorHeap.CommandSet();
         m_descriptorHeap.CommandSetTable(0);
+
+        if (m_cb2.has_value()) m_descriptorHeap.CommandSetTable(2);
 
         // マテリアル設定
         for (size_t materialId = 0; materialId < m_shapes.size(); ++materialId)
