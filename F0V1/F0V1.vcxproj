@@ -143,8 +143,9 @@
     <Content Include="engine\stub.hlsl" />
     <Content Include="asset\shader\default2d.hlsl" />
     <ClCompile Include="EntryPoint_AS.cpp" />
-    <ClCompile Include="EntryPoint_CPP.cpp" />
     <ClCompile Include="pch_helper.cpp" />
+    <ClCompile Include="Title\Title_Rendering.cpp" />
+    <ClCompile Include="Title\Title_Free.cpp" />
     <ClCompile Include="ZG\ConstantBuffer.cpp" />
     <ClCompile Include="ZG\detail\CommandList.cpp" />
     <ClCompile Include="ZG\detail\DescriptorHeap.cpp" />
@@ -208,8 +209,9 @@
     <ClInclude Include="asset\shader\basic.hlsli" />
     <ClInclude Include="asset\shader\model.hlsli" />
     <ClInclude Include="EntryPoint_AS.h" />
-    <ClInclude Include="EntryPoint_CPP.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Title\Title_Rendering.h" />
+    <ClInclude Include="Title\Title_Free.h" />
     <ClInclude Include="ZG\Array.h" />
     <ClInclude Include="ZG\AssertObject.h" />
     <ClInclude Include="ZG\Buffer3D.h" />

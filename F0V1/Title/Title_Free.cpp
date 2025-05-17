@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "EntryPoint_CPP.h"
+#include "Title_Free.h"
 
 #include "ZG/Buffer3D.h"
 #include "ZG/Graphics3D.h"
@@ -19,7 +19,7 @@
 
 using namespace ZG;
 
-void EntryPoint_CPP()
+void Title_Free()
 {
     const PixelShader default2dPS{ShaderParams{.filename = "asset/shader/default2d.hlsl", .entryPoint = "PS"}};
     const VertexShader default2dVS{ShaderParams{.filename = "asset/shader/default2d.hlsl", .entryPoint = "VS"}};

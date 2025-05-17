@@ -1,12 +1,12 @@
 #include "pch.h"
 
 #include "EntryPoint_AS.h"
-#include "EntryPoint_CPP.h"
+#include "Title/Title_Rendering.h"
 
 void Main()
 {
 #if 1
-    EntryPoint_CPP();
+    Title_Rendering();
 #else
     EntryPoint_AS();
 #endif
