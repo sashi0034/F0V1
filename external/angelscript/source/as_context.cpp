@@ -50,6 +50,7 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable:4702) // unreachable code
+#pragma warning(disable:4756) // modified: overflow in constant arithmetic
 #endif
 
 //make compiler shut up
