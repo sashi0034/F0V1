@@ -23,7 +23,8 @@ namespace
 {
     struct DirectionLight_cb2
     {
-        alignas(16) Float3 color{};
+        alignas(16) Float3 lightDirection;
+        alignas(16) Float3 lightColor{};
     };
 }
 
@@ -75,7 +76,9 @@ void Title_Rendering()
             worldMat = worldMat.rotatedY(Math::ToRadians(System::DeltaTime() * 90));
             const Transformer3D t3d{worldMat};
 
-            directionLight.color = Vec3{1.0f, 0.0f, 0.5f};
+            const float invRoot3 = std::sqrt(3.0);
+            directionLight.lightDirection = Float3{invRoot3, -invRoot3, invRoot3};
+            directionLight.lightColor = Float3{1.0f, 1.0f, 0.5f};
             directionLightBuffer.upload(directionLight);
 
             model.draw();
